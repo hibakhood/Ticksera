@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --color-emerald-50:  hsl(152 81% 96%);
+  --color-emerald-100: hsl(149 80% 90%);
+  --color-emerald-200: hsl(152 76% 80%);
+  --color-emerald-300: hsl(156 72% 65%);
+  --color-emerald-400: hsl(158 64% 52%);
+  --color-emerald-500: hsl(160 84% 39%);
+  --color-emerald-600: hsl(161 94% 30%);
+  --color-emerald-700: hsl(163 94% 24%);
+  --color-emerald-800: hsl(163 88% 18%);
+  --color-emerald-900: hsl(164 86% 12%);
+
+  --color-slate-50:  hsl(210 40% 98%);
+  --color-slate-100: hsl(210 40% 96%);
+  --color-slate-200: hsl(214 32% 91%);
+  --color-slate-300: hsl(213 27% 84%);
+  --color-slate-400: hsl(215 20% 65%);
+  --color-slate-500: hsl(215 16% 47%);
+  --color-slate-600: hsl(215 19% 35%);
+  --color-slate-700: hsl(215 25% 27%);
+  --color-slate-800: hsl(217 33% 17%);
+  --color-slate-900: hsl(222 47% 11%);
+  --color-slate-950: hsl(229 84% 5%);
+
+  --color-primary-50:  var(--color-emerald-50);
+  --color-primary-100: var(--color-emerald-100);
+  --color-primary-200: var(--color-emerald-200);
+  --color-primary-300: var(--color-emerald-300);
+  --color-primary-400: var(--color-emerald-400);
+  --color-primary-500: var(--color-emerald-500);
+  --color-primary-600: var(--color-emerald-600);
+  --color-primary-700: var(--color-emerald-700);
+  --color-primary-800: var(--color-emerald-800);
+  --color-primary-900: var(--color-emerald-900);
+
+  --color-dark-bg:     hsl(222 47% 8%);
+  --color-dark-card:   hsl(222 39% 12%);
+  --color-dark-border: hsl(217 33% 20%);
+}
+
+@layer base {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: hsl(210 40% 98%);
+  }
+
+  .dark body { background: hsl(222 47% 8%); }
+}
+
+.font-heading { font-family: 'Space Grotesk', sans-serif; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(160 84% 39% / 0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(160 84% 39% / 0.45); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(160 84% 39% / 0.4); }
+  50%       { box-shadow: 0 0 0 8px hsl(160 84% 39% / 0); }
+}
+
+.animate-fade-in   { animation: fadeIn  0.4s ease-out forwards; }
+.animate-slide-in  { animation: slideIn 0.35s ease-out forwards; }
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+/* ── Explicit section spacing (avoids Tailwind v4 spacing-variable issues) ── */
+/* Mobile-first: compact on small screens */
+.s-hero    { padding-top: 2.75rem; padding-bottom: 3rem; }
+.s-section { padding-top: 2.25rem; padding-bottom: 2.25rem; }
+.s-sm      { padding-top: 1.5rem;  padding-bottom: 1.5rem; }
+.s-inner   { padding-left: 1.25rem; padding-right: 1.25rem; }
+
+@media (min-width: 640px) {
+  .s-hero    { padding-top: 4rem;  padding-bottom: 4.5rem; }
+  .s-section { padding-top: 3rem;  padding-bottom: 3rem; }
+  .s-sm      { padding-top: 2rem;  padding-bottom: 2rem; }
+  .s-inner   { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  .s-hero    { padding-top: 5.5rem;  padding-bottom: 6rem; }
+  .s-section { padding-top: 4rem;    padding-bottom: 4rem; }
+  .s-sm      { padding-top: 2.75rem; padding-bottom: 2.75rem; }
+  .s-inner   { padding-left: 2rem; padding-right: 2rem; }
+}
+
+/* Section header spacing */
+.s-header       { margin-bottom: 2.5rem; }
+.s-header h2    { margin-bottom: 0.75rem; }
+.s-header p     { margin-top: 0; }
+
+/* ── Premium surface utilities ── */
+.card-premium {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+.card-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px hsl(217 33% 17% / 0.08), 0 2px 6px hsl(217 33% 17% / 0.05);
+}
+.dark .card-premium:hover {
+  box-shadow: 0 12px 34px hsl(222 47% 4% / 0.5), 0 2px 8px hsl(222 47% 4% / 0.4);
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, hsl(158 64% 46%) 0%, hsl(163 94% 34%) 55%, hsl(177 70% 42%) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.premium-surface {
+  background:
+    radial-gradient(1100px 380px at 15% -10%, hsl(160 84% 39% / 0.09), transparent 60%),
+    radial-gradient(900px 340px at 100% 0%, hsl(177 70% 42% / 0.07), transparent 55%);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, hsl(217 33% 70% / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(217 33% 70% / 0.07) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, black 40%, transparent 100%);
+}
+
+.chip-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.9rem;
+  color: #fff;
+  flex-shrink: 0;
+}
