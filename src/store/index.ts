@@ -78,6 +78,7 @@ function genRef(): string {
 }
 
 let syncing = false;
+let recoveryPending = false;
 
 const day   = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
 const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
@@ -158,11 +159,13 @@ interface AppState {
 
   // Auth
   currentUser: User | null;
+  recoveryMode: boolean;
   initAuth: () => Promise<void>;
   loadRemoteData: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   demoLogin: (email: string) => boolean;
   resetPassword: (email: string, newPassword: string) => boolean;
+  completePasswordReset: (password: string) => Promise<boolean>;
   signup: (name: string, email: string, password: string, organization?: string) => Promise<SignupResult>;
   logout: () => void;
 
@@ -240,6 +243,7 @@ export const useStore = create<AppState>()(
       toggleDarkMode: () => set(s => ({ darkMode: !s.darkMode })),
 
       currentUser: null,
+      recoveryMode: false,
       loadRemoteData: async () => {
         const { currentUser } = get();
         if (!currentUser || !isSupabaseConfigured() || !isUuid(currentUser.id)) return;
@@ -260,9 +264,15 @@ export const useStore = create<AppState>()(
       },
       initAuth: async () => {
         if (!isSupabaseConfigured()) return;
+        getSupabase().auth.onAuthStateChange((event) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            recoveryPending = true;
+            set({ recoveryMode: true, currentUser: null });
+          }
+        });
         try {
           const { data } = await getSupabase().auth.getSession();
-          if (data.session?.user) {
+          if (data.session?.user && !recoveryPending && !get().recoveryMode) {
             const profile = await buildProfileFromAuthUser(data.session.user);
             set({ currentUser: profile });
             await get().loadRemoteData();
@@ -275,6 +285,8 @@ export const useStore = create<AppState>()(
           try {
             const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalised, password });
             if (error || !data.user) return false;
+            recoveryPending = false;
+            set({ recoveryMode: false });
             const profile = await buildProfileFromAuthUser(data.user);
             set({ currentUser: profile });
             await get().loadRemoteData();
@@ -346,7 +358,19 @@ export const useStore = create<AppState>()(
         if (isSupabaseConfigured()) {
           try { void getSupabase().auth.signOut(); } catch { /* ignore */ }
         }
-        set({ currentUser: null });
+        recoveryPending = false;
+        set({ currentUser: null, recoveryMode: false });
+      },
+      completePasswordReset: async (password: string) => {
+        if (!isSupabaseConfigured()) return false;
+        try {
+          const { error } = await getSupabase().auth.updateUser({ password });
+          if (error) return false;
+          await getSupabase().auth.signOut();
+          recoveryPending = false;
+          set({ recoveryMode: false, currentUser: null });
+          return true;
+        } catch { return false; }
       },
 
       users: seedUsers,
@@ -605,6 +629,9 @@ export const useStore = create<AppState>()(
     {
       name: 'fixora-store',
       version: 5,
+      partialize: (state) => Object.fromEntries(
+        (Object.entries(state) as Array<[string, unknown]>).filter(([k]) => k !== 'recoveryMode')
+      ),
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as Record<string, unknown>;
         if (version < 3) {

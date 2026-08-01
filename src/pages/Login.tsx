@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
@@ -27,9 +27,16 @@ export default function Login() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetViaEmail, setResetViaEmail] = useState(false);
 
-  const { login, resetPassword } = useStore();
+  const { login, resetPassword, completePasswordReset, recoveryMode } = useStore();
   const navigate = useNavigate();
   const supabaseLive = isSupabaseConfigured();
+
+  useEffect(() => {
+    if (recoveryMode) {
+      setMode('reset');
+      setError('');
+    }
+  }, [recoveryMode]);
 
   const getDestination = (userId: string, role: string) => {
     if (STAFF_ROLES.includes(role)) return '/dashboard';
@@ -117,7 +124,7 @@ export default function Login() {
     setMode('reset');
   };
 
-  const handleReset = (e: React.FormEvent) => {
+  const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (newPassword.length < 6) {
@@ -126,6 +133,18 @@ export default function Login() {
     }
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
+      return;
+    }
+    if (supabaseLive) {
+      setLoading(true);
+      const ok = await completePasswordReset(newPassword);
+      setLoading(false);
+      if (ok) {
+        setResetViaEmail(false);
+        setMode('done');
+      } else {
+        setError('Something went wrong. Please try again.');
+      }
       return;
     }
     if (resetPassword(resetEmail, newPassword)) {
@@ -353,7 +372,7 @@ export default function Login() {
                   <div>
                     <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white leading-tight">Set a new password</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                      Create a strong password for <span className="font-semibold text-slate-700 dark:text-slate-300">{resetEmail}</span>.
+                      Create a strong password for <span className="font-semibold text-slate-700 dark:text-slate-300">{resetEmail || 'your account'}</span>.
                     </p>
                   </div>
                 </div>
