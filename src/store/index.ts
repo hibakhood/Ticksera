@@ -39,7 +39,6 @@ async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
           id: authUser.id,
           email: authUser.email ?? '',
           name: fallback.name,
-          role: fallback.role,
           organization: fallback.organization ?? null,
         },
         { onConflict: 'id' }
