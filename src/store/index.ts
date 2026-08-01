@@ -6,7 +6,7 @@ import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../ut
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
-import { requestAgentReply, buildAgentPayload } from '../lib/agent';
+import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad } from '../lib/agent';
 
 export interface SignupResult {
   ok: boolean;
@@ -90,11 +90,11 @@ const SLA_HOURS: Record<string, number> = { low: 5, medium: 3, high: 1, critical
 const seedUsers: User[] = [
   { id: '1', email: 'admin@fixora.com',    name: 'Ibrahim O. Akande', role: 'super_admin',      password: 'fixora123', phone: '+234 800 000 0001', location: 'Lagos, NG',        bio: 'Platform administrator',   createdAt: day(-90) },
   { id: '2', email: 'manager@fixora.com',  name: 'Sarah Chen',     role: 'support_manager',  password: 'fixora123', phone: '+234 800 000 0002', location: 'Lagos, NG',        bio: 'Support team lead',        createdAt: day(-60) },
-  { id: '3', email: 'tech@fixora.com',     name: 'Mike Obi',       role: 'technician',       password: 'fixora123', phone: '+234 800 000 0003', location: 'Abuja, NG',        bio: 'Senior technician',        createdAt: day(-45) },
-  { id: '4', email: 'field@fixora.com',    name: 'Grace Adeyemi',  role: 'field_technician', password: 'fixora123', phone: '+234 800 000 0004', location: 'Port Harcourt, NG', bio: 'Field support specialist', createdAt: day(-30) },
+  { id: '3', email: 'tech@fixora.com',     name: 'Mike Obi',       role: 'technician',       password: 'fixora123', phone: '+234 800 000 0003', location: 'Abuja, NG',        bio: 'Senior technician',        skills: ['computer_repair', 'microsoft365', 'server', 'software', 'remote'], createdAt: day(-45) },
+  { id: '4', email: 'field@fixora.com',    name: 'Grace Adeyemi',  role: 'field_technician', password: 'fixora123', phone: '+234 800 000 0004', location: 'Port Harcourt, NG', bio: 'Field support specialist', skills: ['cctv', 'printer', 'computer_repair', 'networking', 'internet'], createdAt: day(-30) },
   { id: '5', email: 'customer@fixora.com', name: 'David Okonkwo',  role: 'customer',         password: 'fixora123', phone: '+234 800 000 0005', location: 'Lagos, NG',        bio: 'Business owner',           createdAt: day(-20) },
   { id: '6', email: 'jane@company.com',    name: 'Jane Doe',       role: 'customer',         password: 'fixora123', phone: '+234 800 000 0006', location: 'Kano, NG',         bio: 'IT Manager',               createdAt: day(-15) },
-  { id: '7', email: 'tech2@fixora.com',    name: 'Emeka Nwosu',    role: 'technician',       password: 'fixora123', phone: '+234 800 000 0007', location: 'Lagos, NG',        bio: 'Network specialist',       createdAt: day(-40) },
+  { id: '7', email: 'tech2@fixora.com',    name: 'Emeka Nwosu',    role: 'technician',       password: 'fixora123', phone: '+234 800 000 0007', location: 'Lagos, NG',        bio: 'Network specialist',       skills: ['networking', 'internet', 'printer', 'cctv', 'server'], createdAt: day(-40) },
 ];
 
 const seedTickets: Ticket[] = [
@@ -183,6 +183,7 @@ interface AppState {
   resolveViaTriage: (id: string) => void;
   requestTechnician: (id: string, reason: string) => void;
   submitTriageAnswer: (id: string, answer: string) => void;
+  autoRouteTicket: (id: string) => Promise<import('../lib/agent').AutoRouteResult | null>;
 
   // Bookings
   bookings: Booking[];
@@ -328,6 +329,10 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     ],
     typingUsers: s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)),
   }));
+
+  if (mode === 'triage' && completed) {
+    setTimeout(() => void useStore.getState().autoRouteTicket(ticketId), 400);
+  }
 }
 
 export const useStore = create<AppState>()(
@@ -507,6 +512,9 @@ export const useStore = create<AppState>()(
             createdAt: now,
           }],
         }));
+        if (!triageActive) {
+          setTimeout(() => void useStore.getState().autoRouteTicket(id), 1200);
+        }
         return id;
       },
       updateTicket: (id, data) => set(s => ({
@@ -534,39 +542,165 @@ export const useStore = create<AppState>()(
           }],
         };
       }),
-      requestTechnician: (id: string, reason: string) => set(s => {
+      requestTechnician: (id: string, reason: string) => {
+        const res = set(s => {
+          const ticket = s.tickets.find(t => t.id === id);
+          if (!ticket) return s;
+          if (ticket.triageStatus === 'ai_diagnosing') return s;
+          const now = new Date().toISOString();
+          return {
+            tickets: s.tickets.map(t =>
+              t.id === id
+                ? { ...t, triageStatus: 'escalated_to_technician' as const, status: 'open' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `Requested technician support: ${reason}`, entityType: 'ticket', entityId: id, timestamp: now }] }
+                : t
+            ),
+            chatMessages: [...s.chatMessages, {
+              id: `m${Date.now()}`,
+              ticketId: id,
+              senderEmail: 'bot@fixora.com',
+              senderName: 'FIXORA BOT',
+              senderRole: 'bot' as const,
+              message: "Your request has been received.\n\nA technician will be assigned to your ticket shortly, and you'll be notified here the moment they pick it up. Your case details and diagnostic summary have been shared with them.",
+              isAdmin: true,
+              createdAt: now,
+            }],
+            notifications: [...s.notifications, {
+              id: `n${Date.now()}`,
+              userEmail: 'admin@fixora.com',
+              title: 'Technician requested',
+              message: `${ticket.createdByName} requested a technician for: ${ticket.title}`,
+              type: 'assignment',
+              isRead: false,
+              link: `/tickets/${id}`,
+              createdAt: now,
+            }],
+          };
+        });
+        const wasDiagnosing = get().tickets.find(t => t.id === id)?.triageStatus === 'ai_diagnosing';
+        if (!wasDiagnosing) {
+          setTimeout(() => void useStore.getState().autoRouteTicket(id), 400);
+        }
+        return res;
+      },
+      autoRouteTicket: async (id) => {
+        const s = useStore.getState();
         const ticket = s.tickets.find(t => t.id === id);
-        if (!ticket) return s;
-        if (ticket.triageStatus === 'ai_diagnosing') return s;
-        const now = new Date().toISOString();
-        return {
-          tickets: s.tickets.map(t =>
-            t.id === id
-              ? { ...t, triageStatus: 'escalated_to_technician' as const, status: 'open' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `Requested technician support: ${reason}`, entityType: 'ticket', entityId: id, timestamp: now }] }
-              : t
-          ),
-          chatMessages: [...s.chatMessages, {
-            id: `m${Date.now()}`,
-            ticketId: id,
-            senderEmail: 'bot@fixora.com',
-            senderName: 'FIXORA BOT',
-            senderRole: 'bot' as const,
-            message: "Your request has been received.\n\nA technician will be assigned to your ticket shortly, and you'll be notified here the moment they pick it up. Your case details and diagnostic summary have been shared with them.",
-            isAdmin: true,
-            createdAt: now,
-          }],
-          notifications: [...s.notifications, {
-            id: `n${Date.now()}`,
+        if (!ticket || ticket.assignedTo || ticket.status === 'resolved' || ticket.status === 'closed') return null;
+        const technicians = s.users
+          .filter(u => u.role === 'technician' || u.role === 'field_technician')
+          .map(u => ({
+            id: u.id,
+            name: u.name,
+            role: u.role as 'technician' | 'field_technician',
+            location: u.location,
+            bio: u.bio,
+            skills: u.skills,
+            load: getTechnicianLoad(s.tickets, u.id),
+          }));
+        if (technicians.length === 0) {
+          s.addNotification({
             userEmail: 'admin@fixora.com',
-            title: 'Technician requested',
-            message: `${ticket.createdByName} requested a technician for: ${ticket.title}`,
-            type: 'assignment',
-            isRead: false,
+            title: 'No technicians available',
+            message: `Ticket "${ticket.title}" needs routing but the technician roster is empty.`,
+            type: 'system',
             link: `/tickets/${id}`,
-            createdAt: now,
-          }],
+          });
+          return null;
+        }
+        const result = await runAutoRoute(
+          {
+            id: ticket.id,
+            title: ticket.title,
+            description: ticket.description,
+            category: ticket.category,
+            priority: ticket.priority,
+            productItem: ticket.productItem,
+            issueTrigger: ticket.issueTrigger,
+            coreCategory: ticket.coreCategory,
+            escalated: ticket.escalationLevel > 0,
+            slaDeadline: ticket.slaDeadline,
+          },
+          technicians
+        );
+        if (!result) return null;
+
+        const now = new Date().toISOString();
+        const latest = useStore.getState();
+        const current = latest.tickets.find(t => t.id === id);
+        if (!current || current.assignedTo || current.status === 'resolved' || current.status === 'closed') return result;
+        const midTriage = current.triageStatus === 'ai_diagnosing';
+
+        const tech = result.technicianId ? technicians.find(t => t.id === result.technicianId) : undefined;
+
+        const patch: Partial<Ticket> = {
+          aiRoutingReason: result.reason,
+          updatedAt: now,
+          activityLogs: [
+            ...current.activityLogs,
+            {
+              id: uuid(),
+              user: 'FIXORA AI',
+              action: `Auto-routed (${result.enabled ? 'AI' : 'rules'}): ${tech ? `assigned to ${tech.name}` : 'unassigned'} — ${result.reason}`,
+              entityType: 'ticket',
+              entityId: id,
+              timestamp: now,
+            },
+          ],
         };
-      }),
+        if (!midTriage) {
+          if (result.category && result.category !== current.category) patch.category = result.category;
+          if (result.priority && result.priority !== current.priority) patch.priority = result.priority;
+        }
+        if (tech) {
+          patch.assignedTo = tech.id;
+          patch.assignedRole = tech.role;
+          patch.status = 'assigned';
+        }
+        useStore.setState(st => ({
+          tickets: st.tickets.map(t => (t.id === id ? { ...t, ...patch } : t)),
+        }));
+
+        if (tech) {
+          const techUser = latest.users.find(u => u.id === tech.id);
+          if (techUser) {
+            useStore.getState().addNotification({
+              userEmail: techUser.email,
+              title: 'Ticket assigned to you (AI routing)',
+              message: `You have been assigned: ${current.title}`,
+              type: 'assignment',
+              link: `/tickets/${id}`,
+            });
+          }
+          latest.bookings
+            .filter(b => b.ticketId === id)
+            .forEach(b => useStore.getState().updateBooking(b.id, { assignedTechnician: tech.id, status: 'confirmed' }));
+        }
+
+        const managers = latest.users.filter(u => u.role === 'super_admin' || u.role === 'support_manager');
+        if (result.action === 'escalate' || result.priority === 'critical') {
+          managers.forEach(m => {
+            useStore.getState().addNotification({
+              userEmail: m.email,
+              title: 'Ticket escalated by AI routing',
+              message: `${current.title} (${result.priority}) — ${result.reason}`,
+              type: 'system',
+              link: `/tickets/${id}`,
+            });
+          });
+        } else if (tech) {
+          managers.forEach(m => {
+            useStore.getState().addNotification({
+              userEmail: m.email,
+              title: 'AI routed ticket',
+              message: `${current.title} → ${tech.name}. ${result.reason}`,
+              type: 'assignment',
+              link: `/tickets/${id}`,
+            });
+          });
+        }
+
+        return result;
+      },
       submitTriageAnswer: (id: string, answer: string) => {
         const ticket = get().tickets.find(t => t.id === id);
         if (!ticket || !ticket.category) return;
@@ -705,7 +839,7 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'fixora-store',
-      version: 5,
+      version: 6,
       partialize: (state) => Object.fromEntries(
         (Object.entries(state) as Array<[string, unknown]>).filter(([k]) => k !== 'recoveryMode')
       ),
@@ -745,6 +879,23 @@ export const useStore = create<AppState>()(
                 t.triageStep = 0;
               } else if (t.triageStatus && t.triageStatus !== 'ai_diagnosing' && typeof t.triageStep !== 'number') {
                 t.triageStep = 3;
+              }
+            });
+          }
+        }
+        if (version < 6) {
+          const users = state.users as Array<Record<string, unknown>> | undefined;
+          const DEFAULT_SKILLS: Record<string, string[]> = {
+            'tech@fixora.com': ['computer_repair', 'microsoft365', 'server', 'software', 'remote'],
+            'field@fixora.com': ['cctv', 'printer', 'computer_repair', 'networking', 'internet'],
+            'tech2@fixora.com': ['networking', 'internet', 'printer', 'cctv', 'server'],
+          };
+          if (Array.isArray(users)) {
+            users.forEach(u => {
+              if ((u.role === 'technician' || u.role === 'field_technician') && !Array.isArray(u.skills)) {
+                const email = String(u.email ?? '');
+                const skills = DEFAULT_SKILLS[email];
+                if (skills) u.skills = skills;
               }
             });
           }

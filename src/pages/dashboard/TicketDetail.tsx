@@ -763,6 +763,15 @@ export default function TicketDetail() {
                 />
               </div>
             )}
+            {ticket.aiRoutingReason && (
+              <div className="mt-4 flex items-start gap-2 rounded-lg bg-primary-500/10 border border-primary-500/30 p-3 text-xs text-gray-700 dark:text-gray-200">
+                <Cpu className="w-4 h-4 text-primary-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-primary-600 dark:text-primary-400">AI routing</p>
+                  <p className="mt-0.5">{ticket.aiRoutingReason}</p>
+                </div>
+              </div>
+            )}
           </Card>
 
           {canManage && (

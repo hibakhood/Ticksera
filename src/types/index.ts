@@ -12,6 +12,7 @@ export interface User {
   phone?: string;
   location?: string;
   bio?: string;
+  skills?: string[];
   createdAt: string;
 }
 
@@ -40,6 +41,7 @@ export interface Ticket {
   triageStatus?: TriageStatus;
   triageStep?: number;
   estimatedResolutionTime?: string;
+  aiRoutingReason?: string;
   activityLogs: ActivityLog[];
   createdAt: string;
   updatedAt: string;

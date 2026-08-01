@@ -20,7 +20,7 @@ const KB_LIMIT = 3;
 const TRANSCRIPT_LIMIT = 12;
 
 interface AgentBody {
-  mode: 'triage' | 'chat';
+  mode: 'triage' | 'chat' | 'auto-route';
   ticket?: {
     title?: string;
     description?: string;
@@ -29,10 +29,22 @@ interface AgentBody {
     productItem?: string;
     issueTrigger?: string;
     triageStep?: number;
+    coreCategory?: string;
+    escalated?: boolean;
+    slaDeadline?: string;
   };
   transcript?: { senderRole?: string; isAdmin?: boolean; message?: string }[];
   answer?: string;
   kb?: { title: string; content: string }[];
+  technicians?: {
+    id: string;
+    name: string;
+    role: string;
+    location?: string;
+    bio?: string;
+    skills?: string[];
+    load: number;
+  }[];
 }
 
 function json(data: unknown, status = 200): Response {
@@ -75,6 +87,41 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       'Respond with VALID JSON only, exactly this shape:',
       '{"reply": "message for the customer", "completed": true|false, "escalate": true|false}',
       'Set completed:true only when you gave the step-by-step fix and need no more questions. Set escalate:true if a technician is definitely required.',
+    ].join('\n');
+  }
+
+  if (body.mode === 'auto-route') {
+    const roster = (body.technicians ?? [])
+      .map(t =>
+        [
+          `- ${t.id} | ${t.name} | ${t.role.replace(/_/g, ' ')} | ${t.location ?? '—'}` +
+          (t.skills?.length ? ` | skills: ${t.skills.join(', ')}` : '') +
+          (t.bio ? ` | ${t.bio}` : '') +
+          ` | active tickets: ${t.load}`,
+        ].join('')
+      )
+      .join('\n');
+    return [
+      'You are the Fixora ticket routing engine. Route incoming tickets to the most suitable technician.',
+      'A new or escalated ticket arrived and needs classification + assignment.',
+      '',
+      meta,
+      `Escalated already: ${body.ticket?.escalated ? 'yes' : 'no'}`,
+      `SLA deadline: ${body.ticket?.slaDeadline ?? '—'}`,
+      '',
+      'Available technicians:',
+      roster || '(none)',
+      '',
+      'Rules:',
+      '- Suggest a category (one of: computer_repair, networking, printer, cctv, internet, microsoft365, server, website, software, remote) and a priority (low/medium/high/critical).',
+      '- Pick the technician whose skills/bio best match the issue, preferring the least-loaded one (fewest active tickets).',
+      '- For onsite-style work (cctv, printer, computer_repair) prefer a field_technician; for remote work (remote, software, microsoft365) prefer a technician.',
+      '- If the issue is urgent, a security breach, or a full outage, set action to "escalate" so managers are alerted (you may still assign a technician).',
+      '- Set technicianId to exactly one id from the roster above. Set it to null only if no technician is suitable or one is clearly required for management review.',
+      '- Write a concise reason (under 80 words) explaining the choice.',
+      '',
+      'Respond with VALID JSON only, exactly this shape:',
+      '{"category": "category", "priority": "priority", "technicianId": "id or null", "action": "assign"|"escalate", "reason": "short explanation"}',
     ].join('\n');
   }
 
@@ -180,6 +227,29 @@ export default async function handler(req: Request): Promise<Response> {
         });
       }
       return json({ enabled: true, reply: content });
+    }
+
+    if (body.mode === 'auto-route') {
+      const parsed = extractJson(content);
+      if (parsed) {
+        const validIds = new Set((body.technicians ?? []).map(t => t.id));
+        const validCategories = new Set(['computer_repair', 'networking', 'printer', 'cctv', 'internet', 'microsoft365', 'server', 'website', 'software', 'remote']);
+        const validPriorities = new Set(['low', 'medium', 'high', 'critical']);
+        const category = typeof parsed.category === 'string' && validCategories.has(parsed.category) ? parsed.category : (body.ticket?.category ?? 'computer_repair');
+        const priority = typeof parsed.priority === 'string' && validPriorities.has(parsed.priority) ? parsed.priority : (body.ticket?.priority ?? 'medium');
+        const rawTech = typeof parsed.technicianId === 'string' ? parsed.technicianId : '';
+        const technicianId = validIds.has(rawTech) ? rawTech : null;
+        const action = parsed.action === 'escalate' ? 'escalate' : 'assign';
+        return json({
+          enabled: true,
+          category,
+          priority,
+          technicianId,
+          action,
+          reason: typeof parsed.reason === 'string' && parsed.reason.trim() ? parsed.reason.trim() : 'AI routing completed.',
+        });
+      }
+      return json({ enabled: true, error: 'invalid auto-route response' }, 200);
     }
 
     return json({ enabled: true, reply: content });
