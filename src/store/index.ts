@@ -6,6 +6,7 @@ import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../ut
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
+import { requestAgentReply, buildAgentPayload } from '../lib/agent';
 
 export interface SignupResult {
   ok: boolean;
@@ -191,6 +192,7 @@ interface AppState {
   // Chat
   chatMessages: ChatMessage[];
   addChatMessage: (msg: Omit<ChatMessage, 'id' | 'createdAt'>) => void;
+  aiChatReply: (ticketId: string, text: string) => void;
 
   // Contact
   contactMessages: ContactMessage[];
@@ -234,6 +236,98 @@ interface AppState {
   addSession: (session: Omit<AppState['activeSessions'][0], 'id' | 'lastActive'>) => void;
   revokeSession: (id: string) => void;
   revokeAllOtherSessions: () => void;
+}
+
+const BOT_EMAIL = 'bot@fixora.com';
+const BOT_NAME = 'FIXORA BOT';
+
+function setBotTyping(ticketId: string, active: boolean) {
+  useStore.setState(s => ({
+    typingUsers: active
+      ? [...s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)), { ticketId, email: BOT_EMAIL, name: BOT_NAME, expiresAt: Date.now() + 30000 }]
+      : s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)),
+  }));
+}
+
+function fallbackReply(mode: 'triage' | 'chat', category: TicketCategory, step: number, answer: string): string {
+  if (mode === 'triage') {
+    return getDiagnosticResponse(category, step, answer, useStore.getState().kbArticles);
+  }
+  return "Thanks — I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
+}
+
+async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat') {
+  const snapshot = useStore.getState();
+  const ticket = snapshot.tickets.find(t => t.id === ticketId);
+  if (!ticket || !ticket.category) {
+    setBotTyping(ticketId, false);
+    return;
+  }
+  const transcript = snapshot.chatMessages
+    .filter(m => m.ticketId === ticketId)
+    .slice(-12)
+    .map(m => ({ senderRole: m.senderRole, isAdmin: m.isAdmin, message: m.message }));
+
+  let reply: string;
+  let completed = false;
+  if (isSupabaseConfigured()) {
+    const result = await requestAgentReply(
+      buildAgentPayload(
+        {
+          id: ticketId,
+          title: ticket.title,
+          description: ticket.description,
+          category: ticket.category,
+          priority: ticket.priority,
+          productItem: ticket.productItem,
+          issueTrigger: ticket.issueTrigger,
+          triageStep: step,
+        },
+        transcript,
+        answer,
+        mode,
+        snapshot.kbArticles
+      )
+    );
+    if (result?.enabled && result.reply) {
+      reply = result.reply;
+      completed = result.completed === true;
+    } else {
+      reply = fallbackReply(mode, ticket.category, step, answer);
+      if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
+    }
+  } else {
+    reply = fallbackReply(mode, ticket.category, step, answer);
+    if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
+  }
+
+  const now = new Date().toISOString();
+  useStore.setState(s => ({
+    tickets: s.tickets.map(t =>
+      t.id === ticketId && mode === 'triage'
+        ? {
+            ...t,
+            triageStep: (t.triageStep ?? 0) + 1,
+            triageStatus: completed ? ('needs_technician' as const) : t.triageStatus,
+            updatedAt: now,
+          }
+        : t
+    ),
+    chatMessages: [
+      ...s.chatMessages,
+      {
+        id: `m${Date.now()}b`,
+        ticketId,
+        senderEmail: BOT_EMAIL,
+        senderName: BOT_NAME,
+        senderRole: 'bot' as const,
+        message: reply,
+        isAdmin: true,
+        createdAt: now,
+      },
+    ],
+    typingUsers: s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)),
+  }));
 }
 
 export const useStore = create<AppState>()(
@@ -476,20 +570,14 @@ export const useStore = create<AppState>()(
       submitTriageAnswer: (id: string, answer: string) => {
         const ticket = get().tickets.find(t => t.id === id);
         if (!ticket || !ticket.category) return;
-        const flow = getTriageFlow(ticket.category);
         const step = ticket.triageStep ?? 0;
-        const nextIndex = step + 1;
         const now = new Date().toISOString();
         const user = get().users.find(u => u.id === ticket.createdBy);
-        const botReply = getDiagnosticResponse(ticket.category, step, answer, get().kbArticles);
-        const triageComplete = nextIndex >= flow.questions.length;
         set(s => ({
           tickets: s.tickets.map(t =>
             t.id === id
               ? {
                   ...t,
-                  triageStep: nextIndex,
-                  triageStatus: triageComplete ? ('needs_technician' as const) : t.triageStatus,
                   updatedAt: now,
                   activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `AI triage: answered "${answer}"`, entityType: 'ticket', entityId: id, timestamp: now }],
                 }
@@ -509,29 +597,18 @@ export const useStore = create<AppState>()(
             },
           ],
         }));
-        const botEmail = 'bot@fixora.com';
-        const botName = 'FIXORA BOT';
-        set(s => ({
-          typingUsers: [...s.typingUsers.filter(t => !(t.ticketId === id && t.email === botEmail)), { ticketId: id, email: botEmail, name: botName, expiresAt: Date.now() + 5600 }],
-        }));
-        setTimeout(() => {
-          set(s => ({
-            chatMessages: [
-              ...s.chatMessages,
-              {
-                id: `m${Date.now()}b`,
-                ticketId: id,
-                senderEmail: botEmail,
-                senderName: botName,
-                senderRole: 'bot' as const,
-                message: botReply,
-                isAdmin: true,
-                createdAt: new Date().toISOString(),
-              },
-            ],
-            typingUsers: s.typingUsers.filter(t => !(t.ticketId === id && t.email === botEmail)),
-          }));
-        }, 5000);
+        setBotTyping(id, true);
+        void runAgentTurn(id, step, answer, 'triage');
+      },
+
+      aiChatReply: (ticketId: string, text: string) => {
+        const ticket = get().tickets.find(t => t.id === ticketId);
+        if (!ticket) return;
+        if (!isSupabaseConfigured()) return;
+        if (ticket.assignedTo || ticket.status !== 'open' || ticket.triageStatus === 'escalated_to_technician') return;
+        const step = ticket.triageStep ?? 0;
+        setBotTyping(ticketId, true);
+        void runAgentTurn(ticketId, step, text, 'chat');
       },
 
       bookings: seedBookings,

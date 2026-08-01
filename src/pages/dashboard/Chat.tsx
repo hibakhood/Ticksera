@@ -12,6 +12,7 @@ import { Send, MessageSquare, Search, ArrowLeft, Paperclip, X, Bot, ArrowRight, 
 import { Link } from 'react-router-dom';
 import { getTriageFlow } from '../../utils/triage';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'default' | 'purple'> = {
   open: 'info', pending: 'warning', assigned: 'purple', in_progress: 'info',
@@ -19,10 +20,10 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'info' | 
 };
 
 export default function Chat() {
-  const { currentUser, tickets, chatMessages, addChatMessage, setChatLastVisit, typingUsers, startTyping, stopTyping, users, submitTriageAnswer } = useStore(
+  const { currentUser, tickets, chatMessages, addChatMessage, aiChatReply, setChatLastVisit, typingUsers, startTyping, stopTyping, users, submitTriageAnswer } = useStore(
     useShallow(s => ({
       currentUser: s.currentUser, tickets: s.tickets, chatMessages: s.chatMessages,
-      addChatMessage: s.addChatMessage, setChatLastVisit: s.setChatLastVisit,
+      addChatMessage: s.addChatMessage, aiChatReply: s.aiChatReply, setChatLastVisit: s.setChatLastVisit,
       typingUsers: s.typingUsers, startTyping: s.startTyping, stopTyping: s.stopTyping,
       users: s.users, submitTriageAnswer: s.submitTriageAnswer,
     }))
@@ -119,9 +120,10 @@ export default function Chat() {
     if (!msg.trim() || !currentUser || !selectedTicket) return;
     stopTyping(selectedTicket, currentUser.email);
     if (typingTimer.current) clearTimeout(typingTimer.current);
+    const text = msg.trim();
     const ticket = tickets.find(t => t.id === selectedTicket);
     if (ticket?.triageStatus === 'ai_diagnosing' && currentUser.id === ticket.createdBy) {
-      submitTriageAnswer(selectedTicket, msg.trim());
+      submitTriageAnswer(selectedTicket, text);
       setMsg('');
       return;
     }
@@ -130,11 +132,12 @@ export default function Chat() {
       senderEmail: currentUser.email,
       senderName: currentUser.name,
       senderRole: currentUser.role,
-      message: msg.trim(),
+      message: text,
       isAdmin: currentUser.role !== 'customer',
     });
     setMsg('');
-    simulateReply(selectedTicket);
+    if (isSupabaseConfigured()) aiChatReply(selectedTicket, text);
+    else simulateReply(selectedTicket);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +170,7 @@ export default function Chat() {
     });
     setPendingFile(null);
     setMsg('');
-    simulateReply(selectedTicket);
+    if (!isSupabaseConfigured()) simulateReply(selectedTicket);
   };
 
   const ConversationList = () => (

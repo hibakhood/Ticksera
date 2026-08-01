@@ -10,6 +10,7 @@ import { ArrowLeft, Send, Star, Clock, User, MessageSquare, AlertTriangle, Tag, 
 import type { TicketStatus } from '../../types';
 import { getTriageFlow } from '../../utils/triage';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import FileAttachment from '../../components/ui/FileAttachment';
 import TypingIndicator from '../../components/ui/TypingIndicator';
 import ChatMessageText from '../../components/ui/ChatMessageText';
@@ -34,10 +35,10 @@ const coreCategoryLabels: Record<string, string> = {
 export default function TicketDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser, tickets, updateTicket, chatMessages, addChatMessage, users, addNotification, typingUsers, startTyping, stopTyping, bookings, updateBooking, requestTechnician, resolveViaTriage, submitTriageAnswer } = useStore(
+  const { currentUser, tickets, updateTicket, chatMessages, addChatMessage, aiChatReply, users, addNotification, typingUsers, startTyping, stopTyping, bookings, updateBooking, requestTechnician, resolveViaTriage, submitTriageAnswer } = useStore(
     useShallow(s => ({
       currentUser: s.currentUser, tickets: s.tickets, updateTicket: s.updateTicket,
-      chatMessages: s.chatMessages, addChatMessage: s.addChatMessage,
+      chatMessages: s.chatMessages, addChatMessage: s.addChatMessage, aiChatReply: s.aiChatReply,
       users: s.users, addNotification: s.addNotification,
       typingUsers: s.typingUsers, startTyping: s.startTyping, stopTyping: s.stopTyping,
       bookings: s.bookings, updateBooking: s.updateBooking,
@@ -128,7 +129,7 @@ export default function TicketDetail() {
     });
     setPendingFile(null);
     setMsg('');
-    simulateReply();
+    if (!isSupabaseConfigured()) simulateReply();
   };
 
   const messages = chatMessages
@@ -176,8 +177,9 @@ export default function TicketDetail() {
     if (!msg.trim() || !currentUser) return;
     stopTyping(ticket.id, currentUser.email);
     if (typingTimer.current) clearTimeout(typingTimer.current);
+    const text = msg.trim();
     if (ticket.triageStatus === 'ai_diagnosing' && currentUser.id === ticket.createdBy) {
-      submitTriageAnswer(ticket.id, msg.trim());
+      submitTriageAnswer(ticket.id, text);
       setMsg('');
       return;
     }
@@ -186,11 +188,12 @@ export default function TicketDetail() {
       senderEmail: currentUser.email,
       senderName: currentUser.name,
       senderRole: currentUser.role,
-      message: msg.trim(),
+      message: text,
       isAdmin: currentUser.role !== 'customer',
     });
     setMsg('');
-    simulateReply();
+    if (isSupabaseConfigured()) aiChatReply(ticket.id, text);
+    else simulateReply();
   };
 
   const handleStatusChange = (status: TicketStatus) => {
