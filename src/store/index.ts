@@ -22,6 +22,7 @@ interface AuthUserLike {
 
 async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
   const meta = authUser.user_metadata ?? {};
+  const email = (authUser.email ?? '').toLowerCase();
   const fallback: User = {
     id: authUser.id,
     email: authUser.email ?? '',
@@ -48,7 +49,7 @@ async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
       return {
         ...fallback,
         name: data.name ?? fallback.name,
-        role: (data.role as User['role']) ?? fallback.role,
+        role: resolveProfileRole(email, data.role ?? fallback.role),
         organization: data.organization ?? fallback.organization,
         avatar: data.avatar ?? undefined,
         phone: data.phone ?? undefined,
@@ -59,7 +60,16 @@ async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
   } catch {
     // profiles table may not exist yet — fall back to auth metadata
   }
-  return fallback;
+  return { ...fallback, role: resolveProfileRole(email, fallback.role) };
+}
+
+function resolveProfileRole(email: string, dbRole: string): User['role'] {
+  const adminEmails = (import.meta.env.VITE_SUPER_ADMIN_EMAIL ?? '')
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean);
+  if (adminEmails.includes(email)) return 'super_admin';
+  return (dbRole as User['role']) ?? 'customer';
 }
 
 function genRef(): string {
