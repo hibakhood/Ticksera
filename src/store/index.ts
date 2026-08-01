@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
 
 export interface SignupResult {
   ok: boolean;
@@ -66,6 +67,8 @@ function genRef(): string {
   const hex = Math.random().toString(16).substring(2, 8).toUpperCase();
   return `FIXORA-${hex}`;
 }
+
+let syncing = false;
 
 const day   = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
 const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
@@ -147,6 +150,7 @@ interface AppState {
   // Auth
   currentUser: User | null;
   initAuth: () => Promise<void>;
+  loadRemoteData: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   demoLogin: (email: string) => boolean;
   resetPassword: (email: string, newPassword: string) => boolean;
@@ -227,6 +231,24 @@ export const useStore = create<AppState>()(
       toggleDarkMode: () => set(s => ({ darkMode: !s.darkMode })),
 
       currentUser: null,
+      loadRemoteData: async () => {
+        const { currentUser } = get();
+        if (!currentUser || !isSupabaseConfigured() || !isUuid(currentUser.id)) return;
+        const remote = await remoteLoadUserData(currentUser.id);
+        if (!remote || typeof remote !== 'object') return;
+        const r = remote as Partial<Pick<AppState, 'tickets' | 'chatMessages' | 'bookings' | 'payments'>>;
+        syncing = true;
+        try {
+          set(s => ({
+            tickets: Array.isArray(r.tickets) ? r.tickets : s.tickets,
+            chatMessages: Array.isArray(r.chatMessages) ? r.chatMessages : s.chatMessages,
+            bookings: Array.isArray(r.bookings) ? r.bookings : s.bookings,
+            payments: Array.isArray(r.payments) ? r.payments : s.payments,
+          }));
+        } finally {
+          syncing = false;
+        }
+      },
       initAuth: async () => {
         if (!isSupabaseConfigured()) return;
         try {
@@ -234,6 +256,7 @@ export const useStore = create<AppState>()(
           if (data.session?.user) {
             const profile = await buildProfileFromAuthUser(data.session.user);
             set({ currentUser: profile });
+            await get().loadRemoteData();
           }
         } catch { /* ignore */ }
       },
@@ -245,6 +268,7 @@ export const useStore = create<AppState>()(
             if (error || !data.user) return false;
             const profile = await buildProfileFromAuthUser(data.user);
             set({ currentUser: profile });
+            await get().loadRemoteData();
             return true;
           } catch { return false; }
         }
@@ -285,6 +309,7 @@ export const useStore = create<AppState>()(
             if (data.session && data.user) {
               const profile = await buildProfileFromAuthUser(data.user);
               set({ currentUser: profile });
+              await get().loadRemoteData();
               return { ok: true };
             }
             if (data.user) return { ok: true, needsEmailConfirm: true };
@@ -325,7 +350,8 @@ export const useStore = create<AppState>()(
         const slaMs = (SLA_HOURS[ticketData.priority] ?? 24) * 3_600_000;
         const slaDeadline = ticketData.slaDeadline ?? new Date(Date.now() + slaMs).toISOString();
         const now = new Date().toISOString();
-        const isCustomer = get().users.find(u => u.id === ticketData.createdBy)?.role === 'customer';
+        const isCustomer = get().users.find(u => u.id === ticketData.createdBy)?.role === 'customer'
+          || get().currentUser?.id === ticketData.createdBy;
         const triageActive = isCustomer && ticketData.priority !== 'critical';
         const triageGreeting = triageActive
           ? buildTriageGreeting(ticketData.category as TicketCategory, ticketData.createdByName)
@@ -614,3 +640,26 @@ export const useStore = create<AppState>()(
     }
   )
 );
+
+let saveTimer: ReturnType<typeof setTimeout> | null = null;
+useStore.subscribe((s, prev) => {
+  const changed =
+    s.currentUser?.id !== prev.currentUser?.id ||
+    s.tickets !== prev.tickets ||
+    s.chatMessages !== prev.chatMessages ||
+    s.bookings !== prev.bookings ||
+    s.payments !== prev.payments;
+  if (!changed || syncing) return;
+  const uid = s.currentUser?.id;
+  if (!uid || !isSupabaseConfigured() || !isUuid(uid)) return;
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const latest = useStore.getState();
+    remoteSaveUserData(latest.currentUser?.id ?? uid, {
+      tickets: latest.tickets,
+      chatMessages: latest.chatMessages,
+      bookings: latest.bookings,
+      payments: latest.payments,
+    });
+  }, 600);
+});
