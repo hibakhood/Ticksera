@@ -33,13 +33,14 @@ export default function Signup() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', orgName: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signup } = useStore();
   const navigate = useNavigate();
   const isBusiness = accountType === 'business';
   const activeDef = accountOptions.find(o => o.id === accountType)!;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (isBusiness && !form.orgName.trim()) {
@@ -59,20 +60,21 @@ export default function Signup() {
       return;
     }
     setLoading(true);
-    setTimeout(() => {
-      const ok = signup(
-        form.name.trim(),
-        form.email.trim().toLowerCase(),
-        form.password,
-        isBusiness ? form.orgName.trim() : undefined
-      );
-      if (ok) {
-        navigate('/billing');
-      } else {
-        setError('An account with that email already exists.');
-        setLoading(false);
-      }
-    }, 500);
+    const result = await signup(
+      form.name.trim(),
+      form.email.trim().toLowerCase(),
+      form.password,
+      isBusiness ? form.orgName.trim() : undefined
+    );
+    if (result.ok && result.needsEmailConfirm) {
+      setRegistered(true);
+      setLoading(false);
+    } else if (result.ok) {
+      navigate('/billing');
+    } else {
+      setError(result.error ?? 'Sign-up failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
@@ -208,7 +210,25 @@ export default function Signup() {
           </div>
 
           <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm p-6 mb-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {registered ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
+                  <CheckCircle className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white">Check your inbox</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 mb-6 leading-relaxed">
+                  We've sent a confirmation link to{' '}
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">{form.email.trim().toLowerCase()}</span>.
+                  Click the link to activate your account, then sign in.
+                </p>
+                <Link to="/login">
+                  <Button className="w-full" size="md">
+                    <span className="flex items-center justify-center gap-2">Go to Sign In <CheckCircle className="w-4 h-4" /></span>
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
               {isBusiness && (
                 <Input
                   label="Organization Name"
@@ -272,7 +292,8 @@ export default function Signup() {
                   </span>
                 )}
               </Button>
-            </form>
+              </form>
+            )}
           </div>
 
           <div className="flex items-center justify-between">

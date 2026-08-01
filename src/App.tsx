@@ -117,9 +117,17 @@ function ThemeWrapper({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AuthBootstrap() {
+  useEffect(() => {
+    useStore.getState().initAuth();
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
     <ThemeWrapper>
+      <AuthBootstrap />
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>

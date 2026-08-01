@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store';
+import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { Lock, ArrowRight, Shield, Zap, Users, Eye, EyeOff, Check, Mail, KeyRound, ArrowLeft } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -24,9 +25,11 @@ export default function Login() {
   const [newPassword, setNewPassword]   = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetViaEmail, setResetViaEmail] = useState(false);
 
   const { login, resetPassword } = useStore();
   const navigate = useNavigate();
+  const supabaseLive = isSupabaseConfigured();
 
   const getDestination = (userId: string, role: string) => {
     if (STAFF_ROLES.includes(role)) return '/dashboard';
@@ -45,33 +48,63 @@ export default function Login() {
     return hasActivePlan ? '/dashboard' : '/billing';
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const { users } = useStore.getState();
-      const normalized = email.trim().toLowerCase();
-      const user = users.find(u => u.email === normalized);
-      if (login(normalized, password) && user) {
-        if (remember) localStorage.setItem('fixora_remember_email', normalized);
+
+    if (supabaseLive) {
+      const ok = await login(email.trim().toLowerCase(), password);
+      if (ok) {
+        const { currentUser } = useStore.getState();
+        if (remember) localStorage.setItem('fixora_remember_email', email.trim().toLowerCase());
         else localStorage.removeItem('fixora_remember_email');
-        navigate(getDestination(user.id, user.role));
-      } else if (!user) {
-        setError('No account found with that email address.');
-        setLoading(false);
+        navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
       } else {
-        setError('Incorrect password. Please try again.');
+        setError('Invalid email or password.');
         setLoading(false);
       }
-    }, 400);
-  };
+      return;
+    }
 
-  const handleForgot = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
     const { users } = useStore.getState();
     const normalized = email.trim().toLowerCase();
+    const user = users.find(u => u.email === normalized);
+    const ok = await login(normalized, password);
+    if (ok && user) {
+      if (remember) localStorage.setItem('fixora_remember_email', normalized);
+      else localStorage.removeItem('fixora_remember_email');
+      navigate(getDestination(user.id, user.role));
+    } else if (!user) {
+      setError('No account found with that email address.');
+      setLoading(false);
+    } else {
+      setError('Incorrect password. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    const normalized = email.trim().toLowerCase();
+
+    if (supabaseLive) {
+      setLoading(true);
+      try {
+        await getSupabase().auth.resetPasswordForEmail(normalized);
+        setResetEmail(normalized);
+        setResetViaEmail(true);
+        setMode('done');
+      } catch {
+        setError('We could not send a reset link. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const { users } = useStore.getState();
     if (!users.some(u => u.email === normalized)) {
       setError('No account found with that email address.');
       return;
@@ -94,6 +127,7 @@ export default function Login() {
       return;
     }
     if (resetPassword(resetEmail, newPassword)) {
+      setResetViaEmail(false);
       setMode('done');
     } else {
       setError('Something went wrong. Please try again.');
@@ -103,6 +137,7 @@ export default function Login() {
   const backToSignIn = () => {
     setMode('signin');
     setError('');
+    setResetViaEmail(false);
     if (resetEmail) setEmail(resetEmail);
     setPassword('');
     setNewPassword('');
@@ -371,9 +406,13 @@ export default function Login() {
                 <div className="w-16 h-16 rounded-full bg-emerald-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
                   <Check className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white">Password reset successful</h3>
+                <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white">
+                  {resetViaEmail ? 'Check your inbox' : 'Password reset successful'}
+                </h3>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1.5 mb-6 leading-relaxed">
-                  Your password has been updated. Sign in with your new password.
+                  {resetViaEmail
+                    ? <>We've sent a password reset link to <span className="font-semibold text-slate-700 dark:text-slate-300">{resetEmail}</span>. Follow the link in the email to choose a new password.</>
+                    : 'Your password has been updated. Sign in with your new password.'}
                 </p>
                 <Button className="w-full" size="md" onClick={backToSignIn}>
                   <span className="flex items-center justify-center gap-2">Back to Sign In <ArrowRight className="w-4 h-4" /></span>
@@ -390,7 +429,7 @@ export default function Login() {
             </div>
           )}
 
-          {!isResetMode && (
+          {!isResetMode && !supabaseLive && (
             <p className="text-center text-xs text-slate-400 mb-5">
               Demo build — all demo accounts use password{' '}
               <code className="font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">fixora123</code>

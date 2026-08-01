@@ -4,6 +4,63 @@ import type { User, Ticket, Booking, ChatMessage, ContactMessage, Payment, KBArt
 import { v4 as uuid } from 'uuid';
 import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
+import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+
+export interface SignupResult {
+  ok: boolean;
+  needsEmailConfirm?: boolean;
+  error?: string;
+}
+
+interface AuthUserLike {
+  id: string;
+  email?: string | null;
+  created_at?: string;
+  user_metadata?: Record<string, string | null | undefined>;
+}
+
+async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
+  const meta = authUser.user_metadata ?? {};
+  const fallback: User = {
+    id: authUser.id,
+    email: authUser.email ?? '',
+    name: meta.name ?? authUser.email?.split('@')[0] ?? 'User',
+    role: (meta.role as User['role']) ?? 'customer',
+    organization: meta.organization ?? undefined,
+    createdAt: authUser.created_at ?? new Date().toISOString(),
+  };
+  try {
+    const client = getSupabase();
+    await client
+      .from('profiles')
+      .upsert(
+        {
+          id: authUser.id,
+          email: authUser.email ?? '',
+          name: fallback.name,
+          role: fallback.role,
+          organization: fallback.organization ?? null,
+        },
+        { onConflict: 'id' }
+      );
+    const { data } = await client.from('profiles').select('*').eq('id', authUser.id).single();
+    if (data) {
+      return {
+        ...fallback,
+        name: data.name ?? fallback.name,
+        role: (data.role as User['role']) ?? fallback.role,
+        organization: data.organization ?? fallback.organization,
+        avatar: data.avatar ?? undefined,
+        phone: data.phone ?? undefined,
+        location: data.location ?? undefined,
+        bio: data.bio ?? undefined,
+      };
+    }
+  } catch {
+    // profiles table may not exist yet — fall back to auth metadata
+  }
+  return fallback;
+}
 
 function genRef(): string {
   const hex = Math.random().toString(16).substring(2, 8).toUpperCase();
@@ -89,10 +146,11 @@ interface AppState {
 
   // Auth
   currentUser: User | null;
-  login: (email: string, password: string) => boolean;
+  initAuth: () => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   demoLogin: (email: string) => boolean;
   resetPassword: (email: string, newPassword: string) => boolean;
-  signup: (name: string, email: string, password: string, organization?: string) => boolean;
+  signup: (name: string, email: string, password: string, organization?: string) => Promise<SignupResult>;
   logout: () => void;
 
   // Users
@@ -169,8 +227,27 @@ export const useStore = create<AppState>()(
       toggleDarkMode: () => set(s => ({ darkMode: !s.darkMode })),
 
       currentUser: null,
-      login: (email: string, password: string) => {
+      initAuth: async () => {
+        if (!isSupabaseConfigured()) return;
+        try {
+          const { data } = await getSupabase().auth.getSession();
+          if (data.session?.user) {
+            const profile = await buildProfileFromAuthUser(data.session.user);
+            set({ currentUser: profile });
+          }
+        } catch { /* ignore */ }
+      },
+      login: async (email: string, password: string) => {
         const normalised = email.trim().toLowerCase();
+        if (isSupabaseConfigured()) {
+          try {
+            const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalised, password });
+            if (error || !data.user) return false;
+            const profile = await buildProfileFromAuthUser(data.user);
+            set({ currentUser: profile });
+            return true;
+          } catch { return false; }
+        }
         const user = get().users.find(u => u.email === normalised);
         if (user && user.password === password) {
           set({ currentUser: user });
@@ -193,22 +270,49 @@ export const useStore = create<AppState>()(
         set(s => ({ users: s.users.map(u => u.id === user.id ? { ...u, password: newPassword } : u) }));
         return true;
       },
-      signup: (name: string, email: string, password: string, organization?: string) => {
-        const exists = get().users.find(u => u.email === email);
-        if (exists) return false;
+      signup: async (name: string, email: string, password: string, organization?: string) => {
+        const normalised = email.trim().toLowerCase();
+        if (isSupabaseConfigured()) {
+          try {
+            const { data, error } = await getSupabase().auth.signUp({
+              email: normalised,
+              password,
+              options: {
+                data: { name: name.trim(), role: 'customer', organization: organization?.trim() || null },
+              },
+            });
+            if (error) return { ok: false, error: error.message };
+            if (data.session && data.user) {
+              const profile = await buildProfileFromAuthUser(data.user);
+              set({ currentUser: profile });
+              return { ok: true };
+            }
+            if (data.user) return { ok: true, needsEmailConfirm: true };
+            return { ok: false, error: 'Sign-up failed. Please try again.' };
+          } catch {
+            return { ok: false, error: 'Unable to reach the sign-up service. Please try again.' };
+          }
+        }
+        const exists = get().users.find(u => u.email === normalised);
+        if (exists) return { ok: false, error: 'An account with this email already exists.' };
         const newUser: User = {
           id: uuid(),
-          email,
-          name,
+          email: normalised,
+          name: name.trim(),
           role: 'customer',
           password,
           organization,
           createdAt: new Date().toISOString(),
         };
         set(s => ({ users: [...s.users, newUser], currentUser: newUser }));
-        return true;
+        return { ok: true };
       },
-      logout: () => set({ currentUser: null }),
+      logout: () => {
+        if (isSupabaseConfigured()) {
+          try { void getSupabase().auth.signOut(); } catch { /* ignore */ }
+        }
+        set({ currentUser: null });
+      },
 
       users: seedUsers,
       updateUser: (id, data) => set(s => ({ users: s.users.map(u => u.id === id ? { ...u, ...data } : u), currentUser: s.currentUser?.id === id ? { ...s.currentUser, ...data } : s.currentUser })),
