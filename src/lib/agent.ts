@@ -36,7 +36,7 @@ export function buildAgentPayload(
   return { mode, ticket, transcript, answer, kb };
 }
 
-const CLIENT_TIMEOUT_MS = 12000;
+const CLIENT_TIMEOUT_MS = 25000;
 
 export async function requestAgentReply(payload: AgentPayload): Promise<AgentReply | null> {
   const controller = new AbortController();
