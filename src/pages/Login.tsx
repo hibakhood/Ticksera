@@ -92,7 +92,9 @@ export default function Login() {
     if (supabaseLive) {
       setLoading(true);
       try {
-        await getSupabase().auth.resetPasswordForEmail(normalized);
+        await getSupabase().auth.resetPasswordForEmail(normalized, {
+          redirectTo: `${window.location.origin}/login`,
+        });
         setResetEmail(normalized);
         setResetViaEmail(true);
         setMode('done');

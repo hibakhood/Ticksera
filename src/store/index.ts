@@ -303,6 +303,7 @@ export const useStore = create<AppState>()(
               password,
               options: {
                 data: { name: name.trim(), role: 'customer', organization: organization?.trim() || null },
+                emailRedirectTo: `${window.location.origin}/login`,
               },
             });
             if (error) return { ok: false, error: error.message };
