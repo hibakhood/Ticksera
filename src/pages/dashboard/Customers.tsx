@@ -7,6 +7,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import StatCard from '../../components/ui/StatCard';
 import Card from '../../components/ui/Card';
 import { Search, Shield, Users, Ticket, Building2, CreditCard, TrendingUp } from 'lucide-react';
+import { isPaymentActive } from '../../utils/plans';
 
 const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
 
@@ -41,7 +42,7 @@ export default function Customers() {
       const myTickets = tickets.filter(t => t.createdBy === c.id);
       const open = myTickets.filter(t => !['resolved', 'closed'].includes(t.status)).length;
       const pmt = payments
-        .filter(p => p.userId === c.id && p.status === 'completed')
+        .filter(p => p.userId === c.id && isPaymentActive(p))
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
       const owner = c.orgOwnerEmail ? users.find(u => u.email === c.orgOwnerEmail) : null;
       const org = c.organization

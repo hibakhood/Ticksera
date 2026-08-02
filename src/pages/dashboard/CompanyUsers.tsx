@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store';
+import { hasActivePlanFor } from '../../utils/plans';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -59,9 +60,9 @@ export default function CompanyUsers() {
     : currentUser;
 
   const orgPlan = orgOwner
-    ? payments.some(p => p.userId === orgOwner.id && p.plan === 'Enterprise' && p.status === 'completed')
+    ? hasActivePlanFor(payments, orgOwner.id, ['Enterprise'])
       ? 'Enterprise'
-      : payments.some(p => p.userId === orgOwner.id && p.plan === 'Business' && p.status === 'completed')
+      : hasActivePlanFor(payments, orgOwner.id, ['Business'])
         ? 'Business'
         : null
     : null;

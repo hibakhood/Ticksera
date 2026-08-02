@@ -202,7 +202,7 @@ interface AppState {
 
   // Payments
   payments: Payment[];
-  addPayment: (payment: Omit<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'>) => void;
+  addPayment: (payment: Omit<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'> & Partial<Pick<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'>>) => void;
   updatePayment: (id: string, data: Partial<Payment>) => void;
   changePlan: (userId: string, plan: string, amount: number) => void;
 
@@ -760,10 +760,10 @@ export const useStore = create<AppState>()(
       addPayment: (payment) => set(s => ({
         payments: [...s.payments, {
           ...payment,
-          id: `p${Date.now()}`,
-          reference: genRef(),
-          transactionId: `TXN-${uuid().substring(0, 8).toUpperCase()}`,
-          createdAt: new Date().toISOString(),
+          id: payment.id ?? `p${Date.now()}`,
+          reference: payment.reference ?? genRef(),
+          transactionId: payment.transactionId ?? `TXN-${uuid().substring(0, 8).toUpperCase()}`,
+          createdAt: payment.createdAt ?? new Date().toISOString(),
         }]
       })),
       updatePayment: (id, data) => set(s => ({ payments: s.payments.map(p => p.id === id ? { ...p, ...data } : p) })),

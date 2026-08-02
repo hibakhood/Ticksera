@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Logo from '../components/ui/Logo';
 import ShaderBackground from '../components/ui/ShaderBackground';
+import { hasActivePlan, hasActivePlanFor } from '../utils/plans';
 
 const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
 
@@ -46,13 +47,12 @@ export default function Login() {
     if (user?.orgOwnerEmail) {
       const owner = users.find(u => u.email === user.orgOwnerEmail);
       const ownerHasEnterprise = owner
-        ? payments.some(p => p.userId === owner.id && p.plan === 'Enterprise' && p.status === 'completed')
+        ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
         : false;
       return ownerHasEnterprise ? '/dashboard' : '/billing';
     }
     // Regular customer — needs their own active plan
-    const hasActivePlan = payments.some(p => p.userId === userId && p.status === 'completed');
-    return hasActivePlan ? '/dashboard' : '/billing';
+    return hasActivePlan(payments, userId) ? '/dashboard' : '/billing';
   };
 
   const handleLogin = async (e: React.FormEvent) => {

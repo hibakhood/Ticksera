@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { CheckCircle, X, CreditCard, Building, Smartphone, Wallet, ArrowUp, ArrowDown, Minus, Zap, RefreshCw, Calendar, Shield, Phone } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CheckCircle, X, CreditCard, ArrowUp, ArrowDown, Minus, Zap, RefreshCw, Calendar, Shield, Phone, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import PageHeader from '../../components/ui/PageHeader';
+import { initPaystackCheckout, verifyPaystackPayment } from '../../lib/paystack';
+import { isPaymentActive } from '../../utils/plans';
 
 const plans = [
   {
@@ -94,13 +96,6 @@ const plans = [
 
 const planOrder = ['Basic', 'Professional', 'Business', 'Enterprise'];
 
-const paymentMethods = [
-  { id: 'card',   label: 'Card',          icon: CreditCard },
-  { id: 'bank',   label: 'Bank Transfer', icon: Building },
-  { id: 'ussd',   label: 'USSD',          icon: Smartphone },
-  { id: 'mobile', label: 'Mobile Pay',    icon: Wallet },
-];
-
 const accentClasses: Record<string, { ring: string; badge: string }> = {
   slate:   { ring: 'border-slate-400',   badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
   blue:    { ring: 'border-blue-500',    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -110,13 +105,17 @@ const accentClasses: Record<string, { ring: string; badge: string }> = {
 
 export default function PlanSettings() {
   const { currentUser, payments, addPayment, updatePayment } = useStore();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
-  const [method, setMethod] = useState('card');
   const [processing, setProcessing] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [payError, setPayError] = useState('');
+
+  const reference = searchParams.get('reference');
 
   const activePmt = payments
-    .filter(p => p.userId === currentUser?.id && p.status === 'completed')
+    .filter(p => p.userId === currentUser?.id && isPaymentActive(p))
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
 
   const myPayments = payments
@@ -127,25 +126,59 @@ export default function PlanSettings() {
   const currentPlanDef  = plans.find(p => p.name === currentPlanName) ?? plans[0];
   const currentIdx      = planOrder.indexOf(currentPlanName);
 
-  const handleConfirm = () => {
+  // Verify the Paystack transaction when the user returns to /plan?reference=...
+  useEffect(() => {
+    if (!reference || !currentUser || processing || successMsg) return;
+    let cancelled = false;
+    (async () => {
+      setVerifying(true);
+      setProcessing(true);
+      const result = await verifyPaystackPayment(reference);
+      if (cancelled) return;
+      setVerifying(false);
+      setProcessing(false);
+      if (result?.ok && result.payment) {
+        if (activePmt && activePmt.plan !== result.payment.plan) {
+          updatePayment(activePmt.id, { status: 'cancelled' });
+        }
+        addPayment(result.payment);
+        setSuccessMsg(result.payment.plan);
+        setSearchParams({}, { replace: true });
+        setTimeout(() => setSuccessMsg(''), 5000);
+      } else {
+        setPayError(
+          result?.error === 'payment_not_successful'
+            ? 'The payment did not complete. You can try again.'
+            : result?.message || 'We could not verify the payment. If you were charged, contact support.'
+        );
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reference, currentUser, successMsg]);
+
+  const handleActivate = async () => {
     if (!pendingPlan || !currentUser) return;
     const newPlan = plans.find(p => p.name === pendingPlan)!;
+    if (newPlan.enterprise || newPlan.price === 0) return;
     setProcessing(true);
-    setTimeout(() => {
-      if (activePmt) updatePayment(activePmt.id, { status: 'cancelled' });
-      addPayment({
-        plan: newPlan.name,
-        amount: newPlan.price,
-        status: 'completed',
-        paymentMethod: method,
-        renewalDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-        userId: currentUser.id,
-      });
+    setPayError('');
+    const result = await initPaystackCheckout(newPlan.name, currentUser.email, currentUser.id, '/plan');
+    if (!result?.ok) {
       setProcessing(false);
-      setSuccessMsg(pendingPlan);
-      setPendingPlan(null);
-      setTimeout(() => setSuccessMsg(''), 4000);
-    }, 1800);
+      setPayError(
+        result?.error === 'not_configured'
+          ? 'Payments are not configured yet. The account owner needs to add the Paystack secret key.'
+          : result?.message || 'Could not start checkout. Please try again.'
+      );
+      return;
+    }
+    if (result.authorization_url) {
+      window.location.href = result.authorization_url;
+    } else {
+      setProcessing(false);
+      setPayError('Could not start checkout. Please try again.');
+    }
   };
 
   const pendingPlanDef = pendingPlan ? plans.find(p => p.name === pendingPlan) : null;
@@ -309,7 +342,7 @@ export default function PlanSettings() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => { setPendingPlan(plan.name); setMethod('card'); }}
+                      onClick={() => { setPendingPlan(plan.name); setPayError(''); }}
                       className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                         direction === 'upgrade'
                           ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm shadow-emerald-500/20'
@@ -404,24 +437,22 @@ export default function PlanSettings() {
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Payment Method</p>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {paymentMethods.map(m => (
-                    <button
-                      key={m.id}
-                      onClick={() => setMethod(m.id)}
-                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-all ${
-                        method === m.id
-                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                          : 'border-slate-200 dark:border-dark-border hover:border-slate-300'
-                      }`}
-                    >
-                      <m.icon className={`w-4 h-4 ${method === m.id ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                      <span className={`text-xs font-medium ${method === m.id ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>{m.label}</span>
-                    </button>
-                  ))}
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Payment</p>
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-dark-border">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Payment is processed securely by <strong className="text-slate-700 dark:text-slate-200">Paystack</strong> — pay by card, bank transfer, USSD, or mobile money.
+                    You'll be redirected to Paystack to complete the payment, and your plan activates automatically once verified.
+                  </p>
                 </div>
               </div>
+
+              {payError && (
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-amber-700 dark:text-amber-400">{payError}</p>
+                </div>
+              )}
 
               {!isUpgrade && (
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
@@ -436,11 +467,11 @@ export default function PlanSettings() {
                 <Button variant="outline" className="flex-1" onClick={() => setPendingPlan(null)} disabled={processing}>
                   Cancel
                 </Button>
-                <Button className="flex-1" onClick={handleConfirm} disabled={processing}>
+                <Button className="flex-1" onClick={handleActivate} disabled={processing}>
                   {processing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing…
+                      {verifying ? 'Verifying payment…' : 'Preparing checkout…'}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
@@ -450,7 +481,9 @@ export default function PlanSettings() {
                   )}
                 </Button>
               </div>
-              <p className="text-center text-xs text-slate-400">This is a demo — no real charges will be made.</p>
+              <p className="text-center text-xs text-slate-400">
+                You'll be redirected to Paystack to complete your payment securely.
+              </p>
             </div>
           </div>
         </div>

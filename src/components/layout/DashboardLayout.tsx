@@ -9,6 +9,7 @@ import {
   Building2, Layers, Users, Wrench, Sparkles, ScrollText, BarChart3, Inbox
 } from 'lucide-react';
 import Logo from '../ui/Logo';
+import { hasActivePlanFor } from '../../utils/plans';
 
 type NavItem = { to: string; search?: string; icon: typeof LayoutDashboard; label: string };
 
@@ -124,13 +125,11 @@ export default function DashboardLayout() {
   ).length;
 
   const isCustomer = currentUser?.role === 'customer';
-  const hasTeamPlan = isCustomer && payments.some(
-    p => p.userId === currentUser?.id && (p.plan === 'Business' || p.plan === 'Enterprise') && p.status === 'completed'
-  );
+  const hasTeamPlan = isCustomer && hasActivePlanFor(payments, currentUser?.id ?? '', ['Business', 'Enterprise']);
   const isCompanyMember = Boolean(currentUser?.orgOwnerEmail);
   const orgOwner = isCompanyMember ? users.find(u => u.email === currentUser?.orgOwnerEmail) : null;
   const orgOwnerHasTeamPlan = orgOwner
-    ? payments.some(p => p.userId === orgOwner.id && (p.plan === 'Business' || p.plan === 'Enterprise') && p.status === 'completed')
+    ? hasActivePlanFor(payments, orgOwner.id, ['Business', 'Enterprise'])
     : false;
   const showTeamNav = hasTeamPlan || (isCompanyMember && orgOwnerHasTeamPlan);
 

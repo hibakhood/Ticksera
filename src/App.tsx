@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { useEffect, lazy, Suspense } from 'react';
 import { useStore } from './store';
 import { useShallow } from 'zustand/react/shallow';
+import { hasActivePlan, hasActivePlanFor } from './utils/plans';
 
 // Layouts
 import PublicNavbar from './components/layout/PublicNavbar';
@@ -66,14 +67,11 @@ function ProtectedRoute() {
     if (currentUser.orgOwnerEmail) {
       const owner = users.find(u => u.email === currentUser.orgOwnerEmail);
       const ownerHasEnterprise = owner
-        ? payments.some(p => p.userId === owner.id && p.plan === 'Enterprise' && p.status === 'completed')
+        ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
         : false;
       if (!ownerHasEnterprise) return <Navigate to="/billing" replace />;
     } else {
-      const hasActivePlan = payments.some(
-        p => p.userId === currentUser.id && p.status === 'completed'
-      );
-      if (!hasActivePlan) return <Navigate to="/billing" replace />;
+      if (!hasActivePlan(payments, currentUser.id)) return <Navigate to="/billing" replace />;
     }
   }
 
@@ -89,12 +87,11 @@ function BillingRoute() {
   if (currentUser.orgOwnerEmail) {
     const owner = users.find(u => u.email === currentUser.orgOwnerEmail);
     const ownerHasEnterprise = owner
-      ? payments.some(p => p.userId === owner.id && p.plan === 'Enterprise' && p.status === 'completed')
+      ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
       : false;
     if (ownerHasEnterprise) return <Navigate to="/dashboard" replace />;
   }
-  const hasActivePlan = payments.some(p => p.userId === currentUser.id && p.status === 'completed');
-  if (hasActivePlan) return <Navigate to="/dashboard" replace />;
+  if (hasActivePlan(payments, currentUser.id)) return <Navigate to="/dashboard" replace />;
   return (
     <Suspense fallback={<PageLoader />}>
       <Billing />

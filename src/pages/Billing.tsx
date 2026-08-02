@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useStore } from '../store';
-import { CheckCircle, CreditCard, Building, Smartphone, Wallet, Zap, ArrowRight, LogOut, Phone } from 'lucide-react';
+import { CheckCircle, ShieldCheck, Zap, ArrowRight, LogOut, Phone, AlertTriangle } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Logo from '../components/ui/Logo';
+import { initPaystackCheckout, verifyPaystackPayment } from '../lib/paystack';
+import { hasActivePlan } from '../utils/plans';
 
 const plans = [
   {
@@ -82,51 +84,79 @@ const plans = [
   },
 ];
 
-const paymentMethods = [
-  { id: 'card',   label: 'Card',          icon: CreditCard },
-  { id: 'bank',   label: 'Bank Transfer', icon: Building },
-  { id: 'ussd',   label: 'USSD',          icon: Smartphone },
-  { id: 'mobile', label: 'Mobile Pay',    icon: Wallet },
-];
-
 const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
 
 export default function Billing() {
   const { currentUser, payments, addPayment, logout } = useStore();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selected, setSelected] = useState<string | null>(null);
-  const [method, setMethod] = useState('card');
   const [processing, setProcessing] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [payError, setPayError] = useState('');
+
+  const reference = searchParams.get('reference');
 
   useEffect(() => {
     if (!currentUser) { navigate('/login', { replace: true }); return; }
     if (STAFF_ROLES.includes(currentUser.role)) { navigate('/dashboard', { replace: true }); return; }
-    const active = payments.some(p => p.userId === currentUser.id && p.status === 'completed');
-    if (active) { navigate('/dashboard', { replace: true }); }
+    if (hasActivePlan(payments, currentUser.id)) { navigate('/dashboard', { replace: true }); }
   }, [currentUser, payments, navigate]);
 
-  const handleActivate = () => {
+  // Verify the Paystack transaction when the customer returns to /billing?reference=...
+  useEffect(() => {
+    if (!reference || !currentUser || success || processing) return;
+    let cancelled = false;
+    (async () => {
+      setProcessing(true);
+      setVerifying(true);
+      const result = await verifyPaystackPayment(reference);
+      if (cancelled) return;
+      setVerifying(false);
+      if (result?.ok && result.payment) {
+        addPayment(result.payment);
+        setSuccess(true);
+        setSearchParams({}, { replace: true });
+        setTimeout(() => navigate('/dashboard', { replace: true }), 2200);
+      } else {
+        setProcessing(false);
+        setPayError(
+          result?.error === 'payment_not_successful'
+            ? 'The payment did not complete. You can try again below.'
+            : result?.message || 'We could not verify the payment. If you were charged, contact support.'
+        );
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reference, currentUser, success]);
+
+  const handleActivate = async () => {
     if (!selected || !currentUser) return;
     const plan = plans.find(p => p.name === selected)!;
     if (plan.enterprise || plan.price === null) return;
     setProcessing(true);
-    setTimeout(() => {
-      addPayment({
-        plan: plan.name,
-        amount: plan.price as number,
-        status: 'completed',
-        paymentMethod: method,
-        renewalDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-        userId: currentUser!.id,
-      });
+    setPayError('');
+    const result = await initPaystackCheckout(plan.name, currentUser.email, currentUser.id, '/billing');
+    if (!result?.ok) {
       setProcessing(false);
-      setSuccess(true);
-      setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
-    }, 2000);
+      setPayError(
+        result?.error === 'not_configured'
+          ? 'Payments are not configured yet. The account owner needs to add the Paystack secret key.'
+          : result?.message || 'Could not start checkout. Please try again.'
+      );
+      return;
+    }
+    if (result.authorization_url) {
+      window.location.href = result.authorization_url;
+    } else {
+      setProcessing(false);
+      setPayError('Could not start checkout. Please try again.');
+    }
   };
 
-  if (success) {
+  if (success || verifying) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-dark-bg flex items-center justify-center">
         <div className="text-center" style={{ padding: '2rem' }}>
@@ -134,10 +164,12 @@ export default function Billing() {
             <CheckCircle className="w-10 h-10 text-emerald-500" />
           </div>
           <h2 className="font-heading text-2xl font-bold text-slate-900 dark:text-white" style={{ marginBottom: '0.5rem' }}>
-            Payment Successful!
+            {verifying ? 'Verifying your payment…' : 'Payment Successful!'}
           </h2>
           <p className="text-slate-500 dark:text-slate-400" style={{ marginBottom: '1.5rem' }}>
-            Your <strong>{selected}</strong> plan is now active. Taking you to your dashboard…
+            {verifying
+              ? 'Confirming your transaction with Paystack.'
+              : `Your ${selected ?? ''} plan is now active. Taking you to your dashboard…`}
           </p>
           <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto" />
         </div>
@@ -289,31 +321,27 @@ export default function Billing() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest" style={{ marginBottom: '0.75rem' }}>Payment Method</p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {paymentMethods.map(m => (
-                  <button
-                    key={m.id}
-                    onClick={() => setMethod(m.id)}
-                    className={`flex flex-col items-center gap-1.5 rounded-xl border py-3 transition-all ${
-                      method === m.id
-                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                        : 'border-slate-200 dark:border-dark-border hover:border-slate-300'
-                    }`}
-                  >
-                    <m.icon className={`w-5 h-5 ${method === m.id ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                    <span className={`text-xs font-medium ${method === m.id ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>{m.label}</span>
-                  </button>
-                ))}
-              </div>
+            <div className="flex items-start gap-3 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-slate-800/50 p-4" style={{ marginBottom: '1.5rem' }}>
+              <ShieldCheck className="w-5 h-5 text-emerald-500 flex-shrink-0" style={{ marginTop: '0.125rem' }} />
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Payment is processed securely by <strong className="text-slate-700 dark:text-slate-200">Paystack</strong>.
+                You'll be able to pay by card, bank transfer, USSD, or mobile money.
+                Your plan activates automatically once the payment is verified.
+              </p>
             </div>
+
+            {payError && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10 p-3.5" style={{ marginBottom: '1.25rem' }}>
+                <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" style={{ marginTop: '0.125rem' }} />
+                <p className="text-xs text-amber-700 dark:text-amber-400">{payError}</p>
+              </div>
+            )}
 
             <Button size="lg" className="w-full" onClick={handleActivate} disabled={processing}>
               {processing ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing payment…
+                  Preparing checkout…
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
@@ -324,7 +352,7 @@ export default function Billing() {
             </Button>
 
             <p className="text-center text-xs text-slate-400" style={{ marginTop: '1rem' }}>
-              This is a demo — no real charges will be made.
+              Plans renew monthly. You can upgrade or cancel any time from your plan settings.
             </p>
           </div>
         )}
