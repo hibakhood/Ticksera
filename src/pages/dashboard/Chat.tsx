@@ -136,8 +136,7 @@ export default function Chat() {
       isAdmin: currentUser.role !== 'customer',
     });
     setMsg('');
-    if (isSupabaseConfigured()) aiChatReply(selectedTicket, text);
-    else simulateReply(selectedTicket);
+    aiChatReply(selectedTicket, text);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

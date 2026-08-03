@@ -6,7 +6,7 @@ import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../ut
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
-import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad } from '../lib/agent';
+import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad, type AgentStatus } from '../lib/agent';
 
 export interface SignupResult {
   ok: boolean;
@@ -272,6 +272,41 @@ function isCustomerDissatisfied(text: string): boolean {
   return signals.some(s => t.includes(s));
 }
 
+// Strong signals that the customer is happy with the BOT's help / the issue is fixed.
+function isResolvedSignal(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return [
+    'it worked', 'that worked', 'this worked', "it's fixed", 'it is fixed', 'issue fixed',
+    'fixed it', 'that did it', 'that sorted it', 'working now', 'working again',
+    'problem solved', 'that helped', 'solved the issue', 'got it working', "it's working",
+    'fixed now', 'all good now', 'no longer an issue', 'no more issue', 'resolved, thanks',
+    'issue resolved', 'resolved now', 'all sorted', 'perfect, thanks', 'great, thanks',
+    'thank you, that', 'thanks, that', 'appreciate the help', 'thanks for the help',
+  ].some(s => t.includes(s));
+}
+
+// The customer explicitly asks for the ticket to be closed.
+function isCloseSignal(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  return [
+    'close the ticket', 'close it', 'close this ticket', 'close my ticket',
+    'you can close', 'please close', 'mark it closed', 'mark as closed',
+    'close now', 'close the ticket please',
+  ].some(s => t.includes(s));
+}
+
+const AI_STATUSES: ReadonlySet<string> = new Set(['open', 'in_progress', 'resolved', 'closed', 'escalated']);
+
+// Deterministic status inference used when the live AI isn't configured or is offline.
+function inferSuggestedStatus(text: string): AgentStatus {
+  if (isCloseSignal(text)) return 'closed';
+  if (isCustomerDissatisfied(text)) return 'escalated';
+  if (isResolvedSignal(text)) return 'resolved';
+  return 'in_progress';
+}
+
 async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat') {
   const snapshot = useStore.getState();
   const ticket = snapshot.tickets.find(t => t.id === ticketId);
@@ -286,6 +321,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
 
   let reply: string;
   let completed = false;
+  let aiStatus: AgentStatus | undefined;
   if (isSupabaseConfigured()) {
     const result = await requestAgentReply(
       buildAgentPayload(
@@ -308,6 +344,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     if (result?.enabled && result.reply) {
       reply = result.reply;
       completed = result.completed === true;
+      aiStatus = result.status;
     } else {
       reply = fallbackReply(mode, ticket.category, step, answer);
       if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
@@ -321,6 +358,12 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     reply = `${reply}\n\n**Did these steps resolve your issue?**\nIf not, tap **"Not Resolved — Request Technician"** below and a specialist will take over immediately. If it's fixed, tap **"Issue Fixed — No Need"** and we'll close the ticket.`;
   }
 
+  // The AI determines which status the ticket should move to.
+  let suggestedStatus: AgentStatus | undefined;
+  if (mode === 'chat') {
+    suggestedStatus = aiStatus && AI_STATUSES.has(aiStatus) ? aiStatus : inferSuggestedStatus(answer);
+  }
+
   const now = new Date().toISOString();
   useStore.setState(s => ({
     tickets: s.tickets.map(t =>
@@ -331,7 +374,20 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
             triageStatus: completed ? ('needs_technician' as const) : t.triageStatus,
             updatedAt: now,
           }
-        : t
+        : t.id === ticketId && mode === 'chat' && suggestedStatus && suggestedStatus !== t.status
+          ? {
+              ...t,
+              status: suggestedStatus,
+              triageStatus: ['resolved', 'closed', 'escalated'].includes(suggestedStatus) ? undefined : t.triageStatus,
+              resolvedBy: suggestedStatus === 'resolved' ? 'FIXORA BOT' : t.resolvedBy,
+              resolutionNotes: suggestedStatus === 'resolved'
+                ? (t.resolutionNotes ?? 'Resolved via FIXORA BOT conversation')
+                : t.resolutionNotes,
+              escalationLevel: suggestedStatus === 'escalated' ? (t.escalationLevel ?? 0) + 1 : t.escalationLevel,
+              updatedAt: now,
+              activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `FIXORA BOT moved ticket to ${suggestedStatus.replace(/_/g, ' ')}`, entityType: 'ticket', entityId: t.id, timestamp: now }],
+            }
+          : t
     ),
     chatMessages: [
       ...s.chatMessages,
@@ -348,6 +404,24 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     ],
     typingUsers: s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)),
   }));
+
+  if (suggestedStatus === 'escalated') {
+    const latest = useStore.getState();
+    const escalated = latest.tickets.find(t => t.id === ticketId);
+    if (escalated && escalated.status === 'escalated') {
+      latest.users
+        .filter(u => u.role === 'super_admin' || u.role === 'support_manager')
+        .forEach(admin => {
+          latest.addNotification({
+            userEmail: admin.email,
+            title: 'Ticket escalated by FIXORA BOT',
+            message: `The FIXORA BOT marked "${escalated.title}" as escalated after the conversation indicated the issue wasn't resolved.`,
+            type: 'ticket',
+            link: `/tickets/${ticketId}`,
+          });
+        });
+    }
+  }
 
   // NOTE: no auto-route here. The FIXORA BOT resolves the issue first; the ticket is
   // only routed to a technician when the customer explicitly says it isn't resolved
@@ -763,7 +837,6 @@ export const useStore = create<AppState>()(
       aiChatReply: (ticketId: string, text: string) => {
         const ticket = get().tickets.find(t => t.id === ticketId);
         if (!ticket) return;
-        if (!isSupabaseConfigured()) return;
         if (ticket.assignedTo || ['resolved', 'closed', 'escalated'].includes(ticket.status) || ticket.triageStatus === 'escalated_to_technician') return;
         // After the BOT's resolution attempt, auto-route only when the customer
         // explicitly says the BOT didn't help.

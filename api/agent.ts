@@ -138,7 +138,15 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
     '- Use **bold** and bullet points where helpful. Never claim to be human.',
     '- If the issue is urgent or out of scope, suggest requesting a technician.',
     '',
-    'Respond with plain text only (no JSON).',
+    'As part of every reply you must determine which status the ticket should move to, based on the conversation:',
+    '- "in_progress": the customer is still being helped (default).',
+    '- "resolved": the customer confirmed a fix worked or the issue is sorted.',
+    '- "closed": the customer explicitly asked to close the ticket.',
+    '- "escalated": the customer is clearly dissatisfied, the fix is not working, or a technician is required.',
+    '- "open": the conversation just started and nothing has been done yet.',
+    '',
+    'Respond with VALID JSON only, exactly this shape:',
+    '{"reply": "message for the customer", "status": "in_progress|resolved|closed|escalated|open"}',
   ].join('\n');
 }
 
@@ -224,6 +232,20 @@ export default async function handler(req: Request): Promise<Response> {
           reply: typeof parsed.reply === 'string' ? parsed.reply : content,
           completed: parsed.completed === true,
           escalate: parsed.escalate === true,
+        });
+      }
+      return json({ enabled: true, reply: content });
+    }
+
+    if (body.mode === 'chat') {
+      const parsed = extractJson(content);
+      if (parsed) {
+        const validStatuses = new Set(['open', 'in_progress', 'resolved', 'closed', 'escalated']);
+        const status = typeof parsed.status === 'string' && validStatuses.has(parsed.status) ? parsed.status : undefined;
+        return json({
+          enabled: true,
+          reply: typeof parsed.reply === 'string' ? parsed.reply : content,
+          status,
         });
       }
       return json({ enabled: true, reply: content });

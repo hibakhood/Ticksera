@@ -127,6 +127,10 @@ const sections = [
         a: 'Non-critical customer tickets enter AI triage automatically. The FIXORA BOT posts diagnostic questions in the ticket\'s discussion thread, reads your answers to steer the diagnosis, and shares step-by-step troubleshooting. It tries to resolve the issue before any technician is involved. The ticket is only auto-routed to a technician when you say the BOT\'s help didn\'t resolve it — tap "Not Resolved — Request Technician" and a specialist takes over with your full diagnostic history. Critical issues and staff-created tickets bypass the BOT and route directly.',
       },
       {
+        q: 'Who decides the ticket status?',
+        a: 'The FIXORA BOT reads each conversation and moves the ticket to the status it believes fits: In Progress while you\'re being helped, Resolved when you confirm a fix worked, Escalated when the issue isn\'t getting fixed, and Closed when you ask to close it. Every AI status change is logged in the activity timeline. Admins and assigned technicians can always override any status manually from the Update Status control.',
+      },
+      {
         q: 'The AI Assistant (staff)',
         a: 'Open AI Assistant from the sidebar and ask questions in plain English, such as "How do I reset a password?" or "Network is slow — what should I check?". It searches the knowledge base by keyword and returns up to three matching articles. If nothing matches, it suggests opening a ticket or booking a session.',
       },

@@ -1,11 +1,14 @@
 import type { KBArticle, TicketCategory, TicketPriority, Ticket } from '../types';
 import { findKbArticles } from '../utils/triage';
 
+export type AgentStatus = 'open' | 'in_progress' | 'resolved' | 'closed' | 'escalated';
+
 export interface AgentReply {
   enabled: boolean;
   reply?: string;
   completed?: boolean;
   escalate?: boolean;
+  status?: AgentStatus;
 }
 
 export interface AgentPayload {

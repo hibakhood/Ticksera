@@ -192,8 +192,7 @@ export default function TicketDetail() {
       isAdmin: currentUser.role !== 'customer',
     });
     setMsg('');
-    if (isSupabaseConfigured()) aiChatReply(ticket.id, text);
-    else simulateReply();
+    aiChatReply(ticket.id, text);
   };
 
   const handleStatusChange = (status: TicketStatus) => {
