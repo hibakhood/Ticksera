@@ -279,7 +279,7 @@ export default function Profile() {
           <p className="text-sm text-slate-400 text-center py-6">No tickets yet</p>
         ) : (
           <div className="space-y-1">
-            {myTickets.slice(0, 5).map(t => (
+            {[...myTickets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5).map(t => (
               <div key={t.id} className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{cleanTicketTitle(t.title)}</p>

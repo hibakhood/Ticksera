@@ -1,8 +1,9 @@
 // FIXORA Payments — Paystack transaction verification (Vercel Edge function).
 //
 // Verifies a Paystack transaction, then — when Supabase is configured — writes the
-// authoritative payment record into the user's user_data row using the service role
-// key (bypassing RLS) so clients can never self-certify a payment.
+// authoritative payment record into the SHARED application-state row using the
+// service role key (bypassing RLS) so clients can never self-certify a payment and
+// so the admin revenue dashboard reflects every customer's payment immediately.
 //
 // Env vars (set in Vercel):
 //   PAYSTACK_SECRET_KEY           required (sk_test_... / sk_live_...)
@@ -10,7 +11,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY     service-role key (server-only)
 //
 // The caller must send the user's Supabase access token in the Authorization header;
-// the resolved auth user id is used as the owner of the payment record.
+// the resolved auth user id is recorded as the owner of the payment record.
 
 export const config = {
   runtime: 'edge',
@@ -129,9 +130,11 @@ export default async function handler(req: Request): Promise<Response> {
 
   // Persist the authoritative record when Supabase is configured. If it isn't
   // (local dev), the client still applies the verified payment locally.
+  // The payment lands in the SHARED row so every role sees it.
+  const GLOBAL_STATE_ID = '00000000-0000-0000-0000-000000000000';
   if (supabaseUrl && serviceKey && userId) {
     try {
-      const read = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${userId}&select=data`, {
+      const read = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}&select=data`, {
         headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
       });
       let dataObj: Record<string, unknown> = {};
@@ -142,7 +145,7 @@ export default async function handler(req: Request): Promise<Response> {
       const payments = Array.isArray(dataObj.payments) ? (dataObj.payments as unknown[]) : [];
       const alreadyHas = payments.some(p => (p as Record<string, unknown>).reference === payment.reference);
       if (!alreadyHas) payments.push(payment);
-      await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${userId}`, {
+      await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}`, {
         method: 'POST',
         headers: {
           apikey: serviceKey,
@@ -151,7 +154,7 @@ export default async function handler(req: Request): Promise<Response> {
           Prefer: 'resolution=merge-duplicates,return=minimal',
         },
         body: JSON.stringify({
-          user_id: userId,
+          user_id: GLOBAL_STATE_ID,
           data: { ...dataObj, payments },
           updated_at: new Date().toISOString(),
         }),

@@ -49,6 +49,8 @@ export default function Dashboard() {
       ? tickets.filter(t => t.assignedTo === currentUser?.id)
       : tickets;
 
+  const recentTickets   = [...myTickets].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 6);
+
   const openCount       = myTickets.filter(t => t.status === 'open').length;
   const inProgressCount = myTickets.filter(t => ['in_progress', 'assigned'].includes(t.status)).length;
   const resolvedCount   = myTickets.filter(t => t.status === 'resolved').length;
@@ -263,8 +265,8 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {myTickets.slice(0, 6).map((t, idx) => (
-                  <tr key={t.id} className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors ${idx < myTickets.slice(0, 6).length - 1 ? 'border-b border-slate-50 dark:border-slate-800/60' : ''}`}>
+                {recentTickets.map((t, idx) => (
+                  <tr key={t.id} className={`hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors ${idx < recentTickets.length - 1 ? 'border-b border-slate-50 dark:border-slate-800/60' : ''}`}>
                     <td className="py-3.5 px-6">
                       <Link to={`/tickets/${t.id}`} className="font-medium text-slate-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors line-clamp-1 text-sm">
                         {cleanTicketTitle(t.title)}

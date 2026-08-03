@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { buildTriageGreeting, buildHandoffGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
-import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
+import { loadSharedState, saveSharedState, type SharedState } from '../lib/sync';
 import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad, type AgentStatus } from '../lib/agent';
 
 export interface SignupResult {
@@ -80,6 +80,11 @@ function genRef(): string {
 
 let syncing = false;
 let recoveryPending = false;
+
+const POLL_MS = 10_000;
+let pollTimer: ReturnType<typeof setInterval> | null = null;
+let lastLocalMutation = 0;
+let focusHandler: (() => void) | null = null;
 
 const day   = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
 const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
@@ -162,7 +167,7 @@ interface AppState {
   currentUser: User | null;
   recoveryMode: boolean;
   initAuth: () => Promise<void>;
-  loadRemoteData: () => Promise<void>;
+  loadSharedData: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
   demoLogin: (email: string) => boolean;
   resetPassword: (email: string, newPassword: string) => boolean;
@@ -428,6 +433,115 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
   // (requestTechnician) or when the ticket bypasses the BOT entirely (critical / staff).
 }
 
+// ---------------------------------------------------------------------------
+// Shared state helpers — every role reads and writes the SAME data through a
+// single Supabase row (see src/lib/sync.ts + migrations/0003_shared_state.sql)
+// so the admin, technician, and customer dashboards stay correlated.
+// ---------------------------------------------------------------------------
+
+function buildSharedState(
+  s: Pick<AppState, 'tickets' | 'chatMessages' | 'bookings' | 'payments' | 'users' | 'contactMessages' | 'notifications' | 'kbArticles'>
+): SharedState {
+  return {
+    tickets: s.tickets,
+    chatMessages: s.chatMessages,
+    bookings: s.bookings,
+    payments: s.payments,
+    users: s.users.map(u => {
+      const { password: _pw, ...rest } = u;
+      return rest;
+    }),
+    contactMessages: s.contactMessages,
+    notifications: s.notifications,
+    kbArticles: s.kbArticles,
+  };
+}
+
+/**
+ * Merge remote (database) items with local items by id. Remote wins for
+ * matching ids; local-only items are kept so they persist on the next save.
+ * `preserve` copies a local field onto a remote item when the remote lacks it
+ * (e.g. the demo seed password that must not be written to the database).
+ * Returns the original `local` array when nothing actually changed.
+ */
+function mergeById<T extends { id: string }>(
+  local: T[],
+  remote: T[] | undefined,
+  preserve: (keyof T)[] = []
+): T[] {
+  if (!remote || remote.length === 0) return local;
+  const out: T[] = [];
+  const seen = new Set<string>();
+  let changed = false;
+  for (const r of remote) {
+    seen.add(r.id);
+    const l = local.find(x => x.id === r.id);
+    if (!l) {
+      changed = true;
+      out.push(r);
+      continue;
+    }
+    let item: T = r;
+    for (const k of preserve) {
+      if (l[k] !== undefined) item = { ...item, [k]: l[k] };
+    }
+    if (JSON.stringify(item) !== JSON.stringify(l)) {
+      changed = true;
+      out.push(item);
+    } else {
+      out.push(l);
+    }
+  }
+  for (const l of local) {
+    if (!seen.has(l.id)) {
+      changed = true;
+      out.push(l);
+    }
+  }
+  return changed ? out : local;
+}
+
+/** Keep the store's user directory in sync with everyone who signs in. */
+function ensureUserInStore(user: User): void {
+  const { users } = useStore.getState();
+  const existing = users.find(u => u.id === user.id);
+  if (existing) {
+    if (JSON.stringify(existing) !== JSON.stringify(user)) {
+      useStore.setState(s => ({ users: s.users.map(u => (u.id === user.id ? { ...u, ...user } : u)) }));
+    }
+  } else {
+    useStore.setState(s => ({ users: [...s.users, user] }));
+  }
+}
+
+function startSharedPolling(): void {
+  stopSharedPolling();
+  pollTimer = setInterval(() => {
+    const s = useStore.getState();
+    if (!s.currentUser || !isSupabaseConfigured()) return;
+    if (Date.now() - lastLocalMutation < 2_000) return;
+    void s.loadSharedData();
+  }, POLL_MS);
+  focusHandler = () => {
+    const s = useStore.getState();
+    if (!s.currentUser || !isSupabaseConfigured()) return;
+    if (Date.now() - lastLocalMutation < 2_000) return;
+    void s.loadSharedData();
+  };
+  window.addEventListener('focus', focusHandler);
+}
+
+function stopSharedPolling(): void {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+  if (focusHandler) {
+    window.removeEventListener('focus', focusHandler);
+    focusHandler = null;
+  }
+}
+
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -436,20 +550,28 @@ export const useStore = create<AppState>()(
 
       currentUser: null,
       recoveryMode: false,
-      loadRemoteData: async () => {
-        const { currentUser } = get();
-        if (!currentUser || !isSupabaseConfigured() || !isUuid(currentUser.id)) return;
-        const remote = await remoteLoadUserData(currentUser.id);
-        if (!remote || typeof remote !== 'object') return;
-        const r = remote as Partial<Pick<AppState, 'tickets' | 'chatMessages' | 'bookings' | 'payments'>>;
+      loadSharedData: async () => {
+        if (!isSupabaseConfigured()) return;
+        const shared = await loadSharedState();
         syncing = true;
         try {
-          set(s => ({
-            tickets: Array.isArray(r.tickets) ? r.tickets : s.tickets,
-            chatMessages: Array.isArray(r.chatMessages) ? r.chatMessages : s.chatMessages,
-            bookings: Array.isArray(r.bookings) ? r.bookings : s.bookings,
-            payments: Array.isArray(r.payments) ? r.payments : s.payments,
-          }));
+          set(s => {
+            if (!shared) {
+              // First run: seed the shared row from the current store state.
+              void saveSharedState(buildSharedState(s));
+              return {};
+            }
+            return {
+              tickets: mergeById(s.tickets, shared.tickets as Ticket[]),
+              chatMessages: mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]),
+              bookings: mergeById(s.bookings, shared.bookings as Booking[]),
+              payments: mergeById(s.payments, shared.payments as Payment[]),
+              users: mergeById(s.users, shared.users as User[], ['password']),
+              contactMessages: mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]),
+              notifications: mergeById(s.notifications, shared.notifications as Notification[]),
+              kbArticles: mergeById(s.kbArticles, shared.kbArticles as KBArticle[]),
+            };
+          });
         } finally {
           syncing = false;
         }
@@ -466,25 +588,29 @@ export const useStore = create<AppState>()(
           const { data } = await getSupabase().auth.getSession();
           if (data.session?.user && !recoveryPending && !get().recoveryMode) {
             const profile = await buildProfileFromAuthUser(data.session.user);
+            ensureUserInStore(profile);
             set({ currentUser: profile });
-            await get().loadRemoteData();
+            await get().loadSharedData();
+            startSharedPolling();
           }
         } catch { /* ignore */ }
       },
       login: async (email: string, password: string) => {
         const normalised = email.trim().toLowerCase();
-        if (isSupabaseConfigured()) {
-          try {
-            const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalised, password });
-            if (error || !data.user) return false;
-            recoveryPending = false;
-            set({ recoveryMode: false });
-            const profile = await buildProfileFromAuthUser(data.user);
-            set({ currentUser: profile });
-            await get().loadRemoteData();
-            return true;
-          } catch { return false; }
-        }
+          if (isSupabaseConfigured()) {
+            try {
+              const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalised, password });
+              if (error || !data.user) return false;
+              recoveryPending = false;
+              set({ recoveryMode: false });
+              const profile = await buildProfileFromAuthUser(data.user);
+              ensureUserInStore(profile);
+              set({ currentUser: profile });
+              await get().loadSharedData();
+              startSharedPolling();
+              return true;
+            } catch { return false; }
+          }
         const user = get().users.find(u => u.email === normalised);
         if (user && user.password === password) {
           set({ currentUser: user });
@@ -522,11 +648,17 @@ export const useStore = create<AppState>()(
             if (error) return { ok: false, error: error.message };
             if (data.session && data.user) {
               const profile = await buildProfileFromAuthUser(data.user);
+              ensureUserInStore(profile);
               set({ currentUser: profile });
-              await get().loadRemoteData();
+              await get().loadSharedData();
+              startSharedPolling();
               return { ok: true };
             }
-            if (data.user) return { ok: true, needsEmailConfirm: true };
+            if (data.user) {
+              const profile = await buildProfileFromAuthUser(data.user);
+              ensureUserInStore(profile);
+              return { ok: true, needsEmailConfirm: true };
+            }
             return { ok: false, error: 'Sign-up failed. Please try again.' };
           } catch {
             return { ok: false, error: 'Unable to reach the sign-up service. Please try again.' };
@@ -551,6 +683,7 @@ export const useStore = create<AppState>()(
           try { void getSupabase().auth.signOut(); } catch { /* ignore */ }
         }
         recoveryPending = false;
+        stopSharedPolling();
         set({ currentUser: null, recoveryMode: false });
       },
       completePasswordReset: async (password: string) => {
@@ -922,7 +1055,11 @@ export const useStore = create<AppState>()(
       notifications: seedNotifications,
       addNotification: (notif) => set(s => ({ notifications: [...s.notifications, { ...notif, id: `n${Date.now()}`, createdAt: new Date().toISOString(), isRead: false }] })),
       markNotifRead: (id) => set(s => ({ notifications: s.notifications.map(n => n.id === id ? { ...n, isRead: true } : n) })),
-      markAllNotifsRead: () => set(s => ({ notifications: s.notifications.map(n => ({ ...n, isRead: true })) })),
+      markAllNotifsRead: () => set(s => ({
+        notifications: s.notifications.map(n =>
+          n.userEmail === s.currentUser?.email ? { ...n, isRead: true } : n
+        ),
+      })),
 
       chatLastVisit: new Date(0).toISOString(),
       setChatLastVisit: () => set({ chatLastVisit: new Date().toISOString() }),
@@ -1029,18 +1166,17 @@ useStore.subscribe((s, prev) => {
     s.tickets !== prev.tickets ||
     s.chatMessages !== prev.chatMessages ||
     s.bookings !== prev.bookings ||
-    s.payments !== prev.payments;
+    s.payments !== prev.payments ||
+    s.users !== prev.users ||
+    s.contactMessages !== prev.contactMessages ||
+    s.notifications !== prev.notifications ||
+    s.kbArticles !== prev.kbArticles;
   if (!changed || syncing) return;
-  const uid = s.currentUser?.id;
-  if (!uid || !isSupabaseConfigured() || !isUuid(uid)) return;
+  lastLocalMutation = Date.now();
+  if (!isSupabaseConfigured()) return;
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     const latest = useStore.getState();
-    remoteSaveUserData(latest.currentUser?.id ?? uid, {
-      tickets: latest.tickets,
-      chatMessages: latest.chatMessages,
-      bookings: latest.bookings,
-      payments: latest.payments,
-    });
+    void saveSharedState(buildSharedState(latest));
   }, 600);
 });
