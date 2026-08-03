@@ -514,6 +514,85 @@ function ensureUserInStore(user: User): void {
   }
 }
 
+/** Demo seed accounts that must never appear in a live (Supabase) deployment. */
+const DEMO_SEED_IDS = new Set(['1', '2', '3', '4', '5', '6', '7']);
+
+interface DbProfile {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  organization: string | null;
+  org_owner_email?: string | null;
+  avatar?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  created_at?: string;
+}
+
+/** Map a public.profiles row onto the app's User shape (identity fields only). */
+function mapProfileToUser(p: DbProfile): User {
+  const email = (p.email ?? '').toLowerCase();
+  return {
+    id: p.id,
+    email: p.email ?? '',
+    name: p.name ?? p.email?.split('@')[0] ?? 'User',
+    role: resolveProfileRole(email, (p.role as User['role']) ?? 'customer'),
+    organization: p.organization ?? undefined,
+    orgOwnerEmail: p.org_owner_email ?? undefined,
+    avatar: p.avatar ?? undefined,
+    phone: p.phone ?? undefined,
+    location: p.location ?? undefined,
+    bio: p.bio ?? undefined,
+    createdAt: p.created_at ?? new Date().toISOString(),
+  };
+}
+
+/**
+ * Reconcile the store's user directory with the real registered users in the
+ * database (profiles mirrors auth.users). Demo seed accounts are dropped so the
+ * admin dashboard correlates with the database; admin-added employees and other
+ * store-only users that aren't in the database are kept. Existing fields on a
+ * matching user (password, skills, ...) are preserved.
+ */
+function reconcileUsersWithDb(users: User[], profiles: DbProfile[]): User[] {
+  const out: User[] = [];
+  const seenEmails = new Set<string>();
+  for (const p of profiles) {
+    const email = (p.email ?? '').toLowerCase();
+    if (!email || seenEmails.has(email)) continue;
+    seenEmails.add(email);
+    const ex = users.find(u => u.id === p.id);
+    out.push(ex ? { ...ex, ...mapProfileToUser(p) } : mapProfileToUser(p));
+  }
+  for (const u of users) {
+    if (DEMO_SEED_IDS.has(u.id)) continue;
+    const email = (u.email ?? '').toLowerCase();
+    if (!email || seenEmails.has(email)) continue;
+    seenEmails.add(email);
+    out.push(u);
+  }
+  return out;
+}
+
+/**
+ * Fetch the real registered users from the database. Staff (with migration
+ * 0004 applied) read every profile; other roles read only their own row, which
+ * still lets the shared state drop the demo seeds on every live device.
+ * Returns null when not in live mode or the query fails.
+ */
+async function loadDbProfiles(): Promise<DbProfile[] | null> {
+  if (!isSupabaseConfigured()) return null;
+  if (!useStore.getState().currentUser) return null;
+  try {
+    const { data } = await getSupabase().from('profiles').select('*').limit(2000);
+    return (data ?? []) as unknown as DbProfile[];
+  } catch {
+    return null;
+  }
+}
+
 function startSharedPolling(): void {
   stopSharedPolling();
   pollTimer = setInterval(() => {
@@ -553,20 +632,26 @@ export const useStore = create<AppState>()(
       loadSharedData: async () => {
         if (!isSupabaseConfigured()) return;
         const shared = await loadSharedState();
+        const profiles = await loadDbProfiles();
         syncing = true;
         try {
           set(s => {
             if (!shared) {
               // First run: seed the shared row from the current store state.
-              void saveSharedState(buildSharedState(s));
+              const seeded = buildSharedState(s);
+              if (profiles) seeded.users = (seeded.users as User[]).filter(u => !DEMO_SEED_IDS.has(u.id));
+              void saveSharedState(seeded);
+              if (profiles) return { users: reconcileUsersWithDb(s.users, profiles) };
               return {};
             }
+            let users = mergeById(s.users, shared.users as User[], ['password']);
+            if (profiles) users = reconcileUsersWithDb(users, profiles);
             return {
               tickets: mergeById(s.tickets, shared.tickets as Ticket[]),
               chatMessages: mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]),
               bookings: mergeById(s.bookings, shared.bookings as Booking[]),
               payments: mergeById(s.payments, shared.payments as Payment[]),
-              users: mergeById(s.users, shared.users as User[], ['password']),
+              users,
               contactMessages: mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]),
               notifications: mergeById(s.notifications, shared.notifications as Notification[]),
               kbArticles: mergeById(s.kbArticles, shared.kbArticles as KBArticle[]),
