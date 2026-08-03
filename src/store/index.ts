@@ -257,6 +257,21 @@ function fallbackReply(mode: 'triage' | 'chat', category: TicketCategory, step: 
   return "Thanks — I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
 }
 
+// Strong signals that the customer is unhappy with the BOT's help. Used only for
+// post-triage tickets so auto-routing stays driven by explicit dissatisfaction.
+function isCustomerDissatisfied(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (!t) return false;
+  const signals = [
+    'need a technician', 'need a person', 'need a human', 'talk to a technician',
+    'talk to a person', 'talk to a human', 'speak to a technician', 'speak to a person',
+    'transfer me', 'transfer to a technician', 'not resolved', 'not fixed yet',
+    'still broken', 'still not working', 'still having the issue', "didn't help",
+    'did not help', 'not satisfied', 'please escalate', 'escalate this', 'no luck fixing',
+  ];
+  return signals.some(s => t.includes(s));
+}
+
 async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat') {
   const snapshot = useStore.getState();
   const ticket = snapshot.tickets.find(t => t.id === ticketId);
@@ -302,6 +317,10 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
   }
 
+  if (mode === 'triage' && completed) {
+    reply = `${reply}\n\n**Did these steps resolve your issue?**\nIf not, tap **"Not Resolved — Request Technician"** below and a specialist will take over immediately. If it's fixed, tap **"Issue Fixed — No Need"** and we'll close the ticket.`;
+  }
+
   const now = new Date().toISOString();
   useStore.setState(s => ({
     tickets: s.tickets.map(t =>
@@ -330,9 +349,9 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     typingUsers: s.typingUsers.filter(t => !(t.ticketId === ticketId && t.email === BOT_EMAIL)),
   }));
 
-  if (mode === 'triage' && completed) {
-    setTimeout(() => void useStore.getState().autoRouteTicket(ticketId), 400);
-  }
+  // NOTE: no auto-route here. The FIXORA BOT resolves the issue first; the ticket is
+  // only routed to a technician when the customer explicitly says it isn't resolved
+  // (requestTechnician) or when the ticket bypasses the BOT entirely (critical / staff).
 }
 
 export const useStore = create<AppState>()(
@@ -740,6 +759,12 @@ export const useStore = create<AppState>()(
         if (!ticket) return;
         if (!isSupabaseConfigured()) return;
         if (ticket.assignedTo || ticket.status !== 'open' || ticket.triageStatus === 'escalated_to_technician') return;
+        // After the BOT's resolution attempt, auto-route only when the customer
+        // explicitly says the BOT didn't help.
+        if (ticket.triageStatus === 'needs_technician' && isCustomerDissatisfied(text)) {
+          get().requestTechnician(ticketId, `Customer reported the BOT did not resolve the issue: "${text.trim()}"`);
+          return;
+        }
         const step = ticket.triageStep ?? 0;
         setBotTyping(ticketId, true);
         void runAgentTurn(ticketId, step, text, 'chat');

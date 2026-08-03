@@ -399,10 +399,10 @@ export default function TicketDetail() {
                     </>
                   ) : (
                     <>
-                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete</h3>
+                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete — Did the FIXORA BOT resolve your issue?</h3>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        The FIXORA BOT finished its diagnosis and shared troubleshooting steps in the chat.
-                        If the issue isn't resolved, request a technician below.
+                        The BOT finished its diagnosis and shared troubleshooting steps in the chat.
+                        If the issue is fixed, close the ticket below. If not, request a technician and we'll route you immediately.
                       </p>
                       <div className="mt-4 flex gap-2 flex-wrap">
                         <Button
@@ -420,11 +420,12 @@ export default function TicketDetail() {
                             requestTechnician(ticket.id, 'AI triage completed — customer still needs technician');
                           }}
                         >
-                          <Wrench className="w-3.5 h-3.5" /> Request Technician Support
+                          <Wrench className="w-3.5 h-3.5" /> Not Resolved — Request Technician
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                           onClick={() => resolveViaTriage(ticket.id)}
                         >
                           <CheckCircle className="w-3.5 h-3.5" /> Issue Fixed — No Need
