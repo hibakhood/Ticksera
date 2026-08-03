@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Ticket, Booking, ChatMessage, ContactMessage, Payment, KBArticle, Notification, TicketCategory } from '../types';
 import { v4 as uuid } from 'uuid';
-import { buildTriageGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
+import { buildTriageGreeting, buildHandoffGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { isUuid, remoteLoadUserData, remoteSaveUserData } from '../lib/sync';
@@ -581,7 +581,7 @@ export const useStore = create<AppState>()(
         const triageActive = isCustomer && ticketData.priority !== 'critical';
         const triageGreeting = triageActive
           ? buildTriageGreeting(ticketData.category as TicketCategory, ticketData.createdByName)
-          : `Your ticket has been received and flagged as **${ticketData.priority} priority**. A technician will respond shortly.`;
+          : buildHandoffGreeting(ticketData.createdByName, ticketData.priority, ticketData.title);
         set(s => ({
           tickets: [...s.tickets, {
             ...ticketData,

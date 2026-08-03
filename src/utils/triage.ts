@@ -130,11 +130,31 @@ export function buildTriageGreeting(category: TicketCategory, customerName: stri
     '',
     '1. I\'ll ask a few short questions about the issue.',
     '2. I\'ll share step-by-step fixes from our knowledge base.',
-    "3. If the issue isn't resolved, I'll connect you with a human technician.",
+    "3. If the issue isn't resolved, I'll connect you with a Level 1 technician.",
     '',
     "Let's get started.",
     '',
     `**${flow.questions[0].question}**`,
+  ].join('\n');
+}
+
+export function buildHandoffGreeting(customerName: string, priority: string, title: string): string {
+  const criticalNote = priority === 'critical'
+    ? '\nBecause this is marked **critical**, a Level 1 technician has also been alerted and will jump in alongside me if needed.'
+    : '';
+  return [
+    `Hello ${customerName}, welcome to Fixora. I'm **FIXORA**, your AI support assistant, and I'll be handling this ticket for you.`,
+    '',
+    `Your request — "${title}" — has been received as **${priority} priority**, and I'm already on it.`,
+    '',
+    "Here's how I'll work with you:",
+    '',
+    "1. I'll help you work through the issue and share step-by-step fixes from our knowledge base.",
+    "2. If the issue needs hands-on attention or can't be resolved through self-service, I'll escalate it to a Level 1 technician.",
+    "3. The technician takes over with the full context of everything we've tried.",
+    criticalNote,
+    '',
+    "Let's get you sorted out.",
   ].join('\n');
 }
 
