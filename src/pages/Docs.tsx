@@ -80,7 +80,7 @@ const sections = [
       },
       {
         q: 'Ticket statuses',
-        a: 'Open — awaiting assignment. Pending — awaiting initial action. Assigned — a technician is allocated. In Progress — actively being worked on. Waiting for Customer — we need information from you. Escalated — flagged for a manager. Resolved — fixed and verified. Closed — rated and archived.',
+        a: 'Open — awaiting the first message. In Progress — a conversation has started, so the ticket moves out of Open automatically. Pending — awaiting initial action. Assigned — a technician is allocated. Waiting for Customer — we need information from you. Escalated — flagged for a manager. Resolved — fixed and verified. Closed — archived, usually after the customer rates the resolution or closes the ticket.',
       },
       {
         q: 'AI triage on new tickets',
@@ -108,7 +108,7 @@ const sections = [
       },
       {
         q: 'Rating & closing tickets',
-        a: 'Once your ticket is Resolved, the creator sees a 1–5 star rating with optional feedback. Submitting the rating closes the ticket. A closed ticket can be reopened if the issue returns.',
+        a: 'Once your ticket is Resolved, the creator is asked to rate the resolution — the rating targets whoever fixed it, the FIXORA BOT or the technician. Submitting the rating closes the ticket, and a Close Ticket button is also available if you\'d rather skip the rating. You can close a ticket from its page any time after a conversation has started. Every close is recorded in the activity timeline.',
       },
       {
         q: 'Exporting tickets',

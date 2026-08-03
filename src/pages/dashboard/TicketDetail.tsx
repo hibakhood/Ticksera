@@ -235,12 +235,30 @@ export default function TicketDetail() {
 
   const handleResolve = () => {
     if (!resNotes.trim()) return;
-    updateTicket(ticket.id, { status: 'resolved', resolutionNotes: resNotes });
+    updateTicket(ticket.id, { status: 'resolved', resolutionNotes: resNotes, resolvedBy: currentUser?.name || 'Support team' });
   };
 
   const handleRate = () => {
     if (rating > 0) {
       updateTicket(ticket.id, { rating, ratingComment, status: 'closed' });
+    }
+  };
+
+  const handleCloseTicket = () => {
+    const now = new Date().toISOString();
+    updateTicket(ticket.id, {
+      status: 'closed',
+      activityLogs: [...ticket.activityLogs, { id: `al${Date.now()}`, user: currentUser?.name || ticket.createdByName, action: 'Closed the ticket', entityType: 'ticket', entityId: ticket.id, timestamp: now }],
+    });
+    const tech = users.find(u => u.id === ticket.assignedTo);
+    if (tech) {
+      addNotification({
+        userEmail: tech.email,
+        title: 'Ticket closed',
+        message: `Ticket "${ticket.title}" was closed by ${currentUser?.name || 'the customer'}`,
+        type: 'ticket',
+        link: `/tickets/${ticket.id}`,
+      });
     }
   };
 
@@ -571,7 +589,11 @@ export default function TicketDetail() {
           {ticket.status === 'resolved' && currentUser?.id === ticket.createdBy && !ticket.rating && (
             <Card className="p-6 border-2 border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-900/5">
               <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-1">Rate This Resolution</h3>
-              <p className="text-sm text-gray-500 mb-4">How satisfied are you with the support you received?</p>
+              <p className="text-sm text-gray-500 mb-4">
+                {ticket.resolvedBy === 'FIXORA BOT'
+                  ? 'How satisfied are you with the FIXORA BOT\u2019s help? Your rating helps the BOT get better.'
+                  : `How satisfied are you with the support you received from ${ticket.resolvedBy ?? 'the Fixora team'}?`}
+              </p>
               <div className="flex items-center gap-1 mb-4">
                 {[1, 2, 3, 4, 5].map(s => (
                   <button key={s} onClick={() => setRating(s)} className="p-0.5 rounded-lg hover:scale-110 transition-transform">
@@ -581,7 +603,10 @@ export default function TicketDetail() {
                 {rating > 0 && <span className="ml-2 text-sm font-medium text-amber-600">{['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][rating]}</span>}
               </div>
               <TextArea placeholder="Share your feedback (optional)..." rows={2} value={ratingComment} onChange={e => setRatingComment(e.target.value)} />
-              <Button onClick={handleRate} className="mt-3" disabled={rating === 0}>Submit Rating</Button>
+              <div className="mt-3 flex gap-2 flex-wrap">
+                <Button onClick={handleRate} disabled={rating === 0}>Submit Rating</Button>
+                <Button variant="outline" onClick={handleCloseTicket}>Close Ticket</Button>
+              </div>
             </Card>
           )}
 
@@ -774,6 +799,18 @@ export default function TicketDetail() {
               </div>
             )}
           </Card>
+
+          {currentUser?.id === ticket.createdBy && !['open', 'closed'].includes(ticket.status) && (
+            <Card className="p-5 border-2 border-dashed border-gray-300 dark:border-gray-700">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Your Ticket</h3>
+              <p className="text-xs text-gray-500 mb-4">
+                {ticket.status === 'resolved'
+                  ? 'All set? Close the ticket to archive it — you can also rate the resolution above.'
+                  : 'Resolved it yourself or no longer need help? Close the ticket and it gets archived with its full history.'}
+              </p>
+              <Button variant="outline" size="sm" className="w-full" onClick={handleCloseTicket}>Close Ticket</Button>
+            </Card>
+          )}
 
           {canManage && (
             <Card className="p-5">

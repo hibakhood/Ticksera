@@ -546,7 +546,7 @@ export const useStore = create<AppState>()(
         return {
           tickets: s.tickets.map(t =>
             t.id === id
-              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage — no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
+              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolvedBy: 'FIXORA BOT', resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage — no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
               : t
           ),
           chatMessages: [...s.chatMessages, {
@@ -570,7 +570,7 @@ export const useStore = create<AppState>()(
           return {
             tickets: s.tickets.map(t =>
               t.id === id
-                ? { ...t, triageStatus: 'escalated_to_technician' as const, status: 'open' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `Requested technician support: ${reason}`, entityType: 'ticket', entityId: id, timestamp: now }] }
+                ? { ...t, triageStatus: 'escalated_to_technician' as const, status: 'in_progress' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `Requested technician support: ${reason}`, entityType: 'ticket', entityId: id, timestamp: now }] }
                 : t
             ),
             chatMessages: [...s.chatMessages, {
@@ -726,13 +726,19 @@ export const useStore = create<AppState>()(
         const step = ticket.triageStep ?? 0;
         const now = new Date().toISOString();
         const user = get().users.find(u => u.id === ticket.createdBy);
+        const started = ticket.status === 'open';
         set(s => ({
           tickets: s.tickets.map(t =>
             t.id === id
               ? {
                   ...t,
+                  status: started ? ('in_progress' as const) : t.status,
                   updatedAt: now,
-                  activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `AI triage: answered "${answer}"`, entityType: 'ticket', entityId: id, timestamp: now }],
+                  activityLogs: [
+                    ...(started ? [{ id: uuid(), user: t.createdByName, action: 'Conversation started — ticket moved to In Progress', entityType: 'ticket' as const, entityId: id, timestamp: now }] : []),
+                    ...t.activityLogs,
+                    { id: uuid(), user: t.createdByName, action: `AI triage: answered "${answer}"`, entityType: 'ticket', entityId: id, timestamp: now },
+                  ],
                 }
               : t
           ),
@@ -758,7 +764,7 @@ export const useStore = create<AppState>()(
         const ticket = get().tickets.find(t => t.id === ticketId);
         if (!ticket) return;
         if (!isSupabaseConfigured()) return;
-        if (ticket.assignedTo || ticket.status !== 'open' || ticket.triageStatus === 'escalated_to_technician') return;
+        if (ticket.assignedTo || ['resolved', 'closed', 'escalated'].includes(ticket.status) || ticket.triageStatus === 'escalated_to_technician') return;
         // After the BOT's resolution attempt, auto-route only when the customer
         // explicitly says the BOT didn't help.
         if (ticket.triageStatus === 'needs_technician' && isCustomerDissatisfied(text)) {
@@ -775,7 +781,19 @@ export const useStore = create<AppState>()(
       updateBooking: (id, data) => set(s => ({ bookings: s.bookings.map(b => b.id === id ? { ...b, ...data } : b) })),
 
       chatMessages: seedMessages,
-      addChatMessage: (msg) => set(s => ({ chatMessages: [...s.chatMessages, { ...msg, id: `m${Date.now()}`, createdAt: new Date().toISOString() }] })),
+      addChatMessage: (msg) => set(s => {
+        const ticket = s.tickets.find(t => t.id === msg.ticketId);
+        const started = ticket?.status === 'open';
+        const now = new Date().toISOString();
+        return {
+          chatMessages: [...s.chatMessages, { ...msg, id: `m${Date.now()}`, createdAt: now }],
+          tickets: started
+            ? s.tickets.map(t => t.id === msg.ticketId
+              ? { ...t, status: 'in_progress' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: msg.senderName || t.createdByName, action: 'Conversation started — ticket moved to In Progress', entityType: 'ticket', entityId: t.id, timestamp: now }] }
+              : t)
+            : s.tickets,
+        };
+      }),
 
       contactMessages: seedContacts,
       addContactMessage: (msg) => set(s => ({ contactMessages: [...s.contactMessages, { ...msg, id: `c${Date.now()}`, createdAt: new Date().toISOString(), isRead: false }] })),

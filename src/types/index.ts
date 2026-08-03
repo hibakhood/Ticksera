@@ -34,6 +34,7 @@ export interface Ticket {
   createdBy: string;
   createdByName: string;
   resolutionNotes?: string;
+  resolvedBy?: string;
   rating?: number;
   ratingComment?: string;
   slaDeadline?: string;
