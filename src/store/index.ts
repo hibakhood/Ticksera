@@ -593,6 +593,24 @@ async function loadDbProfiles(): Promise<DbProfile[] | null> {
   }
 }
 
+async function loadDbContactMessages(): Promise<ContactMessage[] | null> {
+  try {
+    const { data } = await getSupabase().from('contact_messages').select('*').limit(500);
+    if (!data) return null;
+    return (data as Array<Record<string, unknown>>).map(r => ({
+      id: String(r.id ?? ''),
+      name: String(r.name ?? ''),
+      email: String(r.email ?? ''),
+      subject: String(r.subject ?? ''),
+      message: String(r.message ?? ''),
+      isRead: Boolean(r.read ?? false),
+      createdAt: String(r.created_at ?? new Date().toISOString()),
+    }));
+  } catch {
+    return null;
+  }
+}
+
 function startSharedPolling(): void {
   stopSharedPolling();
   pollTimer = setInterval(() => {
@@ -633,6 +651,8 @@ export const useStore = create<AppState>()(
         if (!isSupabaseConfigured()) return;
         const shared = await loadSharedState();
         const profiles = await loadDbProfiles();
+        const isStaff = ['super_admin', 'support_manager', 'technician', 'field_technician'].includes(get().currentUser?.role ?? '');
+        const dbContacts = isStaff ? await loadDbContactMessages() : null;
         syncing = true;
         try {
           set(s => {
@@ -646,13 +666,16 @@ export const useStore = create<AppState>()(
             }
             let users = mergeById(s.users, shared.users as User[], ['password']);
             if (profiles) users = reconcileUsersWithDb(users, profiles);
+            const contactMessages = dbContacts
+              ? mergeById(mergeById(s.contactMessages, dbContacts), shared.contactMessages as ContactMessage[])
+              : mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]);
             return {
               tickets: mergeById(s.tickets, shared.tickets as Ticket[]),
               chatMessages: mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]),
               bookings: mergeById(s.bookings, shared.bookings as Booking[]),
               payments: mergeById(s.payments, shared.payments as Payment[]),
               users,
-              contactMessages: mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]),
+              contactMessages,
               notifications: mergeById(s.notifications, shared.notifications as Notification[]),
               kbArticles: mergeById(s.kbArticles, shared.kbArticles as KBArticle[]),
             };
@@ -1087,8 +1110,26 @@ export const useStore = create<AppState>()(
       }),
 
       contactMessages: seedContacts,
-      addContactMessage: (msg) => set(s => ({ contactMessages: [...s.contactMessages, { ...msg, id: `c${Date.now()}`, createdAt: new Date().toISOString(), isRead: false }] })),
-      markContactRead: (id) => set(s => ({ contactMessages: s.contactMessages.map(c => c.id === id ? { ...c, isRead: true } : c) })),
+      addContactMessage: (msg) => {
+        const id = `c${Date.now()}`;
+        const createdAt = new Date().toISOString();
+        set(s => ({ contactMessages: [...s.contactMessages, { ...msg, id, createdAt, isRead: false }] }));
+        if (isSupabaseConfigured()) {
+          void (async () => {
+            try {
+              await getSupabase().from('contact_messages').insert({ id, name: msg.name, email: msg.email, subject: msg.subject, message: msg.message, read: false, created_at: createdAt });
+            } catch { /* ignore */ }
+          })();
+        }
+      },
+      markContactRead: (id) => {
+        set(s => ({ contactMessages: s.contactMessages.map(c => c.id === id ? { ...c, isRead: true } : c) }));
+        if (isSupabaseConfigured()) {
+          void (async () => {
+            try { await getSupabase().from('contact_messages').update({ read: true }).eq('id', id); } catch { /* ignore */ }
+          })();
+        }
+      },
 
       payments: seedPayments,
       addPayment: (payment) => set(s => ({

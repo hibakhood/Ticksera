@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useStore } from '../../store';
 import { useShallow } from 'zustand/react/shallow';
 import Card from '../../components/ui/Card';
@@ -102,6 +102,12 @@ export default function TicketDetail() {
   const handleChatFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setPendingFile(null);
+      window.alert('Attachments are limited to 2 MB.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => {
       if (ev.target?.result) {
@@ -139,6 +145,12 @@ export default function TicketDetail() {
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages.length]);
+
+  // IDOR guard: customers may only open tickets they created. Staff (and
+  // technicians with the ticket assigned) are handled by the role checks below.
+  if (ticket && currentUser?.role === 'customer' && ticket.createdBy !== currentUser.id) {
+    return <Navigate to="/tickets" replace />;
+  }
 
   if (!ticket) return (
     <div className="text-center py-20">

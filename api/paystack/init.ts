@@ -10,21 +10,19 @@ export const config = {
   maxDuration: 30,
 };
 
+import { json, rateLimit } from '../_shared';
+
 const PLAN_PRICES: Record<string, number> = {
   Basic: 5000,
   Professional: 15000,
   Business: 50000,
 };
 
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
-  });
-}
-
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+
+  const rl = rateLimit(req, 30, 60_000);
+  if (!rl.ok) return json({ ok: false, error: 'rate_limited' }, 429);
 
   const secretKey = (process.env.PAYSTACK_SECRET_KEY ?? '').trim();
   if (!secretKey) {

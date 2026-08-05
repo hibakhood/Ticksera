@@ -142,6 +142,12 @@ export default function Chat() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      setPendingFile(null);
+      window.alert('Attachments are limited to 2 MB.');
+      e.target.value = '';
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => {
       if (ev.target?.result) {

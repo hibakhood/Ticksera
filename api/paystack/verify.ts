@@ -18,18 +18,13 @@ export const config = {
   maxDuration: 30,
 };
 
+import { json, rateLimit, getAuthedUser, GLOBAL_STATE_ID } from '../_shared';
+
 const PLAN_PRICES: Record<string, number> = {
   Basic: 5000,
   Professional: 15000,
   Business: 50000,
 };
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
-  });
-}
 
 function channelToMethod(channel?: string): string {
   const c = (channel ?? '').toLowerCase();
@@ -64,6 +59,9 @@ function buildPayment(tx: {
 export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
 
+  const rl = rateLimit(req, 30, 60_000);
+  if (!rl.ok) return json({ ok: false, error: 'rate_limited' }, 429);
+
   const secretKey = (process.env.PAYSTACK_SECRET_KEY ?? '').trim();
   if (!secretKey) {
     return json({ ok: false, error: 'not_configured', message: 'Payments are not configured yet.' });
@@ -77,6 +75,14 @@ export default async function handler(req: Request): Promise<Response> {
   }
   const reference = String(body.reference ?? '').trim();
   if (!reference) return json({ ok: false, error: 'missing_reference' }, 400);
+
+  // Ownership is resolved from the caller's Supabase session (server-side,
+  // unforgeable). The client-supplied metadata.user_id is NEVER trusted for
+  // ownership — without a valid session the payment is returned but not
+  // persisted under anyone's account.
+  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
+  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+  const authed = supabaseUrl ? await getAuthedUser(req, supabaseUrl) : null;
 
   let txData: {
     status?: string;
@@ -111,27 +117,11 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ ok: false, error: 'amount_mismatch', message: 'Verified amount does not match the plan price.' });
   }
 
-  // Resolve the paying user from their Supabase session (server-side, unforgeable).
-  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
-  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
-  const authHeader = req.headers.get('authorization') ?? '';
-  let userId: string | null = null;
-  if (supabaseUrl && authHeader.startsWith('Bearer ')) {
-    try {
-      const ures = await fetch(`${supabaseUrl}/auth/v1/user`, { headers: { authorization: authHeader } });
-      const ud = (await ures.json()) as { id?: string; error?: string };
-      if (ures.ok && ud.id) userId = ud.id;
-    } catch {
-      userId = null;
-    }
-  }
+  const userId = authed?.id ?? null;
+  const payment = buildPayment(txData, plan, expectedKobo / 100, userId ?? '');
 
-  const payment = buildPayment(txData, plan, expectedKobo / 100, userId ?? txData.metadata?.user_id ?? '');
-
-  // Persist the authoritative record when Supabase is configured. If it isn't
-  // (local dev), the client still applies the verified payment locally.
-  // The payment lands in the SHARED row so every role sees it.
-  const GLOBAL_STATE_ID = '00000000-0000-0000-0000-000000000000';
+  // Persist the authoritative record only when we know who owns it (an
+  // authenticated Supabase user) and Supabase is configured.
   if (supabaseUrl && serviceKey && userId) {
     try {
       const read = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}&select=data`, {

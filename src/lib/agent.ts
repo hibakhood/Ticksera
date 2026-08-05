@@ -1,5 +1,6 @@
 import type { KBArticle, TicketCategory, TicketPriority, Ticket } from '../types';
 import { findKbArticles } from '../utils/triage';
+import { isSupabaseConfigured, getSupabase } from './supabase';
 
 export type AgentStatus = 'open' | 'in_progress' | 'resolved' | 'closed' | 'escalated';
 
@@ -41,13 +42,26 @@ export function buildAgentPayload(
 
 const CLIENT_TIMEOUT_MS = 25000;
 
+async function authHeaders(): Promise<Record<string, string>> {
+  if (!isSupabaseConfigured()) return { 'content-type': 'application/json' };
+  try {
+    const { data } = await getSupabase().auth.getSession();
+    return {
+      'content-type': 'application/json',
+      ...(data.session?.access_token ? { authorization: `Bearer ${data.session.access_token}` } : {}),
+    };
+  } catch {
+    return { 'content-type': 'application/json' };
+  }
+}
+
 export async function requestAgentReply(payload: AgentPayload): Promise<AgentReply | null> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
   try {
     const res = await fetch('/api/agent', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
@@ -116,7 +130,7 @@ export async function requestAutoRoute(payload: AutoRoutePayload): Promise<AutoR
   try {
     const res = await fetch('/api/agent', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: await authHeaders(),
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
