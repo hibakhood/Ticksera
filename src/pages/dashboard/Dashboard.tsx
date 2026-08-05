@@ -16,6 +16,7 @@ import TicketWizard from '../../components/ui/TicketWizard';
 import PageHeader from '../../components/ui/PageHeader';
 import StatCard from '../../components/ui/StatCard';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
+import { monthKey, monthLabel, lastMonthKeys, dayKey, dayLabel, lastDayKeys } from '../../utils/charts';
 
 const statusColor: Record<string, string> = {
   open: 'info', pending: 'warning', assigned: 'purple', in_progress: 'info',
@@ -56,31 +57,43 @@ export default function Dashboard() {
   const resolvedCount   = myTickets.filter(t => t.status === 'resolved').length;
   const escalatedCount  = myTickets.filter(t => t.status === 'escalated').length;
 
-  const chartData = [
-    { name: 'Mon', tickets: 4, resolved: 3 },
-    { name: 'Tue', tickets: 6, resolved: 5 },
-    { name: 'Wed', tickets: 8, resolved: 6 },
-    { name: 'Thu', tickets: 5, resolved: 5 },
-    { name: 'Fri', tickets: 7, resolved: 4 },
-    { name: 'Sat', tickets: 3, resolved: 3 },
-    { name: 'Sun', tickets: 2, resolved: 2 },
-  ];
+  const chartData = (() => {
+    const keys = lastDayKeys(7);
+    const created = new Map(keys.map(k => [k, 0]));
+    const resolved = new Map(keys.map(k => [k, 0]));
+    myTickets.forEach(t => {
+      const ck = dayKey(t.createdAt);
+      if (created.has(ck)) created.set(ck, (created.get(ck) ?? 0) + 1);
+      if (t.status === 'resolved') {
+        const rk = dayKey(t.updatedAt);
+        if (resolved.has(rk)) resolved.set(rk, (resolved.get(rk) ?? 0) + 1);
+      }
+    });
+    return keys.map(k => ({
+      name: dayLabel(k),
+      tickets: created.get(k) ?? 0,
+      resolved: resolved.get(k) ?? 0,
+    }));
+  })();
 
   const pieData = [
-    { name: 'Open',        value: Math.max(openCount, 1),       color: '#3B82F6' },
-    { name: 'In Progress', value: Math.max(inProgressCount, 1), color: '#8B5CF6' },
-    { name: 'Resolved',    value: Math.max(resolvedCount, 1),   color: '#10B981' },
-    { name: 'Escalated',   value: Math.max(escalatedCount, 1),  color: '#EF4444' },
+    { name: 'Open',        value: openCount,       color: '#3B82F6' },
+    { name: 'In Progress', value: inProgressCount, color: '#8B5CF6' },
+    { name: 'Resolved',    value: resolvedCount,   color: '#10B981' },
+    { name: 'Escalated',   value: escalatedCount,  color: '#EF4444' },
   ];
 
-  const revenueData = [
-    { month: 'Jan', revenue: 85000 },
-    { month: 'Feb', revenue: 120000 },
-    { month: 'Mar', revenue: 95000 },
-    { month: 'Apr', revenue: 150000 },
-    { month: 'May', revenue: 180000 },
-    { month: 'Jun', revenue: 210000 },
-  ];
+  const revenueData = (() => {
+    const keys = lastMonthKeys(6);
+    const byKey = new Map(keys.map(k => [k, 0]));
+    payments
+      .filter(p => p.status === 'completed')
+      .forEach(p => {
+        const k = monthKey(p.createdAt);
+        if (byKey.has(k)) byKey.set(k, (byKey.get(k) ?? 0) + p.amount);
+      });
+    return keys.map(k => ({ month: monthLabel(k), revenue: byKey.get(k) ?? 0 }));
+  })();
 
   const statCards = role === 'customer' ? [
     { icon: Ticket,      label: 'My Tickets', value: myTickets.length, grad: gradients.blue,    trend: { value: `${myTickets.length} total`, up: true } },

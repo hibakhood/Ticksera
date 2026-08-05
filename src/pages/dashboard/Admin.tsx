@@ -9,6 +9,7 @@ import { Select } from '../../components/ui/Input';
 import PageHeader from '../../components/ui/PageHeader';
 import StatCard from '../../components/ui/StatCard';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
+import { monthKey, monthLabel, lastMonthKeys } from '../../utils/charts';
 import {
   Users, Ticket, CreditCard, MessageSquare, BarChart3, Activity, Shield,
   Calendar, TrendingUp, UserPlus, X, CheckCircle, ChevronDown, ChevronUp,
@@ -179,14 +180,22 @@ export default function Admin() {
     );
   }
 
-  const revenueData = [
-    { month: 'Jan', revenue: 85000,  users: 12 },
-    { month: 'Feb', revenue: 120000, users: 18 },
-    { month: 'Mar', revenue: 95000,  users: 22 },
-    { month: 'Apr', revenue: 150000, users: 28 },
-    { month: 'May', revenue: 180000, users: 35 },
-    { month: 'Jun', revenue: 210000, users: 42 },
-  ];
+  const revenueData = (() => {
+    const keys = lastMonthKeys(6);
+    const revenue = new Map(keys.map(k => [k, 0]));
+    const newUsers = new Map(keys.map(k => [k, 0]));
+    payments
+      .filter(p => p.status === 'completed')
+      .forEach(p => {
+        const k = monthKey(p.createdAt);
+        if (revenue.has(k)) revenue.set(k, (revenue.get(k) ?? 0) + p.amount);
+      });
+    users.forEach(u => {
+      const k = monthKey(u.createdAt);
+      if (newUsers.has(k)) newUsers.set(k, (newUsers.get(k) ?? 0) + 1);
+    });
+    return keys.map(k => ({ month: monthLabel(k), revenue: revenue.get(k) ?? 0, users: newUsers.get(k) ?? 0 }));
+  })();
 
   const totalRevenue    = payments.filter(p => p.status === 'completed').reduce((s, p) => s + p.amount, 0);
   const completedCount  = payments.filter(p => p.status === 'completed').length;

@@ -6,6 +6,7 @@ import { buildTriageGreeting, buildHandoffGreeting, getTriageFlow, getDiagnostic
 import { importedKBArticles } from '../data/kbContent';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
 import { loadSharedState, saveSharedState, type SharedState } from '../lib/sync';
+import { loadDbCollections } from '../lib/db';
 import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad, type AgentStatus } from '../lib/agent';
 
 export interface SignupResult {
@@ -442,17 +443,24 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
 function buildSharedState(
   s: Pick<AppState, 'tickets' | 'chatMessages' | 'bookings' | 'payments' | 'users' | 'contactMessages' | 'notifications' | 'kbArticles'>
 ): SharedState {
+  // In live mode the demo seed rows must never leave the browser: the DB tables
+  // are the source of truth and charts must reflect real rows only.
+  const strip = isSupabaseConfigured()
+    ? <T extends { id: string }>(items: T[]): T[] => stripDemoBusiness(items)
+    : <T,>(items: T[]): T[] => items;
   return {
-    tickets: s.tickets,
-    chatMessages: s.chatMessages,
-    bookings: s.bookings,
-    payments: s.payments,
-    users: s.users.map(u => {
-      const { password: _pw, ...rest } = u;
-      return rest;
-    }),
-    contactMessages: s.contactMessages,
-    notifications: s.notifications,
+    tickets: strip(s.tickets),
+    chatMessages: strip(s.chatMessages),
+    bookings: strip(s.bookings),
+    payments: strip(s.payments),
+    users: s.users
+      .filter(u => !isSupabaseConfigured() || !DEMO_SEED_IDS.has(u.id))
+      .map(u => {
+        const { password: _pw, ...rest } = u;
+        return rest;
+      }),
+    contactMessages: strip(s.contactMessages),
+    notifications: strip(s.notifications),
     kbArticles: s.kbArticles,
   };
 }
@@ -516,6 +524,20 @@ function ensureUserInStore(user: User): void {
 
 /** Demo seed accounts that must never appear in a live (Supabase) deployment. */
 const DEMO_SEED_IDS = new Set(['1', '2', '3', '4', '5', '6', '7']);
+
+/**
+ * Demo seed business rows (tickets/bookings/payments/chat/notifications/contact).
+ * In live mode these must never be mirrored to the database — the DB tables are
+ * the source of truth and stay empty until real activity, so dashboard charts
+ * correlate with actual rows instead of sample data.
+ */
+const DEMO_BUSINESS_IDS = new Set<string>([
+  ...seedTickets, ...seedBookings, ...seedPayments, ...seedMessages, ...seedNotifications, ...seedContacts,
+].map(x => x.id));
+
+function stripDemoBusiness<T extends { id: string }>(items: T[]): T[] {
+  return items.filter(i => !DEMO_BUSINESS_IDS.has(i.id));
+}
 
 interface DbProfile {
   id: string;
@@ -652,7 +674,10 @@ export const useStore = create<AppState>()(
         const shared = await loadSharedState();
         const profiles = await loadDbProfiles();
         const isStaff = ['super_admin', 'support_manager', 'technician', 'field_technician'].includes(get().currentUser?.role ?? '');
-        const dbContacts = isStaff ? await loadDbContactMessages() : null;
+        const [dbContacts, db] = await Promise.all([
+          isStaff ? loadDbContactMessages() : Promise.resolve(null),
+          loadDbCollections(),
+        ]);
         syncing = true;
         try {
           set(s => {
@@ -669,15 +694,17 @@ export const useStore = create<AppState>()(
             const contactMessages = dbContacts
               ? mergeById(mergeById(s.contactMessages, dbContacts), shared.contactMessages as ContactMessage[])
               : mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]);
+            // DB rows are merged last so the business tables win (authoritative).
+            // Demo seed rows are stripped so live charts show real data only.
             return {
-              tickets: mergeById(s.tickets, shared.tickets as Ticket[]),
-              chatMessages: mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]),
-              bookings: mergeById(s.bookings, shared.bookings as Booking[]),
-              payments: mergeById(s.payments, shared.payments as Payment[]),
+              tickets: stripDemoBusiness(mergeById(mergeById(s.tickets, shared.tickets as Ticket[]), db?.tickets)),
+              chatMessages: stripDemoBusiness(mergeById(mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]), db?.chatMessages)),
+              bookings: stripDemoBusiness(mergeById(mergeById(s.bookings, shared.bookings as Booking[]), db?.bookings)),
+              payments: stripDemoBusiness(mergeById(mergeById(s.payments, shared.payments as Payment[]), db?.payments)),
               users,
-              contactMessages,
-              notifications: mergeById(s.notifications, shared.notifications as Notification[]),
-              kbArticles: mergeById(s.kbArticles, shared.kbArticles as KBArticle[]),
+              contactMessages: stripDemoBusiness(contactMessages),
+              notifications: stripDemoBusiness(mergeById(mergeById(s.notifications, shared.notifications as Notification[]), db?.notifications)),
+              kbArticles: mergeById(mergeById(s.kbArticles, shared.kbArticles as KBArticle[]), db?.kbArticles),
             };
           });
         } finally {

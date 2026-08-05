@@ -1,4 +1,5 @@
 import { getSupabase, isSupabaseConfigured } from './supabase';
+import { mirrorToDb } from './db';
 
 /**
  * Shared collections the app syncs across roles. All reads/writes go through
@@ -54,6 +55,9 @@ export async function loadSharedState(): Promise<SharedState | null> {
 
 export async function saveSharedState(data: SharedState): Promise<void> {
   if (!isSupabaseConfigured()) return;
+  // Two-way sync: keep the business tables authoritative before publishing to
+  // the shared row, so the dashboard charts correlate with the database.
+  await mirrorToDb(data);
   const token = await sessionToken();
   if (!token) return;
   try {
