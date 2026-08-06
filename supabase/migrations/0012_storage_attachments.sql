@@ -20,4 +20,4 @@ create policy "attachments_update_auth" on storage.objects
 
 drop policy if exists "attachments_delete_own" on storage.objects;
 create policy "attachments_delete_own" on storage.objects
-  for delete using (bucket_id = 'attachments' and auth.uid() = owner_id);
+  for delete using (bucket_id = 'attachments' and owner_id = (select auth.uid()::text));
