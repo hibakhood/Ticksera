@@ -135,7 +135,7 @@ function dbToKBArticle(row: DbRow): KBArticle {
     content: d.content ?? String(row.content ?? ''),
     category: d.category ?? String(row.category ?? 'General'),
     tags: d.tags ?? [],
-    isPublished: d.isPublished ?? true,
+    isPublished: d.isPublished ?? Boolean(row.is_published ?? true),
     helpfulCount: Number(d.helpfulCount ?? row.helpful ?? 0),
     createdBy: d.createdBy ?? (row.author_id ? String(row.author_id) : ''),
     createdAt: d.createdAt ?? String(row.created_at ?? new Date().toISOString()),

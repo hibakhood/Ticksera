@@ -6,10 +6,12 @@ import {
   LayoutDashboard, Ticket, MessageSquare, BookOpen,
   User, Menu, X, Sun, Moon, Bell,
   LogOut, ChevronDown, ChevronRight, CalendarCheck, CalendarDays, LayoutGrid,
-  Building2, Layers, Users, Wrench, Sparkles, ScrollText, BarChart3, Inbox
+  Building2, Layers, Users, Wrench, Sparkles, ScrollText, BarChart3, Inbox,
+  RefreshCw, AlertTriangle, Check
 } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { hasActivePlanFor } from '../../utils/plans';
+import { isSupabaseConfigured } from '../../lib/supabase';
 
 type NavItem = { to: string; search?: string; icon: typeof LayoutDashboard; label: string };
 
@@ -78,7 +80,7 @@ export default function DashboardLayout() {
     notifications, markNotifRead, markAllNotifsRead,
     sidebarOpen, setSidebarOpen,
     chatMessages, tickets, chatLastVisit,
-    payments, users,
+    payments, users, syncStatus, lastSyncedAt,
   } = useStore(
     useShallow(s => ({
       currentUser: s.currentUser, darkMode: s.darkMode, toggleDarkMode: s.toggleDarkMode,
@@ -87,6 +89,7 @@ export default function DashboardLayout() {
       setSidebarOpen: s.setSidebarOpen, chatMessages: s.chatMessages,
       tickets: s.tickets, chatLastVisit: s.chatLastVisit,
       payments: s.payments, users: s.users,
+      syncStatus: s.syncStatus, lastSyncedAt: s.lastSyncedAt,
     }))
   );
   const location = useLocation();
@@ -273,6 +276,31 @@ export default function DashboardLayout() {
           </div>
 
           <div className="flex-1" />
+
+          {/* Sync health */}
+          {isSupabaseConfigured() && (
+            <div
+              className="hidden md:flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border"
+              title={lastSyncedAt ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString()}` : 'Not synced yet'}
+              aria-live="polite"
+            >
+              {syncStatus === 'syncing' && (
+                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-900/10">
+                  <RefreshCw className="w-3 h-3 animate-spin" /> Syncing…
+                </span>
+              )}
+              {syncStatus === 'error' && (
+                <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10">
+                  <AlertTriangle className="w-3 h-3" /> Sync error
+                </span>
+              )}
+              {syncStatus === 'idle' && (
+                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-900/10">
+                  <Check className="w-3 h-3" /> Synced
+                </span>
+              )}
+            </div>
+          )}
 
           <button
             onClick={toggleDarkMode}

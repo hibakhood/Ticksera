@@ -11,6 +11,7 @@ import type { TicketStatus } from '../../types';
 import { getTriageFlow } from '../../utils/triage';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { resolveAttachment } from '../../lib/uploads';
 import FileAttachment from '../../components/ui/FileAttachment';
 import TypingIndicator from '../../components/ui/TypingIndicator';
 import ChatMessageText from '../../components/ui/ChatMessageText';
@@ -108,13 +109,11 @@ export default function TicketDetail() {
       e.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = ev => {
-      if (ev.target?.result) {
-        setPendingFile({ url: ev.target.result as string, name: file.name, type: file.type });
-      }
-    };
-    reader.readAsDataURL(file);
+    void (async () => {
+      const resolved = await resolveAttachment(file);
+      if (resolved) setPendingFile(resolved);
+      else window.alert('That file could not be uploaded. Please try again.');
+    })();
     e.target.value = '';
   };
 

@@ -47,7 +47,38 @@ interface AgentBody {
   }[];
 }
 
-import { json, rateLimit, getAuthedUser } from './_shared';
+import { json, rateLimit, getAuthedUser, logEvent } from './_shared';
+
+// Per-user AI budget (approximate, in-memory per edge isolate). Combined with
+// the per-IP rate limit this bounds cost even if the provider is called
+// aggressively. Over-budget requests degrade to the deterministic bot
+// (enabled:false) instead of spending more credits.
+const aiBudget = new Map<string, { day: string; count: number }>();
+const MAX_BUDGET_KEYS = 50_000;
+
+function budgetKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function consumeAiBudget(key: string, limit: number): boolean {
+  const day = budgetKey();
+  const entry = aiBudget.get(key);
+  if (!entry || entry.day !== day) {
+    aiBudget.set(key, { day, count: 1 });
+    return true;
+  }
+  if (entry.count >= limit) return false;
+  entry.count += 1;
+  return true;
+}
+
+function pruneAiBudget(): void {
+  if (aiBudget.size < MAX_BUDGET_KEYS) return;
+  const day = budgetKey();
+  for (const [key, entry] of aiBudget) {
+    if (entry.day !== day) aiBudget.delete(key);
+  }
+}
 
 function buildSystemPrompt(body: AgentBody, kbContext: string): string {
   const t = body.ticket ?? {};
@@ -182,13 +213,25 @@ export default async function handler(req: Request): Promise<Response> {
   // so strangers cannot burn AI API credits. Local/demo deployments without
   // Supabase remain open so the deterministic bot keeps working in the SPA.
   const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim();
+  let callerId: string | null = null;
   if (supabaseUrl) {
     const user = await getAuthedUser(req, supabaseUrl);
     if (!user) return json({ error: 'unauthorized' }, 401);
+    callerId = user.id;
   }
 
   const apiKey = (process.env.AI_API_KEY ?? '').trim();
   if (!apiKey) return json({ enabled: false });
+
+  // Enforce the per-user daily budget before spending any credits.
+  const dailyLimit = Number(process.env.AI_DAILY_LIMIT_PER_USER ?? 60) || 60;
+  const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim();
+  const budgetKeyId = callerId ?? ip;
+  pruneAiBudget();
+  if (!consumeAiBudget(budgetKeyId, dailyLimit)) {
+    logEvent('agent.budget_exceeded', { userId: callerId ?? null, ip });
+    return json({ enabled: false });
+  }
 
   let body: AgentBody;
   try {

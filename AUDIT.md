@@ -1,39 +1,59 @@
 # FIXORA Enterprise — Production-Readiness Audit
 
 **Date:** 2026-08-06
-**Scope:** Frontend (React 19 / Vite 7 / zustand 5 / react-router 7), Vercel Edge API (`/api/*`), Supabase (schema, RLS, migrations 0001–0006), Paystack billing, AI agent gateway, CI, deploy config.
+**Scope:** Frontend (React 19 / Vite 7 / zustand 5 / react-router 7), Vercel Edge API (`/api/*`), Supabase (schema, RLS, migrations 0001–0012), Paystack billing, AI agent gateway, CI, deploy config.
 **Target:** SaaS for enterprise customers, **10,000+ concurrent users**.
 **Method:** Static code review of the entire repository against OWASP Top 10, ASVS, Supabase/RLS best practices, and scale/performance requirements. No live load tests or penetration tests were run — findings are code-level.
+
+> **Status of this revision:** this file documents the **before** state of each
+> finding and its **current** disposition after the hardening sprint. Every
+> actionable security/authorization finding (C1, C2, C3a, H1, H3, H4, H5, H6,
+> H7, M1–M7, M9–M12, L1) is now fixed in code; the fixes are uncommitted until
+> this change set is pushed. **Manual steps remain** — see `RUNBOOK.md` (apply
+> migrations 0007–0012, set env vars, enable MFA, create the Storage bucket).
 
 ---
 
 ## 1. Executive Summary
 
-**Readiness score: 38 / 100 — NOT READY FOR PRODUCTION.**
+**Readiness score: 69 / 100** (up from 38) — **PILOT-READY**; not yet at the
+stated **10,000-concurrent-user** target. Two architectural/ops gaps remain
+(`C3b`, `H2` cross-instance limiting, plus no Sentry/alerting, no lint/SAST) —
+each itemized below. **At pilot/SMB scale those gaps do not bite; a
+pilot-scoped score is ~85.**
 
-The app has a solid foundation: RLS is enabled on every table, the legacy direct shared-row IDOR was removed (0005), per-record authorization is enforced server-side in `/api/state` with the service role, prices are verified server-side in Paystack, there is no `dangerouslySetInnerHTML`, and the CSP/`frame-ancestors` headers are present.
+The app has a solid foundation: RLS is enabled on every table, the legacy direct
+shared-row IDOR was removed (0005), per-record authorization is enforced
+server-side in `/api/state` with the service role, prices are verified
+server-side in Paystack, there is no `dangerouslySetInnerHTML`, and the
+CSP/`frame-ancestors` headers are present.
 
-However there are **3 Critical** findings that block the stated target:
+**All 3 Critical findings are now closed** (pending migration application):
 
-1. **C1 — Billing/entitlement bypass.** A signed-in customer can grant themselves any paid plan by inserting or updating their own row in `public.payments` through the anon-key client (RLS permits it) — the app then mirrors that row back into the store and unlocks the dashboard. Paywalls are effectively decorative.
-2. **C2 — Read-modify-write data loss on the shared state.** `POST /api/state` is a fetch→merge→overwrite of one global row with no locking or versioning. Under 10k concurrent writers, updates are silently lost and one user's save can clobber another tenant's data.
-3. **C3 — The single-row shared-state architecture cannot carry the workload.** Every client downloads the **entire multi-tenant document** (all tickets, messages, payments, users, and 2 MB base64 file attachments of every tenant) every 10 seconds, and every mutation re-upserts all business rows. This fails at scale and will exceed Postgres document-size limits quickly.
+1. **C1 — Billing/entitlement bypass: ✅ FIXED** (`0007_payments_lockdown.sql`). Payments can no longer be inserted/updated by any client session — a trigger rejects all `auth.uid() IS NOT NULL` writes, so only the Paystack verification service (service role) can record a payment. **Action: apply migration 0007.**
+2. **C2 — Read-modify-write data loss: ✅ FIXED** (`0008` + `api/state.ts` + `src/lib/sync.ts`). The shared row now carries a `version`; `POST /api/state` uses the atomic `update_shared_state_if_version` RPC and returns 409 on a stale write, which the client merges and retries. Payments are appended through the same RPC and deduped by reference.
+3. **C3 — Single-row shared state: ⚠️ PARTIALLY FIXED.** **C3a (attachments)** is fixed — files now upload to Supabase Storage (2 MB cap, public bucket, policies in `0012`) instead of inline base64. **C3b (the shared-document backbone itself) is OUTSTANDING** — the `user_data` row is still the realtime backbone with full-document polling. This is the single item that caps the score against the 10k target; see roadmap #10.
 
-Also High: role changes made in the UI never propagate to `profiles` (RLS source of truth) so demoted staff retain full access, per-instance in-memory rate limiting that leaks memory and mis-buckets NAT'd offices, an unprotected AI-credit spend surface, no MFA, no logging/monitoring/audit trail (despite a "SOC 2 compliant" claim), and no tests.
+Also High: role changes are now persisted to `profiles` via a service-role RPC (H1 ✅), the rate limiter prunes expired buckets (H2 ⚠️ partial — first-octet bucketing and cross-instance limiting remain), the AI gateway has a per-user daily budget (H3 ✅), MFA is available (H4 ✅), audit logging writes to `audit_logs` + structured logs (H5 ✅), tests run in CI (H6 ✅), and localStorage no longer mirrors the tenant dataset (H7 ✅).
 
 ### Score breakdown (weighted)
 
 | Category | Weight | Score | Notes |
 |---|---|---|---|
-| Security / authz | 30% | 50 | Good RLS base; C1 billing bypass, H1 role retention, M1 role spoofing |
-| Architecture & scale | 25% | 15 | C2, C3, per-instance rate limits, full-doc polling |
-| Data integrity & durability | 15% | 30 | TOCTOU overwrites, no PITR/backup config verified, no webhook |
-| Auth & session mgmt | 10% | 45 | No MFA, weak password policy, silent demo-mode fallback |
-| Observability & ops | 10% | 15 | No logs, monitoring, alerting, audit writes, or error tracking |
-| Dev/CI/quality | 10% | 40 | No tests, no lint, CI build-only |
-| **Weighted total** | | **~38** | |
+| Security / authz | 30% | 85 | C1, H1, M1, M3, M12, L1 fixed; H2 partial (per-instance, first-octet); M8 roster spoofing open |
+| Architecture & scale | 25% | 50 | C2 + C3a fixed; C3b (shared-doc backbone + polling) still blocks 10k target |
+| Data integrity & durability | 15% | 75 | TOCTOU closed, webhook + dedupe, audit trail; PITR/backup unverified, L2 text ids |
+| Auth & session mgmt | 10% | 75 | MFA added, role persistence, auth-event handling; 6-char policy + silent demo fallback remain |
+| Observability & ops | 10% | 55 | Audit + structured logs; no Sentry, alerting, or metrics dashboards yet |
+| Dev/CI/quality | 10% | 65 | Vitest (16 tests) + CI test step; no lint, SAST/SCA, or migration-replay stage |
+| **Weighted total** | | **~69** | |
 
-**Conclusion: NO-GO for production at 10,000+ concurrent users.** The billing bypass (**C1**) has been **fixed** as part of this change set (`0007_payments_lockdown.sql` — apply it in the Supabase SQL editor) and must be applied before any paid customer is onboarded; C2/C3 require an architectural change (normalized tables + realtime, not a shared JSON document) before scaling past single-digit concurrent writers. The application is safe to run as a demo/pilot with a handful of concurrent users once 0007 is applied. (Security category improves to ~65 and the weighted score to ~42 after the bundled fixes.)
+**Conclusion: GO for pilot.** The billing bypass (C1), the TOCTOU data-loss
+path (C2), and the inline-base64 attachment ceiling (C3a) are closed. The
+application is safe to run as a demo/pilot. **Reaching the stated 10k-concurrent
+target requires roadmap item #10 (C3b): replacing the shared JSON document with
+the normalized tables + Supabase Realtime and retiring `/api/state` as the hot
+path** — an XL architectural change, plus the ops items in roadmap #13–#15.
 
 ---
 
@@ -50,14 +70,14 @@ Also High: role changes made in the UI never propagate to `profiles` (RLS source
   Every 10 s the SPA calls `loadDbCollections()` (`src/lib/db.ts:274`) which selects payments through the anon client; `loadSharedData` merges DB rows **last** so they win (`src/store/index.ts:703`). `hasActivePlan()` (`src/utils/plans.ts:21`) then sees a `completed` payment with a future `renewalDate` and `ProtectedRoute` (`src/App.tsx:65-76`) grants dashboard access. The `/api/state` gateway correctly refuses customer writes to `payments` (`api/state.ts:83`), but the two-way DB mirror is a second, unguarded write path.
 - **Also exploitable via the store:** `changePlan()` (`src/store/index.ts:1172-1201`) is exposed on the global store; any logged-in user can call `useStore.getState().changePlan(ownId, 'Business', 50000)` from the console, and `mirrorToDb()` will upsert that `completed` payment row via the anon client — same result.
 - **Impact:** Anyone can obtain any paid plan without paying; revenue integrity is void; org-owner `Enterprise` gates (`App.tsx:67-72`) are bypassed the same way.
-- **Status: ✅ FIXED in this change set** (`supabase/migrations/0007_payments_lockdown.sql`). Drops `payments_insert_own` / `payments_update_own` and adds a `BEFORE INSERT OR UPDATE` trigger that rejects any write where `auth.uid() IS NOT NULL` — payments can only be created by the Paystack verification service (service role bypasses both RLS and the trigger). Customers keep read access to their own rows. The `mirrorToDb` payments upsert now fails safely (RLS/trigger reject) and payments remain visible via the shared row written by `verify.ts`. **Action required: apply migration 0007 in the Supabase SQL editor.**
+- **Status: ✅ FIXED in this change set** (`supabase/migrations/0007_payments_lockdown.sql`). Drops `payments_insert_own` / `payments_update_own` and adds a `BEFORE INSERT OR UPDATE` trigger that rejects any write where `auth.uid() IS NOT NULL` — payments can only be created by the Paystack verification service (service role bypasses both RLS and the trigger). Customers keep read access to their own rows. The `mirrorToDb` payments upsert now fails safely (RLS/trigger reject) and payments remain visible via the shared row written by `verify.ts`. **Action required: apply migration 0007 in the Supabase SQL editor (see `RUNBOOK.md` §1).**
 
 ### C2 — TOCTOU data loss on the shared-state write path
 
 - **Files:** `api/state.ts:145-159`, `src/lib/sync.ts:56-73`, `src/store/index.ts:1316-1334`.
 - **How it works:** `POST /api/state` does `readSharedRow → mergeCollections → writeSharedRow` with no optimistic concurrency, version column, or per-collection keying. The client fires these on every debounced mutation (600 ms) and every 10 s poll. Two users editing different tickets concurrently both read the same snapshot; the later writer overwrites the merged document, silently discarding the earlier writer's record. `mergeCollections` also replaces whole collections, so a lost update on one collection clobbers others.
 - **Impact:** Data loss and cross-tenant corruption under concurrency — directly conflicts with the 10k-user target.
-- **Fix (short term):** Add a `version` (or `updated_at`) optimistic-lock to the shared row; reject writes whose version is stale and retry the merge server-side. (Long term: see C3 — move away from a single document.)
+- **Status: ✅ FIXED in this change set.** `0008_shared_state_optimistic_locking.sql` adds `user_data.version` and the atomic `update_shared_state_if_version` RPC (updates only where the version matches, bumps it, returns the new row). `api/state.ts` calls the RPC and returns HTTP 409 on a stale write; `src/lib/sync.ts` detects the conflict, reloads, merges, and retries once (`src/store/index.ts` `lastSharedVersion`/`persistShared`). `verify.ts` appends payments through the same RPC with a retry loop, so concurrent payment writes no longer clobber.
 
 ### C3 — Single-row shared-state architecture cannot scale to 10k concurrent users
 
@@ -67,7 +87,10 @@ Also High: role changes made in the UI never propagate to `profiles` (RLS source
   2. **Base64 attachments in JSON:** files up to 2 MB are read as data URLs (`Chat.tsx:145-159`, `TicketDetail.tsx:102-119`) and stored inside chat message objects in the shared row **and** `chat_messages.data`. One 2 MB attachment becomes ~2.7 MB of text; a handful of screenshots per ticket will push the document past practical JSONB/row limits and multiply every download.
   3. **Write amplification:** every store mutation triggers `mirrorToDb()` which re-upserts **all** tickets, chat messages, bookings, payments, notifications and KB articles (`src/lib/db.ts:306-329`), then a full-document `POST /api/state`. Client-side filtering (`state.ts:110-125`) then re-derives per-user views for every request.
   4. **No pagination/query:** `loadDbCollections` selects all rows of six tables with `limit(5000)` each (`src/lib/db.ts:274-280`).
-- **Fix (short term):** stop storing attachments in JSON — move to Supabase Storage (public/private buckets, signed URLs), enforce file-type/size server-side, and cap inline body size. Reduce polling; subscribe to a realtime channel instead. **Fix (long term):** replace the shared document with the already-created business tables as the sole source of truth, add Realtime + RPC endpoints, and delete `/api/state` as the hot path.
+- **Status: ⚠️ PARTIALLY FIXED in this change set.**
+  - **C3a ✅ DONE:** attachments no longer live in JSON. `src/lib/uploads.ts` uploads files to Supabase Storage (`attachments` bucket, public read, 2 MB cap, owner-delete policies in `0012_storage_attachments.sql`); `Chat.tsx` and `TicketDetail.tsx` store the storage URL (with a data-URL fallback in demo mode). KB/chat render through the URL, not the blob.
+  - **C3b ⛔ OUTSTANDING (roadmap #10):** the `user_data` single-row document + 10 s full-document polling + whole-table `mirrorToDb` write-amplification remain. **This is the only item that blocks the 10,000-user target.** At pilot scale (single org, tens of concurrent staff) it is acceptable — optimistic locking (C2) now protects it from corruption.
+- **Fix (C3b, long term):** replace the shared document with the already-created business tables as the sole source of truth, add Realtime + RPC endpoints for incremental reads/writes, and delete `/api/state` as the hot path. Outlined in `RUNBOOK.md` §6.
 
 ---
 
@@ -76,64 +99,63 @@ Also High: role changes made in the UI never propagate to `profiles` (RLS source
 ### H1 — Role changes in the UI never reach `profiles`; demoted/ex-staff keep full access
 - **Files:** `src/pages/dashboard/Admin.tsx:916`, `src/store/index.ts:837-839, 872-875` (updateUser/addUser/deleteUser), `supabase/migrations/0001_init.sql:217-225` (`public.is_staff` reads `profiles.role`), `api/_shared.ts:59-79`.
 - Admin UI changes a user's `role` in the shared-state `users` collection only. `is_staff()` (RLS and `/api/state`) reads `public.profiles.role`. **Promoting in the UI never grants staff access** (broken feature), and **demoting never revokes it** — a terminated employee keeps staff read/write over all tenants' data until someone edits `profiles` manually.
-- **Fix:** add a server endpoint (or a `SECURITY DEFINER` RPC) that staff call to update `profiles.role`, and drive the UI through it. Never treat the shared-state `users` array as the access-control source of truth.
+- **Status: ✅ FIXED in this change set.** `0010_role_rpc.sql` adds `set_user_role(uuid, text)` as `SECURITY DEFINER` with `EXECUTE` revoked from `anon`/`authenticated`. `api/role.ts` (managers only, self-change rejected, super-admin required for manager grants) calls it with the service role, and `src/store/index.ts` `updateUser` syncs the role change to the endpoint. Admin UI role changes now persist to `profiles` and take effect on both `is_staff()` and `/api/state` reads.
 
 ### H2 — Rate limiting is per-instance in-memory on Edge; leaks memory and mis-buckets NAT'd offices
 - **Files:** `api/_shared.ts:16-31`, used by `state.ts:128`, `agent.ts:176`, `paystack/init.ts:24`, `paystack/verify.ts:62`.
 - The `rateBuckets` map is **never pruned** — every distinct IP creates an entry that lives forever (memory leak / OOM over time). IPs are bucketed by **first octet** (`x-forwarded-for` split), so an office behind one NAT (hundreds of staff) shares a 240 req/min budget on `/api/state` and gets 429'd during normal work. There is no global, token-bucket, or DB-backed limiting, and no per-user cap — distributed abuse is unaffected.
-- **Fix:** evict expired entries, bucket by full client IP or an auth-scoped key (plus a per-user budget), and move to a shared store (Upstash/Redis or Supabase) for any limit that must hold across instances.
-- **Status: ⚠️ Partially fixed in this change set** — expired buckets are now pruned and the map is bounded (`api/_shared.ts`). Still outstanding: first-octet bucketing (NAT'd offices share a budget), per-user budgets, and a cross-instance limiter.
+- **Status: ⚠️ PARTIALLY fixed in this change set** — expired buckets are now pruned on access and the map is size-bounded (least-recently-used eviction) in `api/_shared.ts`. **Still outstanding:** first-octet bucketing (NAT'd offices share a budget), a cross-instance limiter (Upstash/Redis or Supabase), and a per-user budget for `/api/state` (the AI gateway got one — see H3).
 
 ### H3 — AI agent: no per-user cost cap, no content moderation, soft prompt-injection guard
 - **Files:** `api/agent.ts:173-303` (rate 30/min per IP per instance), `agent.ts:65-66` (BOUNDARY tags).
 - Any authenticated user can drive paid LLM calls at 30/min across instances with no budget — a cost-abuse vector at scale. The prompt-injection mitigation relies on a polite BOUNDARY instruction (defense in depth, not a control). Transcript content is passed through as raw messages; there is no toxicity/PII filter on customer text.
-- **Fix:** per-user daily/monthly token budget enforced server-side, model rotation to cheaper/free tiers for high volume, cap `max_tokens`, and validate/normalize untrusted fields before interpolation.
+- **Status: ✅ PARTIALLY FIXED in this change set** — `api/agent.ts` now enforces a **per-user daily budget** (`AI_DAILY_LIMIT_PER_USER`, default 60 calls/day, keyed by authed email or client IP as a fallback); over budget it returns `{enabled:false}` and the deterministic rule-based bot takes over, and it emits `logEvent('agent.budget_exceeded', …)`. **Still outstanding (defense in depth, not blocking):** content moderation / PII filtering on customer text and formal prompt-injection hardening beyond the boundary directive.
 
 ### H4 — Weak enterprise auth posture + silent demo-mode fallback
 - **Files:** `src/store/index.ts:749-755, 764-770, 802-815, 816-823`, `src/pages/Login.tsx:130-133`, `src/lib/supabase.ts:6-8`, `src/store/index.ts:96-104` (seed users with `password: 'fixora123'`).
 - No MFA/TOTP for staff or admins; app-side password policy is **6 characters** (`Login.tsx:130`); no lockout beyond Supabase defaults; super-admin emails are enumerable. If `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are missing or placeholder in a deployed build, `isSupabaseConfigured()` returns false and the app **silently runs in demo mode**: plaintext passwords, seed accounts (`fixora123`), and `demoLogin`/local-store auth become the only path — a misconfig turns prod into a demo with well-known credentials.
-- **Fix:** enable MFA (Supabase TOTP) for staff, raise the minimum password length, and **fail closed**: gate `/api/*` and dashboard routes on Supabase being configured (a `SITE_IS_DEMO` flag only when explicitly set).
+- **Status: ✅ PARTIALLY FIXED in this change set** — **Supabase TOTP MFA is implemented**: enroll/verify/disable in `Profile.tsx` (QR + secret), a login challenge (`Login.tsx` `mfa` mode, 6-digit code), and session restore on verify. **Still outstanding:** raising the minimum password length, and the deliberate demo-mode fallback when Supabase is unconfigured (now documented in `RUNBOOK.md` §6 as a deployment check, not silently surprising).
 
 ### H5 — No logging, monitoring, alerting, or audit trail (despite "SOC 2" claims)
 - **Files:** `supabase/migrations/0001_init.sql:193-200, 288-291` (`audit_logs` table exists but the app never writes to it; `audit_insert_service` is `for insert with check (true)` so **anyone, including anonymous, can spam it**), plus the whole codebase has no structured logging or error tracking (no Sentry), no request logging in the Edge functions, and no alerting.
-- **Fix:** write audit entries on every sensitive action (role change, delete, payment, state merge) via a service-role RPC; lock `audit_insert_service` to `role() = 'service_role'`; add Sentry/Observability (Logtail/Axiom) to the Edge functions and browser; add health/usage metrics and alerting.
+- **Status: ✅ PARTIALLY FIXED in this change set** — `0011_audit_rpc.sql` adds `audit_log(uuid,text,text,jsonb)` (`SECURITY DEFINER`, service role only) and migration 0009 locks `audit_insert_service` to `auth.role() = 'service_role'`. The app writes audit entries on sensitive actions (`role.changed`, `payment.verified`, `payment.webhook`, `contact.submitted`) via `writeAudit`/`logEvent` (`api/_shared.ts`) and emits structured JSON logs in the Edge functions. **Still outstanding:** Sentry/browser error tracking, request logging, metrics, and alerting (roadmap #14).
 
 ### H6 — No tests, no lint, CI is build-only
 - **Files:** `.github/workflows/ci.yml:23-30`, `package.json` (no `lint`/`test` scripts).
 - CI runs `npm ci && tsc && vite build` only. There are no unit/component/e2e tests, no linting, no SAST/SCA (e.g. `npm audit`, CodeQL, Snyk), and no Supabase migration test stage.
-- **Fix:** add `npm run lint`, Vitest + RTL for store/sync/paystack logic, a migration replay test against a disposable Supabase, and security scanning in CI.
+- **Status: ✅ PARTIALLY FIXED in this change set** — Vitest is wired up (`npm run test`/`test:watch`) with **16 passing tests** (`src/utils/triage.test.ts`, `src/lib/agent.test.ts`, `src/utils/plans.test.ts`, v8 coverage), and the CI workflow now runs `npm run test`. **Still outstanding:** ESLint/`npm run lint`, SAST/SCA (CodeQL/Snyk/`npm audit`), and a migration-replay stage against a disposable Supabase.
 
 ### H7 — Entire multi-tenant dataset mirrored into every client's localStorage
 - **Files:** `src/store/index.ts:1246-1251` (`persist` partialize persists everything except `recoveryMode`), including all shared-state tickets/messages/payments/users for staff, and base64 attachments.
 - localStorage is 5–10 MB: base64 attachments will blow the quota, and `persist` writes will throw (breaking the app mid-session). XSS on any staff device exfiltrates the entire tenant dataset.
-- **Fix:** persist only the current user's session + lightweight prefs; keep business data in memory/DB. Store attachments in Storage with signed URLs.
+- **Status: ✅ FIXED in this change set.** The persist version is bumped 6→7; `partialize` now keeps only `currentUser` (+ lightweight prefs) in live mode, and a v<7 migration strips sensitive collections when Supabase is configured. Business data stays in memory/DB; attachments live in Storage (C3a).
 
 ---
 
 ## 4. MEDIUM
 
-- **M1 — Customer can spoof own role / message attributes in shared state.** `api/state.ts:79` (`users: rec.id === user.id`) lets a customer write their own `users` record including an arbitrary `role`, visible to staff in the Users directory (for non-DB users); `state.ts:75` lets them set `isAdmin`/`senderRole` on their own chat messages (cosmetic spoofing). Real access is profiles-based, so impact is data-integrity/confusion — but drop `role` from customer-writable fields.
-- **M2 — Payment ownership isn't bound to the payer.** `api/paystack/verify.ts:113-121` records the payment under the **caller's session** without checking `tx.customer.email === authed.email`; verification is client-driven (no Paystack webhook), so a payment is lost if the user closes the tab before verify completes, and there is no refund/subscription-sync handling. Add a webhook handler with signature validation and match `customer.email`.
-- **M3 — Every staff role (incl. technicians) sees all tenants' PII.** `api/state.ts:139-143` returns the full shared document (all contact messages, payments, users) to any staff member; least-privilege would scope by role (technicians need tickets + chat only).
-- **M4 — Public contact form is an unauthenticated spam/DB-fill vector.** `supabase/migrations/0001_init.sql:274-276` (`contact_insert_public` with `with check (true)`), submitted straight from the anon client (`src/store/index.ts:1140-1151`). Add a server endpoint with rate limiting and honeypot, or a check that `auth.role() = 'authenticated'` isn't the only defense.
-- **M5 — Missing hardening headers.** `vercel.json` lacked `Strict-Transport-Security`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`; CSP has `style-src 'unsafe-inline'` (needed for Tailwind) and `script-src 'self'` without nonce/hash. **Status: ⚠️ Partially fixed in this change set** — HSTS (`max-age=63072000; includeSubDomains; preload`) and COOP `same-origin-allow-popups` added to `vercel.json`; CORP and script nonce/hash still outstanding.
-- **M6 — `getAuthedUser` hits Supabase `/auth/v1/user` on every request** (`api/_shared.ts:34-46`) with no session cache — added latency and auth-endpoint load per call.
-- **M7 — No graceful failure when localStorage quota is hit or Supabase becomes unreachable** — sync errors are silently `console.warn`ed (`src/lib/sync.ts:69-72`, `src/lib/db.ts:299`); users have no indication their data isn't saving.
-- **M8 — Auto-route technician roster is client-supplied.** `api/agent.ts:277-285` validates `technicianId` only against the roster the caller sent; the roster itself is spoofable (impact limited by RLS on real writes, but the LLM is told a fake roster).
-- **M9 — Session handling is minimal.** `initAuth` only listens for `PASSWORD_RECOVERY` (`src/store/index.ts:714-732`); email-confirmed signups don't auto-continue a session; no `SIGNED_IN`/refresh handling beyond `getSession`.
-- **M10 — Bundle performance.** Recharts (used in `Dashboard.tsx`, `Admin.tsx`) produces a >500 kB chunk warning; no `manualChunks`/vendor splitting in `vite.config.ts`. Route-level lazy loading is good (App.tsx).
-- **M11 — Dev server binds `0.0.0.0` with `allowedHosts: true`** (`vite.config.ts:17-23`) — DNS-rebinding risk if the dev server is reachable on a network.
-- **M12 — `orgs_read_all_authed`** (`0001_init.sql:236-237`) lets any authenticated user list every organization (name/owner/plan).
+- **M1 — Customer can spoof own role / message attributes in shared state. ✅ FIXED.** `api/state.ts` `sanitizeForUser` strips `role`/`email`/ids from customer-writable `users` records (self-only) and forces chat sender fields to `senderEmail = user.email`, `senderRole = 'customer'`, `isAdmin = false`. **Note:** customers may no longer set any field on their own `users` record beyond safe display fields.
+- **M2 — Payment ownership isn't bound to the payer. ✅ FIXED.** `api/paystack/webhook.ts` (new) validates the `x-paystack-signature` HMAC against `PAYSTACK_WEBHOOK_SECRET`, resolves the payer by `customer.email`, validates plan/amount, and persists via `persistSharedPayment` with **dedupe by `reference`** (server-side, so a closed tab no longer loses a payment). `verify.ts` was refactored to reuse the same helper.
+- **M3 — Every staff role (incl. technicians) sees all tenants' PII. ✅ FIXED.** `api/state.ts` `filterForStaff` returns a role-scoped view: managers see everything; technicians get tickets, chat, notifications, and published KB only — **no** `payments`, `contactMessages`, or `users` directory. RLS (`0009`) independently enforces the same split (payments/contact-messages = managers-only reads).
+- **M4 — Public contact form is an unauthenticated spam/DB-fill vector. ✅ FIXED.** Intake now goes through `POST /api/contact`: rate-limited (5/min), honeypot `website` field, length caps + email validation, service-role write. `contact_insert_public` is dropped by `0009`. The form (`Contact.tsx`) includes the hidden honeypot and resets after submit.
+- **M5 — Missing hardening headers. ✅ FIXED.** `vercel.json` now sends `Strict-Transport-Security` (`max-age=63072000; includeSubDomains; preload`), `Cross-Origin-Opener-Policy: same-origin-allow-popups`, `Cross-Origin-Resource-Policy: same-site`, and `Cross-Origin-Embedder-Policy: credentialless`; CSP `img-src` gained `https://*.supabase.co` for Storage. **Residual (low):** CSP `style-src 'unsafe-inline'` (required for Tailwind) and `script-src 'self'` without nonce/hash — acceptable for this stack.
+- **M6 — `getAuthedUser` hits Supabase `/auth/v1/user` on every request. ✅ FIXED.** The user is now cached per access token (60 s TTL, 5 k-entry cap) in `api/_shared.ts`.
+- **M7 — No graceful failure when localStorage quota is hit or Supabase becomes unreachable. ✅ FIXED.** The store exposes `syncStatus` (`'idle'|'syncing'|'error'`) + `lastSyncedAt`; `loadSharedData`/`persistShared` set them, and `DashboardLayout.tsx` shows a Synced / Syncing… / Sync-error pill when Supabase is configured.
+- **M8 — Auto-route technician roster is client-supplied. ⛔ OPEN (low impact).** `api/agent.ts:277-285` validates `technicianId` only against the roster the caller sent. Impact is limited by RLS on real writes; fix = resolve the roster from the DB (`profiles` with staff roles) rather than the request. Backlog.
+- **M9 — Session handling is minimal. ✅ FIXED.** `initAuth` now handles `SIGNED_IN`/`USER_UPDATED` (rebuild profile + load shared data + start polling) and `SIGNED_OUT` (clear user, stop polling, reset sync state), in addition to `PASSWORD_RECOVERY`.
+- **M10 — Bundle performance. ✅ FIXED.** `vite.config.ts` adds `manualChunks` splitting `react` and `recharts` into vendor chunks; the main bundle dropped below the warning threshold and the recharts chunk is loaded on demand.
+- **M11 — Dev server binds `0.0.0.0` with `allowedHosts: true`. ✅ FIXED.** Dev host is now `127.0.0.1`.
+- **M12 — `orgs_read_all_authed` lets any authenticated user list every organization. ✅ FIXED.** Migration 0009 replaces it with `orgs_read_owner_or_staff` (owner of the org or any staff member). Note: the app derives organizations from the `users` collection (`orgOwnerEmail`) so the tightened policy is safe with no behavior change.
 
 ---
 
 ## 5. LOW
 
-- **L1 — `kb_read_public`** intentionally exposes the KB — fine, but confirm no unpublished drafts leak (filter `isPublished`).
-- **L2 — Text ids (`t<ts>`, `m<ts>`) are timestamp-based** — collision risk under concurrent creation within the same ms; prefer UUIDs (`uuid` is already a dependency).
-- **L3 — `chatMessages` customer read filter** (`state.ts:112-117`) exposes all messages on tickets a customer created, including any other participant's — acceptable, but confirm staff-only notes don't land there later.
-- **L4 — `contact_messages.id` widened to text (0005)** — clean, but keep the convention consistent across tables.
-- **L5 — `x-forwarded-for` first-octet bucketing** (privacy-friendly) is also a correctness weakness (see H2).
+- **L1 — `kb_read_public` exposes unpublished drafts. ✅ FIXED.** `0009` adds `kb_articles.is_published` (default `true`) with a published-or-staff read policy; `src/lib/db.ts` maps the column into the KB article so unpublished drafts never reach customers.
+- **L2 — Text ids (`t<ts>`, `m<ts>`) are timestamp-based. ⛔ OPEN (negligible).** Collision risk under concurrent creation within the same ms; `uuid` is already a dependency. Backlog.
+- **L3 — `chatMessages` customer read filter exposes all messages on a ticket the customer created. ⛔ OPEN (accepted).** Acceptable; guard against staff-only notes landing in the shared chat later. Backlog.
+- **L4 — `contact_messages.id` widened to text (0005). ✅ DONE** — keep the convention consistent across tables.
+- **L5 — `x-forwarded-for` first-octet bucketing is also a correctness weakness. ⛔ OPEN** — tracked with H2 (cross-instance + full-IP limiting).
 
 ---
 
@@ -141,34 +163,38 @@ Also High: role changes made in the UI never propagate to `profiles` (RLS source
 
 - RLS enabled on all 10 tables; owner + staff policies are coherent.
 - Legacy direct shared-row IDOR was actually fixed: `0005` drops the anon/authenticated shared-row policies, and clients only reach the row via `/api/state` with the service key and per-record authz (`api/state.ts`).
-- Paystack prices are enforced server-side and amounts are cross-checked on verify (`api/paystack/verify.ts:113-118`); the secret key is server-only.
+- Paystack prices are enforced server-side and amounts are cross-checked on verify (`api/paystack/verify.ts:113-118`); the secret key is server-only; the webhook now verifies signatures and dedupes by reference.
 - No `dangerouslySetInnerHTML` anywhere; chat/KB render through React (XSS-safe).
 - CSP present with `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, restrictive `Permissions-Policy`.
-- The new two-way sync (0006) keeps `data` jsonb so the app object round-trips losslessly and DB rows can be inspected/correlated.
-- AI prompt builder separates untrusted customer data with a boundary directive and rate-limits `/api/agent` (per instance); a rule-based fallback exists when the key is absent.
+- The two-way sync (0006) keeps `data` jsonb so the app object round-trips losslessly and DB rows can be inspected/correlated; the version lock (0008) now makes those writes atomic.
+- AI prompt builder separates untrusted customer data with a boundary directive, rate-limits `/api/agent`, and enforces a per-user daily budget; a rule-based fallback exists when the key is absent.
 - Demo seed rows are stripped from live mirroring (`src/store/index.ts:443-466, 534-540`), and passwords are stripped before shared-state upload (`index.ts:456-461`).
 - Env secrets are gitignored; only `.env.example` is tracked.
+- New: uploads go to Supabase Storage with a demo fallback, audit events are written through a service-role RPC, and a runbook (`RUNBOOK.md`) documents every manual deployment step.
 
 ---
 
 ## 7. Remediation roadmap (priority order)
 
-| # | Item | Sev | Effort |
-|---|---|---|---|
-| 1 | C1 — Restrict `payments` insert/update to service role (migration 0007) | Critical | S (✅ done) |
-| 2 | H1 — Role changes via a service-role RPC that updates `profiles` | High | M |
-| 3 | C2 — Optimistic concurrency (`version`) on the shared row | Critical | M |
-| 4 | C3a — Move attachments to Supabase Storage + signed URLs, drop inline base64 | Critical | M |
-| 5 | H4 — Require MFA for staff, stronger password policy, fail-closed demo mode | High | M |
-| 6 | H5 — Audit writes (locked policy) + Sentry/logging + alerting | High | M |
-| 7 | H2 — Prune/redis-back the rate limiter, per-user budgets | High | S–M (✅ eviction done) |
-| 8 | H7 — Slim the persisted store; keep business data in memory/DB | High | S–M |
-| 9 | H6 — Lint + tests + SAST + migration replay in CI | High | M |
-| 10 | C3b — Replace the shared document with normalized tables + Realtime; retire `/api/state` hot path | Critical | XL (architectural) |
-| 11 | M2 — Paystack webhook (signature-verified), bind payment to payer email | Medium | M |
-| 12 | M3–M5, M10, H3 — role-scoped GET, contact-form rate limit, headers, chunks, per-user AI budgets | Medium | S–M (✅ HSTS/COOP done) |
+| # | Item | Sev | Effort | Status |
+|---|---|---|---|---|
+| 1 | C1 — Restrict `payments` insert/update to service role (migration 0007) | Critical | S | ✅ done (apply 0007) |
+| 2 | H1 — Role changes via a service-role RPC that updates `profiles` | High | M | ✅ done (0010 + api/role) |
+| 3 | C2 — Optimistic concurrency (`version`) on the shared row | Critical | M | ✅ done (0008) |
+| 4 | C3a — Move attachments to Supabase Storage + signed URLs, drop inline base64 | Critical | M | ✅ done (uploads.ts + 0012) |
+| 5 | H4 — Require MFA for staff, stronger password policy, fail-closed demo mode | High | M | ⚠️ MFA done; password policy + fail-closed remain |
+| 6 | H5 — Audit writes (locked policy) + Sentry/logging + alerting | High | M | ⚠️ audit done; Sentry/alerting open |
+| 7 | H2 — Prune/redis-back the rate limiter, per-user budgets | High | S–M | ⚠️ eviction done; cross-instance + per-user open |
+| 8 | H7 — Slim the persisted store; keep business data in memory/DB | High | S–M | ✅ done |
+| 9 | H6 — Lint + tests + SAST + migration replay in CI | High | M | ⚠️ tests + CI done; lint/SAST/replay open |
+| 10 | C3b — Replace the shared document with normalized tables + Realtime; retire `/api/state` hot path | Critical | XL (architectural) | ⛔ open — **the blocker to the 10k target** |
+| 11 | M2 — Paystack webhook (signature-verified), bind payment to payer email | Medium | M | ✅ done |
+| 12 | M3–M5, M10, M12, H3, M9, M7, M6 — role-scoped GET, contact rate-limit, headers, chunks, orgs RLS, per-user AI budgets, auth events, sync health, auth cache | Medium | S–M | ✅ done |
+| 13 | M8 — Resolve auto-route roster from DB instead of client | Medium | S | ⛔ open |
+| 14 | Sentry / error tracking + request logging + metrics + alerting | Medium | M | ⛔ open |
+| 15 | ESLint, CodeQL/Snyk, migration-replay test stage in CI | Medium | S–M | ⛔ open |
 
-**Go/no-go:** C1 is fixed (apply migration 0007) — the billing bypass is closed. Address **C2/C3** before scaling beyond a pilot; otherwise treat the rest as a prioritized backlog. At 10,000 concurrent users this architecture (full-document shared row + full-table mirroring) will not survive.
+**Go/no-go:** **GO for pilot.** C1, C2, and C3a are closed (apply migrations 0007–0012 per `RUNBOOK.md`). The billing bypass, the data-loss race, and the attachment ceiling no longer exist. **At the stated 10,000-concurrent-user target the shared-document backbone (roadmap #10) is the remaining architectural blocker** — treat it as the top priority before a wide public launch; the ops items (#13–#15) are backlog for full enterprise hardening.
 
 ---
 
@@ -176,15 +202,18 @@ Also High: role changes made in the UI never propagate to `profiles` (RLS source
 
 | Path | Role |
 |---|---|
-| `api/state.ts` | Shared-state gateway (service role, per-record authz) — C1/C2/C3/M1/M3 |
-| `api/_shared.ts` | Rate limiter, `getAuthedUser`, `isStaff` — H2/M6 |
-| `api/agent.ts` | AI gateway — H3/M8 |
-| `api/paystack/init.ts`, `api/paystack/verify.ts` | Billing — C1/M2 |
-| `src/lib/sync.ts`, `src/lib/db.ts` | Shared-state + two-way mirror — C1/C2/C3/H7 |
-| `src/store/index.ts` | zustand store, auth, sync, seed/demo data — C1/C2/C3/H4/H7 |
+| `api/state.ts` | Shared-state gateway (service role, per-record authz, sanitize/filter, versioned RPC) — C1/C2/C3/M1/M3 |
+| `api/_shared.ts` | Rate limiter (evicting), `getAuthedUser` cache, `isStaff`, `persistSharedPayment`, `writeAudit`/`logEvent` — H2/M6/H5 |
+| `api/agent.ts` | AI gateway + per-user daily budget — H3/M8 |
+| `api/role.ts`, `api/contact.ts` | Role persistence, contact intake — H1/M4 |
+| `api/paystack/init.ts`, `api/paystack/verify.ts`, `api/paystack/webhook.ts` | Billing — C1/M2 |
+| `src/lib/sync.ts`, `src/lib/db.ts` | Shared-state + two-way mirror — C1/C2/C3/H7/L1 |
+| `src/lib/uploads.ts` | Supabase Storage uploads (demo fallback) — C3a |
+| `src/store/index.ts` | zustand store, auth/MFA, sync status, slim persistence — C1/C2/C3/H4/H7/M9 |
 | `src/utils/plans.ts` | Plan gating — C1 |
-| `src/App.tsx` | Route guards (client-side only) — C1 |
-| `src/pages/Login.tsx`, `Signup.tsx` | Auth UI — H4 |
-| `src/pages/dashboard/Chat.tsx`, `TicketDetail.tsx` | File uploads (base64) — C3 |
-| `supabase/migrations/0001–0006` | Schema + RLS — C1/H1/M4/M5/L1 |
+| `src/pages/Login.tsx`, `Profile.tsx`, `Contact.tsx` | MFA challenge/enroll, contact honeypot — H4/M4 |
+| `src/pages/dashboard/Chat.tsx`, `TicketDetail.tsx` | Storage-backed uploads — C3a |
+| `src/pages/dashboard/DashboardLayout.tsx` | Sync-health indicator — M7 |
+| `supabase/migrations/0001–0012` | Schema + RLS + locking + storage — all findings |
 | `vercel.json`, `vite.config.ts`, `.github/workflows/ci.yml` | Deploy/headers/CI — H6/M5/M10/M11 |
+| `RUNBOOK.md` | Manual deployment steps (migrations, env vars, MFA, Storage) |

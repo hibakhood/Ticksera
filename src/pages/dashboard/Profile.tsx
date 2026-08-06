@@ -1,11 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store';
+import { isSupabaseConfigured, getSupabase } from '../../lib/supabase';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { TextArea } from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
-import { Phone, MapPin, Edit, Save, Ticket, Star, Calendar, Monitor, Smartphone, Laptop, Shield, LogOut, AlertTriangle, Camera, Trash2 } from 'lucide-react';
+import { Phone, MapPin, Edit, Save, Ticket, Star, Calendar, Monitor, Smartphone, Laptop, Shield, LogOut, AlertTriangle, Camera, Trash2, ShieldCheck, QrCode, KeyRound } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
 
@@ -67,6 +68,84 @@ export default function Profile() {
     location: currentUser?.location || '',
     bio: currentUser?.bio || '',
   });
+
+  const [mfaOn, setMfaOn] = useState(false);
+  const [mfaLoading, setMfaLoading] = useState(false);
+  const [mfaError, setMfaError] = useState('');
+  const [mfaQr, setMfaQr] = useState<string | null>(null);
+  const [mfaSecret, setMfaSecret] = useState('');
+  const [mfaFactorId, setMfaFactorId] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+
+  const supabaseLive = isSupabaseConfigured();
+
+  useEffect(() => {
+    if (!supabaseLive) return;
+    let active = true;
+    void (async () => {
+      try {
+        const { data } = await getSupabase().auth.mfa.listFactors();
+        if (active) setMfaOn((data?.totp ?? []).some(f => f.status === 'verified'));
+      } catch { /* ignore */ }
+    })();
+    return () => { active = false; };
+  }, [supabaseLive]);
+
+  const handleEnroll = async () => {
+    setMfaError('');
+    setMfaLoading(true);
+    try {
+      const { data, error } = await getSupabase().auth.mfa.enroll({ factorType: 'totp' });
+      if (error) { setMfaError(error.message ?? 'Could not start enrollment.'); return; }
+      if (!data) { setMfaError('Could not start enrollment.'); return; }
+      setMfaQr(`data:image/svg+xml;base64,${btoa(data.totp.qr_code)}`);
+      setMfaSecret(data.totp.secret);
+      setMfaFactorId(data.id);
+      setMfaCode('');
+    } catch {
+      setMfaError('Could not start enrollment.');
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleVerifyMfa = async () => {
+    setMfaError('');
+    if (!mfaFactorId || mfaCode.trim().length < 6) { setMfaError('Enter the 6-digit code from your authenticator app.'); return; }
+    setMfaLoading(true);
+    try {
+      const challenge = await getSupabase().auth.mfa.challenge({ factorId: mfaFactorId });
+      if (challenge.error || !challenge.data?.id) { setMfaError(challenge.error?.message ?? 'Challenge failed.'); return; }
+      const verify = await getSupabase().auth.mfa.verify({ factorId: mfaFactorId, challengeId: challenge.data.id, code: mfaCode.trim() });
+      if (verify.error) { setMfaError(verify.error.message ?? 'That code did not verify.'); return; }
+      setMfaOn(true);
+      setMfaQr(null);
+      setMfaSecret('');
+      setMfaFactorId('');
+      setMfaCode('');
+    } catch {
+      setMfaError('Could not verify the code.');
+    } finally {
+      setMfaLoading(false);
+    }
+  };
+
+  const handleDisableMfa = async () => {
+    setMfaError('');
+    setMfaLoading(true);
+    try {
+      const { data } = await getSupabase().auth.mfa.listFactors();
+      const factor = (data?.totp ?? []).find(f => f.status === 'verified');
+      if (!factor) { setMfaOn(false); return; }
+      const { error } = await getSupabase().auth.mfa.unenroll({ factorId: factor.id });
+      if (error) { setMfaError(error.message ?? 'Could not disable MFA.'); return; }
+      setMfaOn(false);
+    } catch {
+      setMfaError('Could not disable MFA.');
+    } finally {
+      setMfaLoading(false);
+    }
+  };
 
   if (!currentUser) return null;
 
@@ -270,6 +349,72 @@ export default function Profile() {
           ))}
         </div>
         <p className="text-xs text-slate-400 dark:text-slate-500 mt-4">If you see a session you don't recognise, sign it out immediately and change your password.</p>
+      </Card>
+
+      {/* Two-Factor Authentication */}
+      <Card className="card-premium p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <h3 className="font-heading font-semibold text-slate-900 dark:text-white">Two-Factor Authentication</h3>
+          </div>
+          {mfaOn && <Badge variant="success">Enabled</Badge>}
+        </div>
+        {!supabaseLive ? (
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Two-factor authentication is available when Supabase is configured.
+          </p>
+        ) : mfaQr ? (
+          <div className="mt-4 space-y-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Scan this QR code with your authenticator app (Google Authenticator, 1Password, Authy), then enter the
+              generated 6-digit code to confirm.
+            </p>
+            <div className="flex flex-col sm:flex-row items-start gap-5">
+              <div className="p-3 bg-white rounded-2xl border border-slate-200 dark:border-slate-700">
+                <img src={mfaQr} alt="MFA setup QR code" className="w-40 h-40" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-slate-400 mb-1">Manual setup secret</p>
+                <code className="block font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-2 rounded-lg break-all mb-4">{mfaSecret}</code>
+                <div className="flex flex-col gap-2">
+                  <Input
+                    label="Verification code"
+                    placeholder="000000"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={mfaCode}
+                    onChange={e => { setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setMfaError(''); }}
+                    error={mfaError}
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={handleVerifyMfa} disabled={mfaLoading}>
+                      <KeyRound className="w-3.5 h-3.5" /> Confirm & Enable
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setMfaQr(null); setMfaSecret(''); setMfaFactorId(''); setMfaError(''); }}>Cancel</Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : mfaOn ? (
+          <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400 flex-1">
+              Your account requires a 6-digit code on every new sign-in. Keep your authenticator app backed up.
+            </p>
+            <Button size="sm" variant="danger" onClick={handleDisableMfa} disabled={mfaLoading}>Disable MFA</Button>
+          </div>
+        ) : (
+          <div className="mt-3 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400 flex-1">
+              Add an extra layer of security. Once enabled, every sign-in asks for a code from your authenticator app.
+            </p>
+            <Button size="sm" onClick={handleEnroll} disabled={mfaLoading}>
+              <QrCode className="w-3.5 h-3.5" /> Set up MFA
+            </Button>
+          </div>
+        )}
+        {mfaError && !mfaQr && <p className="text-xs text-red-500 mt-2">{mfaError}</p>}
       </Card>
 
       {/* Recent tickets */}

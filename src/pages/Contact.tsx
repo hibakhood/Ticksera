@@ -24,14 +24,15 @@ export default function Contact() {
   const { addContactMessage } = useStore();
   const [sent, setSent] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', website: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.subject || !form.message) return;
-    addContactMessage(form);
+    const { website, ...msg } = form;
+    addContactMessage(msg);
     setSent(true);
-    setForm({ name: '', email: '', subject: '', message: '' });
+    setForm({ name: '', email: '', subject: '', message: '', website: '' });
     setTimeout(() => setSent(false), 4000);
   };
 
@@ -146,8 +147,11 @@ export default function Contact() {
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Fill in the form and our team will respond shortly.</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input label="Your Name" placeholder="John Doe" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
-                      <Input label="Email" type="email" placeholder="you@example.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+                    <Input label="Your Name" placeholder="John Doe" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+                    <Input label="Email" type="email" placeholder="you@example.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
+                    <div className="absolute opacity-0 -z-10" aria-hidden="true">
+                      <Input label="Website" tabIndex={-1} autoComplete="off" value={form.website} onChange={e => setForm(f => ({ ...f, website: e.target.value }))} />
+                    </div>
                     </div>
                     <Input label="Subject" placeholder="How can we help?" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))} required />
                     <TextArea label="Message" placeholder="Tell us more about your inquiry..." rows={5} value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))} required />

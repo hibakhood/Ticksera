@@ -18,7 +18,7 @@ export const config = {
   maxDuration: 30,
 };
 
-import { json, rateLimit, getAuthedUser, GLOBAL_STATE_ID } from '../_shared';
+import { json, rateLimit, getAuthedUser, persistSharedPayment, writeAudit, logEvent } from '../_shared';
 
 const PLAN_PRICES: Record<string, number> = {
   Basic: 5000,
@@ -121,37 +121,20 @@ export default async function handler(req: Request): Promise<Response> {
   const payment = buildPayment(txData, plan, expectedKobo / 100, userId ?? '');
 
   // Persist the authoritative record only when we know who owns it (an
-  // authenticated Supabase user) and Supabase is configured.
+  // authenticated Supabase user) and Supabase is configured. Uses the
+  // version-gated atomic update (migration 0008) so a concurrent client write
+  // cannot be clobbered and the reference is never recorded twice.
   if (supabaseUrl && serviceKey && userId) {
-    try {
-      const read = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}&select=data`, {
-        headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+    const recorded = await persistSharedPayment(supabaseUrl, serviceKey, payment);
+    if (recorded) {
+      await writeAudit(supabaseUrl, serviceKey, {
+        userId,
+        action: 'payment.verified',
+        entity: 'payments',
+        details: { reference: payment.reference, plan, amount: expectedKobo / 100 },
       });
-      let dataObj: Record<string, unknown> = {};
-      if (read.ok) {
-        const rows = (await read.json()) as { data?: Record<string, unknown> }[];
-        if (rows.length) dataObj = rows[0].data ?? {};
-      }
-      const payments = Array.isArray(dataObj.payments) ? (dataObj.payments as unknown[]) : [];
-      const alreadyHas = payments.some(p => (p as Record<string, unknown>).reference === payment.reference);
-      if (!alreadyHas) payments.push(payment);
-      await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}`, {
-        method: 'POST',
-        headers: {
-          apikey: serviceKey,
-          authorization: `Bearer ${serviceKey}`,
-          'content-type': 'application/json',
-          Prefer: 'resolution=merge-duplicates,return=minimal',
-        },
-        body: JSON.stringify({
-          user_id: GLOBAL_STATE_ID,
-          data: { ...dataObj, payments },
-          updated_at: new Date().toISOString(),
-        }),
-      });
-    } catch {
-      // Non-fatal: payment verification already succeeded.
     }
+    logEvent('payment.verified', { userId, reference: payment.reference, plan });
   }
 
   return json({ ok: true, payment });

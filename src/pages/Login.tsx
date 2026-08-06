@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store';
 import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
-import { Lock, ArrowRight, Shield, Zap, Users, Eye, EyeOff, Check, Mail, KeyRound, ArrowLeft } from 'lucide-react';
+import { Lock, ArrowRight, Shield, Zap, Users, Eye, EyeOff, Check, Mail, KeyRound, ArrowLeft, ShieldCheck } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Logo from '../components/ui/Logo';
@@ -11,7 +11,7 @@ import { hasActivePlan, hasActivePlanFor } from '../utils/plans';
 
 const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
 
-type AuthMode = 'signin' | 'forgot' | 'reset' | 'done';
+type AuthMode = 'signin' | 'forgot' | 'reset' | 'done' | 'mfa';
 
 export default function Login() {
   const [email, setEmail]       = useState(() => localStorage.getItem('fixora_remember_email') ?? '');
@@ -27,8 +27,9 @@ export default function Login() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetViaEmail, setResetViaEmail] = useState(false);
+  const [mfaCode, setMfaCode]           = useState('');
 
-  const { login, resetPassword, completePasswordReset, recoveryMode } = useStore();
+  const { login, verifyMfa, resetPassword, completePasswordReset, recoveryMode } = useStore();
   const navigate = useNavigate();
   const supabaseLive = isSupabaseConfigured();
 
@@ -61,12 +62,16 @@ export default function Login() {
     setLoading(true);
 
     if (supabaseLive) {
-      const ok = await login(email.trim().toLowerCase(), password);
-      if (ok) {
+      const res = await login(email.trim().toLowerCase(), password);
+      if (res.ok) {
         const { currentUser } = useStore.getState();
         if (remember) localStorage.setItem('fixora_remember_email', email.trim().toLowerCase());
         else localStorage.removeItem('fixora_remember_email');
         navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
+      } else if (res.mfaRequired) {
+        setMode('mfa');
+        setError('');
+        setLoading(false);
       } else {
         setError('Invalid email or password.');
         setLoading(false);
@@ -78,7 +83,7 @@ export default function Login() {
     const normalized = email.trim().toLowerCase();
     const user = users.find(u => u.email === normalized);
     const ok = await login(normalized, password);
-    if (ok && user) {
+    if (ok.ok && user) {
       if (remember) localStorage.setItem('fixora_remember_email', normalized);
       else localStorage.removeItem('fixora_remember_email');
       navigate(getDestination(user.id, user.role));
@@ -155,6 +160,24 @@ export default function Login() {
     }
   };
 
+  const handleMfa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (mfaCode.trim().length < 6) {
+      setError('Enter the 6-digit code from your authenticator app.');
+      return;
+    }
+    setLoading(true);
+    const ok = await verifyMfa(mfaCode);
+    setLoading(false);
+    if (ok) {
+      const { currentUser } = useStore.getState();
+      navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
+    } else {
+      setError('That code did not verify. Try again.');
+    }
+  };
+
   const backToSignIn = () => {
     setMode('signin');
     setError('');
@@ -163,6 +186,7 @@ export default function Login() {
     setPassword('');
     setNewPassword('');
     setConfirmPassword('');
+    setMfaCode('');
   };
 
   const isResetMode = mode !== 'signin';
@@ -418,6 +442,41 @@ export default function Login() {
                   className="w-full flex items-center justify-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Back
+                </button>
+              </form>
+            )}
+
+            {mode === 'mfa' && (
+              <form onSubmit={handleMfa} className="space-y-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25 flex-shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-white leading-tight">Two-factor authentication</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Enter the 6-digit code from your authenticator app to complete sign in.</p>
+                  </div>
+                </div>
+                <Input
+                  label="Verification code"
+                  placeholder="000000"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={mfaCode}
+                  onChange={e => { setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6)); setError(''); }}
+                  error={error}
+                  autoFocus
+                  required
+                />
+                <Button type="submit" className="w-full" size="md" disabled={loading}>
+                  <span className="flex items-center justify-center gap-2">Verify & Sign In <ArrowRight className="w-4 h-4" /></span>
+                </Button>
+                <button
+                  type="button"
+                  onClick={backToSignIn}
+                  className="w-full flex items-center justify-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to sign in
                 </button>
               </form>
             )}

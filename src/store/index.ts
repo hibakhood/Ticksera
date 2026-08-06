@@ -81,11 +81,13 @@ function genRef(): string {
 
 let syncing = false;
 let recoveryPending = false;
+let mfaPending: { factorId: string; challengeId: string } | null = null;
 
 const POLL_MS = 10_000;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let lastLocalMutation = 0;
 let focusHandler: (() => void) | null = null;
+let lastSharedVersion: number | null = null;
 
 const day   = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
 const hours = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
@@ -169,7 +171,8 @@ interface AppState {
   recoveryMode: boolean;
   initAuth: () => Promise<void>;
   loadSharedData: () => Promise<void>;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; mfaRequired?: boolean }>;
+  verifyMfa: (code: string) => Promise<boolean>;
   demoLogin: (email: string) => boolean;
   resetPassword: (email: string, newPassword: string) => boolean;
   completePasswordReset: (password: string) => Promise<boolean>;
@@ -211,6 +214,10 @@ interface AppState {
   addPayment: (payment: Omit<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'> & Partial<Pick<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'>>) => void;
   updatePayment: (id: string, data: Partial<Payment>) => void;
   changePlan: (userId: string, plan: string, amount: number) => void;
+
+  // Sync health
+  syncStatus: 'idle' | 'syncing' | 'error';
+  lastSyncedAt: string | null;
 
   // Knowledge Base
   kbArticles: KBArticle[];
@@ -669,54 +676,82 @@ export const useStore = create<AppState>()(
 
       currentUser: null,
       recoveryMode: false,
+      syncStatus: 'idle' as const,
+      lastSyncedAt: null,
       loadSharedData: async () => {
         if (!isSupabaseConfigured()) return;
-        const shared = await loadSharedState();
-        const profiles = await loadDbProfiles();
-        const isStaff = ['super_admin', 'support_manager', 'technician', 'field_technician'].includes(get().currentUser?.role ?? '');
-        const [dbContacts, db] = await Promise.all([
-          isStaff ? loadDbContactMessages() : Promise.resolve(null),
-          loadDbCollections(),
-        ]);
-        syncing = true;
+        set({ syncStatus: 'syncing' });
         try {
-          set(s => {
-            if (!shared) {
-              // First run: seed the shared row from the current store state.
-              const seeded = buildSharedState(s);
-              if (profiles) seeded.users = (seeded.users as User[]).filter(u => !DEMO_SEED_IDS.has(u.id));
-              void saveSharedState(seeded);
-              if (profiles) return { users: reconcileUsersWithDb(s.users, profiles) };
-              return {};
-            }
-            let users = mergeById(s.users, shared.users as User[], ['password']);
-            if (profiles) users = reconcileUsersWithDb(users, profiles);
-            const contactMessages = dbContacts
-              ? mergeById(mergeById(s.contactMessages, dbContacts), shared.contactMessages as ContactMessage[])
-              : mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]);
-            // DB rows are merged last so the business tables win (authoritative).
-            // Demo seed rows are stripped so live charts show real data only.
-            return {
-              tickets: stripDemoBusiness(mergeById(mergeById(s.tickets, shared.tickets as Ticket[]), db?.tickets)),
-              chatMessages: stripDemoBusiness(mergeById(mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]), db?.chatMessages)),
-              bookings: stripDemoBusiness(mergeById(mergeById(s.bookings, shared.bookings as Booking[]), db?.bookings)),
-              payments: stripDemoBusiness(mergeById(mergeById(s.payments, shared.payments as Payment[]), db?.payments)),
-              users,
-              contactMessages: stripDemoBusiness(contactMessages),
-              notifications: stripDemoBusiness(mergeById(mergeById(s.notifications, shared.notifications as Notification[]), db?.notifications)),
-              kbArticles: mergeById(mergeById(s.kbArticles, shared.kbArticles as KBArticle[]), db?.kbArticles),
-            };
-          });
-        } finally {
-          syncing = false;
+          const loaded = await loadSharedState();
+          const shared = loaded?.data ?? null;
+          if (loaded) lastSharedVersion = loaded.version;
+          const profiles = await loadDbProfiles();
+          const isStaff = ['super_admin', 'support_manager', 'technician', 'field_technician'].includes(get().currentUser?.role ?? '');
+          const [dbContacts, db] = await Promise.all([
+            isStaff ? loadDbContactMessages() : Promise.resolve(null),
+            loadDbCollections(),
+          ]);
+          syncing = true;
+          try {
+            set(s => {
+              if (!shared) {
+                // First run: seed the shared row from the current store state.
+                const seeded = buildSharedState(s);
+                if (profiles) seeded.users = (seeded.users as User[]).filter(u => !DEMO_SEED_IDS.has(u.id));
+                void saveSharedState(seeded);
+                if (profiles) return { users: reconcileUsersWithDb(s.users, profiles) };
+                return {};
+              }
+              let users = mergeById(s.users, shared.users as User[], ['password']);
+              if (profiles) users = reconcileUsersWithDb(users, profiles);
+              const contactMessages = dbContacts
+                ? mergeById(mergeById(s.contactMessages, dbContacts), shared.contactMessages as ContactMessage[])
+                : mergeById(s.contactMessages, shared.contactMessages as ContactMessage[]);
+              // DB rows are merged last so the business tables win (authoritative).
+              // Demo seed rows are stripped so live charts show real data only.
+              return {
+                tickets: stripDemoBusiness(mergeById(mergeById(s.tickets, shared.tickets as Ticket[]), db?.tickets)),
+                chatMessages: stripDemoBusiness(mergeById(mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]), db?.chatMessages)),
+                bookings: stripDemoBusiness(mergeById(mergeById(s.bookings, shared.bookings as Booking[]), db?.bookings)),
+                payments: stripDemoBusiness(mergeById(mergeById(s.payments, shared.payments as Payment[]), db?.payments)),
+                users,
+                contactMessages: stripDemoBusiness(contactMessages),
+                notifications: stripDemoBusiness(mergeById(mergeById(s.notifications, shared.notifications as Notification[]), db?.notifications)),
+                kbArticles: mergeById(mergeById(s.kbArticles, shared.kbArticles as KBArticle[]), db?.kbArticles),
+              };
+            });
+          } finally {
+            syncing = false;
+          }
+          set({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+        } catch {
+          set({ syncStatus: 'error' });
         }
       },
       initAuth: async () => {
         if (!isSupabaseConfigured()) return;
-        getSupabase().auth.onAuthStateChange((event) => {
+        getSupabase().auth.onAuthStateChange((event, session) => {
           if (event === 'PASSWORD_RECOVERY') {
             recoveryPending = true;
             set({ recoveryMode: true, currentUser: null });
+            return;
+          }
+          if (event === 'SIGNED_OUT') {
+            recoveryPending = false;
+            stopSharedPolling();
+            set({ currentUser: null, recoveryMode: false, syncStatus: 'idle', lastSyncedAt: null });
+            return;
+          }
+          if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user && !recoveryPending && !get().recoveryMode) {
+            void (async () => {
+              try {
+                const profile = await buildProfileFromAuthUser(session.user);
+                ensureUserInStore(profile);
+                set({ currentUser: profile });
+                await get().loadSharedData();
+                startSharedPolling();
+              } catch { /* ignore */ }
+            })();
           }
         });
         try {
@@ -735,23 +770,66 @@ export const useStore = create<AppState>()(
           if (isSupabaseConfigured()) {
             try {
               const { data, error } = await getSupabase().auth.signInWithPassword({ email: normalised, password });
-              if (error || !data.user) return false;
+              if (error || !data.session) {
+                // A valid sign-in that still needs its second factor. If the
+                // user has a verified TOTP factor, start a challenge and ask
+                // for the code.
+                if (data.user && !data.session) {
+                  try {
+                    const factors = await getSupabase().auth.mfa.listFactors();
+                    const factor = factors.data?.totp?.find(f => f.status === 'verified');
+                    if (factor) {
+                      const challenge = await getSupabase().auth.mfa.challenge({ factorId: factor.id });
+                      if (challenge.data?.id) {
+                        mfaPending = { factorId: factor.id, challengeId: challenge.data.id };
+                        return { ok: false, mfaRequired: true };
+                      }
+                    }
+                  } catch { /* fall through to generic failure */ }
+                }
+                return { ok: false };
+              }
               recoveryPending = false;
               set({ recoveryMode: false });
-              const profile = await buildProfileFromAuthUser(data.user);
+              const profile = await buildProfileFromAuthUser(data.session.user);
               ensureUserInStore(profile);
               set({ currentUser: profile });
               await get().loadSharedData();
               startSharedPolling();
-              return true;
-            } catch { return false; }
+              return { ok: true };
+            } catch { return { ok: false }; }
           }
         const user = get().users.find(u => u.email === normalised);
         if (user && user.password === password) {
           set({ currentUser: user });
-          return true;
+          return { ok: true };
         }
-        return false;
+        return { ok: false };
+      },
+      verifyMfa: async (code: string) => {
+        if (!mfaPending) return false;
+        try {
+          const { error } = await getSupabase().auth.mfa.verify({
+            factorId: mfaPending.factorId,
+            challengeId: mfaPending.challengeId,
+            code: code.trim(),
+          });
+          if (error) return false;
+          mfaPending = null;
+          recoveryPending = false;
+          set({ recoveryMode: false });
+          const { data: sessionData } = await getSupabase().auth.getSession();
+          const user = sessionData.session?.user;
+          if (!user) return false;
+          const profile = await buildProfileFromAuthUser(user);
+          ensureUserInStore(profile);
+          set({ currentUser: profile });
+          await get().loadSharedData();
+          startSharedPolling();
+          return true;
+        } catch {
+          return false;
+        }
       },
       demoLogin: (email: string) => {
         const user = get().users.find(u => u.email === email);
@@ -834,7 +912,20 @@ export const useStore = create<AppState>()(
       },
 
       users: seedUsers,
-      updateUser: (id, data) => set(s => ({ users: s.users.map(u => u.id === id ? { ...u, ...data } : u), currentUser: s.currentUser?.id === id ? { ...s.currentUser, ...data } : s.currentUser })),
+      updateUser: (id, data) => {
+        set(s => ({ users: s.users.map(u => u.id === id ? { ...u, ...data } : u), currentUser: s.currentUser?.id === id ? { ...s.currentUser, ...data } : s.currentUser }));
+        if (data.role && isSupabaseConfigured()) {
+          void (async () => {
+            try {
+              await fetch('/api/role', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify({ userId: id, role: data.role }),
+              });
+            } catch { /* offline — store state still reflects the change */ }
+          })();
+        }
+      },
       addUser: (userData) => set(s => ({ users: [...s.users, { ...userData, id: uuid(), createdAt: new Date().toISOString() }] })),
       deleteUser: (id) => set(s => ({ users: s.users.filter(u => u.id !== id) })),
 
@@ -1141,13 +1232,15 @@ export const useStore = create<AppState>()(
         const id = `c${Date.now()}`;
         const createdAt = new Date().toISOString();
         set(s => ({ contactMessages: [...s.contactMessages, { ...msg, id, createdAt, isRead: false }] }));
-        if (isSupabaseConfigured()) {
-          void (async () => {
-            try {
-              await getSupabase().from('contact_messages').insert({ id, name: msg.name, email: msg.email, subject: msg.subject, message: msg.message, read: false, created_at: createdAt });
-            } catch { /* ignore */ }
-          })();
-        }
+        void (async () => {
+          try {
+            await fetch('/api/contact', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(msg),
+            });
+          } catch { /* offline / demo mode — message stays local */ }
+        })();
       },
       markContactRead: (id) => {
         set(s => ({ contactMessages: s.contactMessages.map(c => c.id === id ? { ...c, isRead: true } : c) }));
@@ -1245,12 +1338,27 @@ export const useStore = create<AppState>()(
     }),
     {
       name: 'fixora-store',
-      version: 6,
-      partialize: (state) => Object.fromEntries(
-        (Object.entries(state) as Array<[string, unknown]>).filter(([k]) => k !== 'recoveryMode')
-      ),
+      version: 7,
+      partialize: (state) => {
+        if (isSupabaseConfigured()) {
+          // Live mode: never persist tenant collections (tickets, chats,
+          // payments, users, contact messages, KB...) to localStorage — they
+          // contain PII and are already authoritative in Supabase. Only keep
+          // the signed-in user's identity so a refresh restores the session.
+          return Object.fromEntries(
+            (Object.entries(state) as Array<[string, unknown]>).filter(([k]) => k === 'currentUser')
+          );
+        }
+        return Object.fromEntries(
+          (Object.entries(state) as Array<[string, unknown]>).filter(([k]) => k !== 'recoveryMode')
+        );
+      },
       migrate: (persistedState: unknown, version: number) => {
         const state = persistedState as Record<string, unknown>;
+        if (version < 7 && isSupabaseConfigured()) {
+          const sensitive = ['tickets', 'chatMessages', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'];
+          sensitive.forEach(k => { delete state[k]; });
+        }
         if (version < 3) {
           state.activeSessions = [
             { id: 's1', device: 'MacBook Pro', browser: 'Chrome 124', location: 'Lagos, Nigeria', ip: '197.211.58.12', lastActive: new Date().toISOString(), current: true },
@@ -1313,6 +1421,28 @@ export const useStore = create<AppState>()(
 );
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+/** Publish the current store to the shared row, retrying once on a stale-version conflict. */
+async function persistShared(): Promise<void> {
+  useStore.setState({ syncStatus: 'syncing' });
+  const base = lastSharedVersion;
+  const first = await saveSharedState(buildSharedState(useStore.getState()), base);
+  if (first.conflict) {
+    // Another writer landed first: reload, re-merge local state, then retry.
+    await useStore.getState().loadSharedData();
+    const second = await saveSharedState(buildSharedState(useStore.getState()), lastSharedVersion);
+    if (second.ok && typeof second.version === 'number') {
+      lastSharedVersion = second.version;
+      useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+    }
+    return;
+  }
+  if (first.ok && typeof first.version === 'number') {
+    lastSharedVersion = first.version;
+    useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+  }
+}
+
 useStore.subscribe((s, prev) => {
   const changed =
     s.currentUser?.id !== prev.currentUser?.id ||
@@ -1329,7 +1459,6 @@ useStore.subscribe((s, prev) => {
   if (!isSupabaseConfigured()) return;
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    const latest = useStore.getState();
-    void saveSharedState(buildSharedState(latest));
+    void persistShared();
   }, 600);
 });
