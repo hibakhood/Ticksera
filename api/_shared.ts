@@ -12,12 +12,22 @@ export function json(data: unknown, status = 200): Response {
 
 // Simple in-memory fixed-window rate limiter keyed by client IP. Vercel Edge
 // isolates are ephemeral and per-instance, so this is approximate — it still
-// meaningfully raises the cost of automated abuse.
+// meaningfully raises the cost of automated abuse. Expired buckets are evicted
+// so the map does not grow without bound.
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+const MAX_BUCKETS = 10_000;
+
+function pruneBuckets(now: number): void {
+  if (rateBuckets.size < MAX_BUCKETS) return;
+  for (const [key, bucket] of rateBuckets) {
+    if (bucket.resetAt <= now) rateBuckets.delete(key);
+  }
+}
 
 export function rateLimit(req: Request, limit = 60, windowMs = 60_000): { ok: boolean; retryAfter?: number } {
   const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim();
   const now = Date.now();
+  pruneBuckets(now);
   const bucket = rateBuckets.get(ip);
   if (!bucket || bucket.resetAt < now) {
     rateBuckets.set(ip, { count: 1, resetAt: now + windowMs });
