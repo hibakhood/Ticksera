@@ -30,6 +30,20 @@ alter table public.payments      drop constraint if exists payments_status_check
 alter table public.notifications drop constraint if exists notifications_user_id_fkey;
 alter table public.kb_articles   drop constraint if exists kb_articles_author_id_fkey;
 
+-- Policies that reference columns we are about to widen must be dropped first
+-- (PostgreSQL refuses to alter a column that a policy definition depends on).
+drop policy if exists "tickets_read_own" on public.tickets;
+drop policy if exists "tickets_insert_own" on public.tickets;
+drop policy if exists "tickets_update_own_or_staff" on public.tickets;
+drop policy if exists "chat_read_ticket_participants" on public.chat_messages;
+drop policy if exists "chat_insert_participants" on public.chat_messages;
+drop policy if exists "chat_update_participants" on public.chat_messages;
+drop policy if exists "bookings_own" on public.bookings;
+drop policy if exists "payments_own" on public.payments;
+drop policy if exists "payments_insert_own" on public.payments;
+drop policy if exists "payments_update_own" on public.payments;
+drop policy if exists "notifications_own" on public.notifications;
+
 -- 2. Widen primary/foreign ids to text (the app generates text ids).
 alter table public.tickets       alter column id          drop default;
 alter table public.tickets       alter column id          type text;
