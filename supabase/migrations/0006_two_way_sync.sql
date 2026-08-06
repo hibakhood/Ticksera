@@ -120,7 +120,7 @@ create policy "payments_update_own" on public.payments
 create policy "payments_read_staff" on public.payments
   for select using (public.is_staff(auth.uid()));
 create policy "payments_write_staff" on public.payments
-  for insert, update using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+  for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
 
 drop policy if exists "notifications_own" on public.notifications;
 drop policy if exists "notifications_read_staff" on public.notifications;
@@ -130,4 +130,4 @@ create policy "notifications_own" on public.notifications
 create policy "notifications_read_staff" on public.notifications
   for select using (public.is_staff(auth.uid()));
 create policy "notifications_write_staff" on public.notifications
-  for insert, update using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
+  for all using (public.is_staff(auth.uid())) with check (public.is_staff(auth.uid()));
