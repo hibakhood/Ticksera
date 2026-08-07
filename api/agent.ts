@@ -20,7 +20,7 @@ const KB_LIMIT = 3;
 const TRANSCRIPT_LIMIT = 12;
 
 interface AgentBody {
-  mode: 'triage' | 'chat' | 'auto-route';
+  mode: 'triage' | 'chat' | 'recovery' | 'auto-route';
   ticket?: {
     title?: string;
     description?: string;
@@ -48,6 +48,29 @@ interface AgentBody {
 }
 
 import { json, rateLimit, getAuthedUser, logEvent } from './_shared';
+
+// Customer-facing text rules for every reply. The model is told to pick the
+// best-fitting punctuation in place of em-dashes/en-dashes, and cleanDashes is
+// a hard safety net so no dash ever reaches a customer.
+const DASH_RULES = [
+  'Output rules for text shown to the customer:',
+  '- Never use em-dashes (—) or en-dashes (–) anywhere in your reply.',
+  '- Where a sentence would use an em-dash or en-dash, use the punctuation that best fits: a comma, period, colon, parentheses, or the word "and"/"but", whichever preserves the original meaning and flow.',
+  '- Do not simply delete the dash and leave a run-on sentence; restructure the sentence if needed so it still reads naturally.',
+  '- Keep hyphens in compound words (e.g. "state-of-the-art"); only avoid em-dashes and en-dashes used as sentence punctuation.',
+  '- Do not change any other wording, tone, facts, or formatting.',
+  '- Return the reply message text only, with no explanation or commentary.',
+  '',
+];
+
+// Safety net: strip any em-dash/en-dash the model still emitted. A spaced
+// em-dash becomes a comma; a bare dash becomes a hyphen.
+function cleanDashes(text: string): string {
+  return (text ?? '')
+    .replace(/ ?\u2014 ?/g, ', ')
+    .replace(/\u2014/g, '-')
+    .replace(/\u2013/g, '-');
+}
 
 // Per-user AI budget (approximate, in-memory per edge isolate). Combined with
 // the per-IP rate limit this bounds cost even if the provider is called
@@ -116,6 +139,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       '- If the issue seems urgent or beyond self-service (hardware failure, security breach, outage), say a technician may be needed.',
       '- Use **bold** and bullet points where helpful. Never claim to be human.',
       '',
+      ...DASH_RULES,
       'Respond with VALID JSON only, exactly this shape:',
       '{"reply": "message for the customer", "completed": true|false, "escalate": true|false}',
       'Set completed:true only when you gave the step-by-step fix and need no more questions. Set escalate:true if a technician is definitely required.',
@@ -155,8 +179,37 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       '- Set technicianId to exactly one id from the roster above. Set it to null only if no technician is suitable or one is clearly required for management review.',
       '- Write a concise reason (under 80 words) explaining the choice.',
       '',
+      ...DASH_RULES,
       'Respond with VALID JSON only, exactly this shape:',
       '{"category": "category", "priority": "priority", "technicianId": "id or null", "action": "assign"|"escalate", "reason": "short explanation"}',
+    ].join('\n');
+  }
+
+  if (body.mode === 'recovery') {
+    return [
+      'You are FIXORA, the friendly AI support assistant for Fixora IT Support.',
+      'A customer tried the step-by-step fix from our knowledge base, but the issue is still not resolved. They are following up with you.',
+      '',
+      BOUNDARY,
+      '<customer_data>',
+      meta,
+      '',
+      kbContext,
+      '</customer_data>',
+      '',
+      'Rules:',
+      '- Keep replies short, warm and under 130 words.',
+      '- Use your own technical reasoning and general knowledge to propose the best possible alternative solutions the customer has not tried yet.',
+      '- Suggest ONE concrete next step at a time and ask them to try it before the next one.',
+      '- Use the knowledge base when relevant, but go beyond it: reason about the likely cause and give the most effective fix.',
+      '- Do NOT repeat the same steps from the knowledge base that already failed.',
+      '- If you genuinely cannot help, the issue is urgent, or it clearly needs hands-on work, set escalate:true so a technician takes over.',
+      '- Use **bold** and bullet points where helpful. Never claim to be human.',
+      '',
+      ...DASH_RULES,
+      'Respond with VALID JSON only, exactly this shape:',
+      '{"reply": "message for the customer", "escalate": true|false}',
+      'Set escalate:true only when you truly have no more useful steps and a technician is required.',
     ].join('\n');
   }
 
@@ -183,6 +236,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
     '- "escalated": the customer is clearly dissatisfied, the fix is not working, or a technician is required.',
     '- "open": the conversation just started and nothing has been done yet.',
     '',
+    ...DASH_RULES,
     'Respond with VALID JSON only, exactly this shape:',
     '{"reply": "message for the customer", "status": "in_progress|resolved|closed|escalated|open"}',
   ].join('\n');
@@ -294,12 +348,24 @@ export default async function handler(req: Request): Promise<Response> {
       if (parsed) {
         return json({
           enabled: true,
-          reply: typeof parsed.reply === 'string' ? parsed.reply : content,
+          reply: cleanDashes(typeof parsed.reply === 'string' ? parsed.reply : content),
           completed: parsed.completed === true,
           escalate: parsed.escalate === true,
         });
       }
-      return json({ enabled: true, reply: content });
+      return json({ enabled: true, reply: cleanDashes(content) });
+    }
+
+    if (body.mode === 'recovery') {
+      const parsed = extractJson(content);
+      if (parsed) {
+        return json({
+          enabled: true,
+          reply: cleanDashes(typeof parsed.reply === 'string' ? parsed.reply : content),
+          escalate: parsed.escalate === true,
+        });
+      }
+      return json({ enabled: true, reply: cleanDashes(content) });
     }
 
     if (body.mode === 'chat') {
@@ -309,11 +375,11 @@ export default async function handler(req: Request): Promise<Response> {
         const status = typeof parsed.status === 'string' && validStatuses.has(parsed.status) ? parsed.status : undefined;
         return json({
           enabled: true,
-          reply: typeof parsed.reply === 'string' ? parsed.reply : content,
+          reply: cleanDashes(typeof parsed.reply === 'string' ? parsed.reply : content),
           status,
         });
       }
-      return json({ enabled: true, reply: content });
+      return json({ enabled: true, reply: cleanDashes(content) });
     }
 
     if (body.mode === 'auto-route') {
@@ -339,7 +405,7 @@ export default async function handler(req: Request): Promise<Response> {
       return json({ enabled: true, error: 'invalid auto-route response' }, 200);
     }
 
-    return json({ enabled: true, reply: content });
+    return json({ enabled: true, reply: cleanDashes(content) });
   } catch (err) {
     return json({ enabled: true, error: err instanceof Error ? err.message : 'upstream error' }, 200);
   }

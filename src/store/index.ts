@@ -255,6 +255,11 @@ interface AppState {
 const BOT_EMAIL = 'bot@fixora.com';
 const BOT_NAME = 'FIXORA BOT';
 
+// Bounded recovery attempts: after the knowledge-base fix fails, the AI gets up
+// to this many chances to reason through an alternative solution before the
+// ticket is handed to a technician.
+const MAX_BOT_RECOVERY_TRIES = 2;
+
 function setBotTyping(ticketId: string, active: boolean) {
   useStore.setState(s => ({
     typingUsers: active
@@ -263,9 +268,12 @@ function setBotTyping(ticketId: string, active: boolean) {
   }));
 }
 
-function fallbackReply(mode: 'triage' | 'chat', category: TicketCategory, step: number, answer: string): string {
+function fallbackReply(mode: 'triage' | 'chat' | 'recovery', category: TicketCategory, step: number, answer: string): string {
   if (mode === 'triage') {
     return getDiagnosticResponse(category, step, answer, useStore.getState().kbArticles);
+  }
+  if (mode === 'recovery') {
+    return "I'm sorry the suggested steps didn't fix it. I've passed your case to a technician who will take over shortly.";
   }
   return "Thanks, I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
 }
@@ -320,7 +328,7 @@ function inferSuggestedStatus(text: string): AgentStatus {
   return 'in_progress';
 }
 
-async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat') {
+async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat' | 'recovery') {
   const snapshot = useStore.getState();
   const ticket = snapshot.tickets.find(t => t.id === ticketId);
   if (!ticket || !ticket.category) {
@@ -335,6 +343,8 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
   let reply: string;
   let completed = false;
   let aiStatus: AgentStatus | undefined;
+  let aiEscalate = false;
+  let aiReplyAvailable = false;
   if (isSupabaseConfigured()) {
     const result = await requestAgentReply(
       buildAgentPayload(
@@ -356,8 +366,10 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     );
     if (result?.enabled && result.reply) {
       reply = result.reply;
+      aiReplyAvailable = true;
       completed = result.completed === true;
       aiStatus = result.status;
+      aiEscalate = result.escalate === true;
     } else {
       reply = fallbackReply(mode, ticket.category, step, answer);
       if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
@@ -365,6 +377,18 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
   } else {
     reply = fallbackReply(mode, ticket.category, step, answer);
     if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
+  }
+
+  // Recovery mode: the knowledge-base fix already failed. The AI gets one solid
+  // attempt to reason through the best alternative solution; if it can't help
+  // (or the live AI is unavailable), hand off to a technician instead of
+  // looping the customer back through more self-service.
+  if (mode === 'recovery') {
+    setBotTyping(ticketId, false);
+    if (!aiReplyAvailable || aiEscalate) {
+      useStore.getState().requestTechnician(ticketId, `FIXORA BOT exhausted self-service options: "${answer.trim()}"`);
+      return;
+    }
   }
 
   if (mode === 'triage' && completed) {
@@ -1197,10 +1221,24 @@ export const useStore = create<AppState>()(
         const ticket = get().tickets.find(t => t.id === ticketId);
         if (!ticket) return;
         if (ticket.assignedTo || ['resolved', 'closed', 'escalated'].includes(ticket.status) || ticket.triageStatus === 'escalated_to_technician') return;
-        // After the BOT's resolution attempt, auto-route only when the customer
-        // explicitly says the BOT didn't help.
+        // After the BOT's resolution attempt, the customer says the knowledge-base
+        // fix didn't work: give the AI a chance to reason through the best
+        // alternative solution before routing to a technician. Bounded so a
+        // dissatisfied customer can't loop through bot-only recovery forever.
         if (ticket.triageStatus === 'needs_technician' && isCustomerDissatisfied(text)) {
-          get().requestTechnician(ticketId, `Customer reported the BOT did not resolve the issue: "${text.trim()}"`);
+          if ((ticket.botRecoveryTries ?? 0) >= MAX_BOT_RECOVERY_TRIES) {
+            get().requestTechnician(ticketId, `Customer reported the BOT did not resolve the issue: "${text.trim()}"`);
+            return;
+          }
+          set(s => ({
+            tickets: s.tickets.map(t =>
+              t.id === ticketId
+                ? { ...t, botRecoveryTries: (t.botRecoveryTries ?? 0) + 1, updatedAt: new Date().toISOString() }
+                : t
+            ),
+          }));
+          setBotTyping(ticketId, true);
+          void runAgentTurn(ticketId, ticket.triageStep ?? 0, text, 'recovery');
           return;
         }
         const step = ticket.triageStep ?? 0;

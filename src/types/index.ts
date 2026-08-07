@@ -41,6 +41,7 @@ export interface Ticket {
   escalationLevel: number;
   triageStatus?: TriageStatus;
   triageStep?: number;
+  botRecoveryTries?: number;
   estimatedResolutionTime?: string;
   aiRoutingReason?: string;
   activityLogs: ActivityLog[];

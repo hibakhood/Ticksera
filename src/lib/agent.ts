@@ -13,7 +13,7 @@ export interface AgentReply {
 }
 
 export interface AgentPayload {
-  mode: 'triage' | 'chat';
+  mode: 'triage' | 'chat' | 'recovery';
   ticket: {
     id: string;
     title: string;
