@@ -12,9 +12,14 @@ export interface AgentReply {
   status?: AgentStatus;
 }
 
+export interface StaffMember {
+  name: string;
+  role: string;
+}
+
 export interface AgentPayload {
-  mode: 'triage' | 'chat' | 'recovery';
-  ticket: {
+  mode: 'triage' | 'chat' | 'recovery' | 'staff';
+  ticket?: {
     id: string;
     title: string;
     description?: string;
@@ -24,6 +29,11 @@ export interface AgentPayload {
     issueTrigger?: string;
     triageStep?: number;
   };
+  conversation?: {
+    title?: string;
+    participants: StaffMember[];
+  };
+  staff?: StaffMember[];
   transcript: { senderRole?: string; isAdmin?: boolean; message?: string }[];
   answer: string;
   kb?: { title: string; content: string }[];
@@ -34,10 +44,11 @@ export function buildAgentPayload(
   transcript: AgentPayload['transcript'],
   answer: string,
   mode: AgentPayload['mode'],
-  kbArticles: KBArticle[] = []
+  kbArticles: KBArticle[] = [],
+  staff: StaffMember[] = []
 ): AgentPayload {
-  const kb = ticket.category ? findKbArticles(kbArticles, ticket.category, 4).map(a => ({ title: a.title, content: a.content })) : [];
-  return { mode, ticket, transcript, answer, kb };
+  const kb = ticket?.category ? findKbArticles(kbArticles, ticket.category, 4).map(a => ({ title: a.title, content: a.content })) : [];
+  return { mode, ticket, transcript, answer, kb, staff };
 }
 
 const CLIENT_TIMEOUT_MS = 25000;

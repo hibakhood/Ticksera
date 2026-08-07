@@ -72,7 +72,8 @@ export interface Booking {
 
 export interface ChatMessage {
   id: string;
-  ticketId: string;
+  ticketId?: string;
+  conversationId?: string;
   senderEmail: string;
   senderName: string;
   senderRole: UserRole;
@@ -82,6 +83,17 @@ export interface ChatMessage {
   fileName?: string;
   fileType?: string;
   createdAt: string;
+}
+
+/** Staff-to-staff chat thread. Direct (two people) or group (several). */
+export interface Conversation {
+  id: string;
+  type: 'direct' | 'group';
+  title?: string;
+  participantIds: string[];
+  createdBy: string;
+  createdAt: string;
+  lastMessageAt: string;
 }
 
 export interface ContactMessage {

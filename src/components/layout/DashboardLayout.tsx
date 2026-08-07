@@ -79,7 +79,7 @@ export default function DashboardLayout() {
     currentUser, darkMode, toggleDarkMode, logout,
     notifications, markNotifRead, markAllNotifsRead,
     sidebarOpen, setSidebarOpen,
-    chatMessages, tickets, chatLastVisit,
+    chatMessages, tickets, chatLastVisit, conversations,
     payments, users, syncStatus, lastSyncedAt,
   } = useStore(
     useShallow(s => ({
@@ -87,7 +87,7 @@ export default function DashboardLayout() {
       logout: s.logout, notifications: s.notifications, markNotifRead: s.markNotifRead,
       markAllNotifsRead: s.markAllNotifsRead, sidebarOpen: s.sidebarOpen,
       setSidebarOpen: s.setSidebarOpen, chatMessages: s.chatMessages,
-      tickets: s.tickets, chatLastVisit: s.chatLastVisit,
+      tickets: s.tickets, chatLastVisit: s.chatLastVisit, conversations: s.conversations,
       payments: s.payments, users: s.users,
       syncStatus: s.syncStatus, lastSyncedAt: s.lastSyncedAt,
     }))
@@ -121,9 +121,14 @@ export default function DashboardLayout() {
         : t.assignedTo === currentUser?.id || isAdmin)
       .map(t => t.id)
   );
+  const myConversationIds = new Set(
+    conversations
+      .filter(c => currentUser && c.participantIds.includes(currentUser.id))
+      .map(c => c.id)
+  );
   const unreadChatCount = chatMessages.filter(m =>
     m.senderEmail !== currentUser?.email &&
-    myTicketIds.has(m.ticketId) &&
+    (m.ticketId ? myTicketIds.has(m.ticketId) : myConversationIds.has(m.conversationId ?? '')) &&
     new Date(m.createdAt) > new Date(chatLastVisit)
   ).length;
 

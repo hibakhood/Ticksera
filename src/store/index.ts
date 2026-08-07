@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, Ticket, Booking, ChatMessage, ContactMessage, Payment, KBArticle, Notification, TicketCategory } from '../types';
+import type { User, Ticket, Booking, ChatMessage, Conversation, ContactMessage, Payment, KBArticle, Notification, TicketCategory } from '../types';
 import { v4 as uuid } from 'uuid';
 import { buildTriageGreeting, buildHandoffGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
@@ -122,16 +122,27 @@ const seedBookings: Booking[] = [
   { id: 'b3', serviceType: 'Remote Assistance', preferredDate: day(1).split('T')[0], preferredTime: '09:00', description: 'Help with email migration', status: 'confirmed', contactPhone: '+234 800 000 0005', assignedTechnician: '7', sessionType: 'remote', createdBy: '5', createdAt: day(-2) },
 ];
 
+const seedConversations: Conversation[] = [
+  { id: 'conv1', type: 'group', title: 'Ops Squad', participantIds: ['1', '2', '3', '4', '7'], createdBy: '1', createdAt: day(-6), lastMessageAt: day(-1) },
+  { id: 'conv2', type: 'direct', title: 'Sarah Chen', participantIds: ['1', '2'], createdBy: '1', createdAt: day(-4), lastMessageAt: day(-2) },
+  { id: 'conv3', type: 'direct', title: 'Mike Obi', participantIds: ['1', '3'], createdBy: '1', createdAt: day(-3), lastMessageAt: day(-2) },
+  { id: 'conv4', type: 'group', title: 'Field Crew', participantIds: ['1', '2', '4'], createdBy: '2', createdAt: day(-5), lastMessageAt: day(-1) },
+];
+
 const seedMessages: ChatMessage[] = [
   { id: 'm1', ticketId: 't2', senderEmail: 'jane@company.com', senderName: 'Jane Doe', senderRole: 'customer', message: 'The network dropped again just now. This is really affecting our work.', isAdmin: false, createdAt: day(-2) },
   { id: 'm2', ticketId: 't2', senderEmail: 'tech@fixora.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'I understand the urgency. I\'m checking the router logs now. Can you confirm if the issue happens on both 2.4GHz and 5GHz bands?', isAdmin: true, createdAt: day(-2) },
   { id: 'm3', ticketId: 't2', senderEmail: 'jane@company.com', senderName: 'Jane Doe', senderRole: 'customer', message: 'It happens on both bands. We have an Ubiquiti UniFi setup.', isAdmin: false, createdAt: day(-1) },
   { id: 'm4', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'How long will this take to fix? I need my laptop for a presentation tomorrow.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm5', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'Hello David, welcome to Fixora. I\'m **FIXORA**, your AI support assistant.\n\nLet\'s diagnose your laptop boot issue together.\n\n**First question:**\n\nDoes the computer turn on at all? Do you see any lights or hear fans?', isAdmin: true, createdAt: day(-2) },
+  { id: 'm5', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'Hello David, welcome to Fixora. I\'m **FIXORA**, your AI support assistant.\n\nLet\'s diagnose your laptop boot issue together.\n\n**First question:**\n\nDoes the computer turn on at all? Do you see any lights or hear fans?', isAdmin: true, createdAt: day(-2) },
   { id: 'm6', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'It powers on but I get a blue screen with error code 0x0000007B.', isAdmin: false, createdAt: day(-2) },
-  { id: 'm7', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'A blue screen with **0x0000007B** usually points to a boot-device issue.\n\n**You can try this now:**\n\n• Boot into Safe Mode.\n• Run System Restore to a point before the Windows update.\n\n**Next question:**\n\nWhen did this issue start? Was it after a specific event?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm7', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'A blue screen with **0x0000007B** usually points to a boot-device issue.\n\n**You can try this now:**\n\n• Boot into Safe Mode.\n• Run System Restore to a point before the Windows update.\n\n**Next question:**\n\nWhen did this issue start? Was it after a specific event?', isAdmin: true, createdAt: day(-1) },
   { id: 'm8', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'Yes, it started right after the latest Windows update.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm9', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below; I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
+  { id: 'm9', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below; I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
+  { id: 'm10', conversationId: 'conv1', senderEmail: 'tech@fixora.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'Anyone free to take the CCTV outage in Port Harcourt tomorrow?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm11', conversationId: 'conv1', senderEmail: 'manager@fixora.com', senderName: 'Sarah Chen', senderRole: 'support_manager', message: 'Grace, can you cover it?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm12', conversationId: 'conv2', senderEmail: 'admin@fixora.com', senderName: 'Ibrahim O. Akande', senderRole: 'super_admin', message: 'Review the AI routing logs when you get a chance.', isAdmin: true, createdAt: day(-2) },
+  { id: 'm13', conversationId: 'conv4', senderEmail: 'field@fixora.com', senderName: 'Grace Adeyemi', senderRole: 'field_technician', message: 'Confirming I can cover Port Harcourt tomorrow.', isAdmin: true, createdAt: day(-1) },
 ];
 
 const seedContacts: ContactMessage[] = [
@@ -204,6 +215,11 @@ interface AppState {
   addChatMessage: (msg: Omit<ChatMessage, 'id' | 'createdAt'>) => void;
   aiChatReply: (ticketId: string, text: string) => void;
 
+  // Staff chats
+  conversations: Conversation[];
+  createConversation: (participantIds: string[], title?: string) => string | null;
+  staffChatReply: (conversationId: string, text: string) => void;
+
   // Contact
   contactMessages: ContactMessage[];
   addContactMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>) => void;
@@ -253,7 +269,7 @@ interface AppState {
 }
 
 const BOT_EMAIL = 'bot@fixora.com';
-const BOT_NAME = 'FIXORA BOT';
+const BOT_NAME = 'FIXORA';
 
 // Bounded recovery attempts: after the knowledge-base fix fails, the AI gets up
 // to this many chances to reason through an alternative solution before the
@@ -328,6 +344,85 @@ function inferSuggestedStatus(text: string): AgentStatus {
   return 'in_progress';
 }
 
+// Staff conversations: the bot only joins when called by its name (FIXORA).
+function isBotMentioned(text: string): boolean {
+  return /\bfixora\b/i.test(text || '');
+}
+
+function staffRoster(users: User[]): { name: string; role: string }[] {
+  return users
+    .filter(u => u.role !== 'customer' && u.role !== 'bot')
+    .map(u => ({ name: u.name, role: u.role }));
+}
+
+function staffFallbackReply(text: string): string {
+  const kb = useStore.getState().kbArticles.filter(a => a.isPublished);
+  const words = (text || '').toLowerCase().split(/\W+/).filter(w => w.length > 3);
+  const hits = kb.filter(a => {
+    const hay = `${a.title} ${a.category} ${(a.tags ?? []).join(' ')}`.toLowerCase();
+    return words.some(w => hay.includes(w));
+  }).slice(0, 2);
+  if (hits.length > 0) {
+    return 'I found these in the knowledge base that may help:\n\n' +
+      hits.map(a => `• **${a.title}**`).join('\n') +
+      '\n\nAsk me and I can pull up the full guide.';
+  }
+  return "I'm FIXORA. I don't have a perfect answer in my knowledge base for that right now. If it's urgent, tag a technician to pick it up directly.";
+}
+
+async function runStaffTurn(conversationId: string, text: string) {
+  const snapshot = useStore.getState();
+  const conv = snapshot.conversations.find(c => c.id === conversationId);
+  if (!conv) {
+    setBotTyping(conversationId, false);
+    return;
+  }
+  const transcript = snapshot.chatMessages
+    .filter(m => m.conversationId === conversationId)
+    .slice(-12)
+    .map(m => ({ senderRole: m.senderRole, isAdmin: m.isAdmin, message: m.message }));
+  const staff = staffRoster(snapshot.users);
+  const participants = conv.participantIds
+    .map(id => snapshot.users.find(u => u.id === id))
+    .filter((u): u is User => Boolean(u))
+    .map(u => ({ name: u.name, role: u.role }));
+  const kb = snapshot.kbArticles.slice(0, 3).map(a => ({ title: a.title, content: a.content }));
+
+  let reply: string;
+  if (isSupabaseConfigured()) {
+    const result = await requestAgentReply({
+      mode: 'staff',
+      conversation: { title: conv.title, participants },
+      staff,
+      transcript,
+      answer: text,
+      kb,
+    });
+    reply = result?.enabled && result.reply ? result.reply : staffFallbackReply(text);
+  } else {
+    reply = staffFallbackReply(text);
+  }
+
+  const now = new Date().toISOString();
+  useStore.setState(s => ({
+    chatMessages: [
+      ...s.chatMessages,
+      {
+        id: `m${Date.now()}b`,
+        conversationId,
+        senderEmail: BOT_EMAIL,
+        senderName: 'FIXORA',
+        senderRole: 'bot' as const,
+        message: reply,
+        isAdmin: true,
+        createdAt: now,
+      },
+    ],
+    conversations: s.conversations.map(c => c.id === conversationId ? { ...c, lastMessageAt: now } : c),
+    typingUsers: s.typingUsers.filter(t => !(t.ticketId === conversationId && t.email === BOT_EMAIL)),
+  }));
+}
+
 async function runAgentTurn(ticketId: string, step: number, answer: string, mode: 'triage' | 'chat' | 'recovery') {
   const snapshot = useStore.getState();
   const ticket = snapshot.tickets.find(t => t.id === ticketId);
@@ -361,7 +456,8 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
         transcript,
         answer,
         mode,
-        snapshot.kbArticles
+        snapshot.kbArticles,
+        staffRoster(snapshot.users)
       )
     );
     if (result?.enabled && result.reply) {
@@ -386,7 +482,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
   if (mode === 'recovery') {
     setBotTyping(ticketId, false);
     if (!aiReplyAvailable || aiEscalate) {
-      useStore.getState().requestTechnician(ticketId, `FIXORA BOT exhausted self-service options: "${answer.trim()}"`);
+      useStore.getState().requestTechnician(ticketId, `${BOT_NAME} exhausted self-service options: "${answer.trim()}"`);
       return;
     }
   }
@@ -416,13 +512,13 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
               ...t,
               status: suggestedStatus,
               triageStatus: ['resolved', 'closed', 'escalated'].includes(suggestedStatus) ? undefined : t.triageStatus,
-              resolvedBy: suggestedStatus === 'resolved' ? 'FIXORA BOT' : t.resolvedBy,
+              resolvedBy: suggestedStatus === 'resolved' ? BOT_NAME : t.resolvedBy,
               resolutionNotes: suggestedStatus === 'resolved'
-                ? (t.resolutionNotes ?? 'Resolved via FIXORA BOT conversation')
+                ? (t.resolutionNotes ?? `Resolved via ${BOT_NAME} conversation`)
                 : t.resolutionNotes,
               escalationLevel: suggestedStatus === 'escalated' ? (t.escalationLevel ?? 0) + 1 : t.escalationLevel,
               updatedAt: now,
-              activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `FIXORA BOT moved ticket to ${suggestedStatus.replace(/_/g, ' ')}`, entityType: 'ticket', entityId: t.id, timestamp: now }],
+              activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: `${BOT_NAME} moved ticket to ${suggestedStatus.replace(/_/g, ' ')}`, entityType: 'ticket', entityId: t.id, timestamp: now }],
             }
           : t
     ),
@@ -432,7 +528,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
         id: `m${Date.now()}b`,
         ticketId,
         senderEmail: BOT_EMAIL,
-        senderName: BOT_NAME,
+        senderName: 'FIXORA',
         senderRole: 'bot' as const,
         message: reply,
         isAdmin: true,
@@ -451,8 +547,8 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
         .forEach(admin => {
           latest.addNotification({
             userEmail: admin.email,
-            title: 'Ticket escalated by FIXORA BOT',
-            message: `The FIXORA BOT marked "${escalated.title}" as escalated after the conversation indicated the issue wasn't resolved.`,
+            title: `Ticket escalated by ${BOT_NAME}`,
+            message: `The ${BOT_NAME} marked "${escalated.title}" as escalated after the conversation indicated the issue wasn't resolved.`,
             type: 'ticket',
             link: `/tickets/${ticketId}`,
           });
@@ -472,7 +568,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
 // ---------------------------------------------------------------------------
 
 function buildSharedState(
-  s: Pick<AppState, 'tickets' | 'chatMessages' | 'bookings' | 'payments' | 'users' | 'contactMessages' | 'notifications' | 'kbArticles'>
+  s: Pick<AppState, 'tickets' | 'chatMessages' | 'conversations' | 'bookings' | 'payments' | 'users' | 'contactMessages' | 'notifications' | 'kbArticles'>
 ): SharedState {
   // In live mode the demo seed rows must never leave the browser: the DB tables
   // are the source of truth and charts must reflect real rows only.
@@ -482,6 +578,7 @@ function buildSharedState(
   return {
     tickets: strip(s.tickets),
     chatMessages: strip(s.chatMessages),
+    conversations: strip(s.conversations),
     bookings: strip(s.bookings),
     payments: strip(s.payments),
     users: s.users
@@ -563,7 +660,7 @@ const DEMO_SEED_IDS = new Set(['1', '2', '3', '4', '5', '6', '7']);
  * correlate with actual rows instead of sample data.
  */
 const DEMO_BUSINESS_IDS = new Set<string>([
-  ...seedTickets, ...seedBookings, ...seedPayments, ...seedMessages, ...seedNotifications, ...seedContacts,
+  ...seedTickets, ...seedBookings, ...seedPayments, ...seedMessages, ...seedConversations, ...seedNotifications, ...seedContacts,
 ].map(x => x.id));
 
 function stripDemoBusiness<T extends { id: string }>(items: T[]): T[] {
@@ -736,6 +833,7 @@ export const useStore = create<AppState>()(
               return {
                 tickets: stripDemoBusiness(mergeById(mergeById(s.tickets, shared.tickets as Ticket[]), db?.tickets)),
                 chatMessages: stripDemoBusiness(mergeById(mergeById(s.chatMessages, shared.chatMessages as ChatMessage[]), db?.chatMessages)),
+                conversations: stripDemoBusiness(mergeById(s.conversations, shared.conversations as Conversation[])),
                 bookings: stripDemoBusiness(mergeById(mergeById(s.bookings, shared.bookings as Booking[]), db?.bookings)),
                 payments: stripDemoBusiness(mergeById(mergeById(s.payments, shared.payments as Payment[]), db?.payments)),
                 users,
@@ -981,7 +1079,7 @@ export const useStore = create<AppState>()(
             id: `m${Date.now()}`,
             ticketId: id,
             senderEmail: 'bot@fixora.com',
-            senderName: 'FIXORA BOT',
+            senderName: 'FIXORA',
             senderRole: 'bot' as const,
             message: triageGreeting,
             isAdmin: true,
@@ -1003,14 +1101,14 @@ export const useStore = create<AppState>()(
         return {
           tickets: s.tickets.map(t =>
             t.id === id
-              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolvedBy: 'FIXORA BOT', resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage, no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
+              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolvedBy: BOT_NAME, resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage, no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
               : t
           ),
           chatMessages: [...s.chatMessages, {
             id: `m${Date.now()}`,
             ticketId: id,
             senderEmail: 'bot@fixora.com',
-            senderName: 'FIXORA BOT',
+            senderName: 'FIXORA',
             senderRole: 'bot' as const,
             message: "That's wonderful to hear. Your issue is now resolved, and your ticket has been marked accordingly.\n\nIf you ever need help again, you can reach us anytime; just create a new ticket. Take care!",
             isAdmin: true,
@@ -1034,7 +1132,7 @@ export const useStore = create<AppState>()(
               id: `m${Date.now()}`,
               ticketId: id,
               senderEmail: 'bot@fixora.com',
-              senderName: 'FIXORA BOT',
+              senderName: 'FIXORA',
               senderRole: 'bot' as const,
               message: "Your request has been received.\n\nA technician will be assigned to your ticket shortly, and you'll be notified here the moment they pick it up. Your case details and diagnostic summary have been shared with them.",
               isAdmin: true,
@@ -1246,22 +1344,63 @@ export const useStore = create<AppState>()(
         void runAgentTurn(ticketId, step, text, 'chat');
       },
 
+      createConversation: (participantIds, title) => {
+        const me = get().currentUser;
+        if (!me || (me.role !== 'super_admin' && me.role !== 'support_manager')) return null;
+        const ids = Array.from(new Set([me.id, ...participantIds]));
+        if (ids.length < 2) return null;
+        const now = new Date().toISOString();
+        const id = `conv${Date.now()}`;
+        const other = ids.filter(i => i !== me.id);
+        const isDirect = other.length === 1;
+        const fallbackTitle = isDirect
+          ? get().users.find(u => u.id === other[0])?.name || 'Direct chat'
+          : title?.trim() || 'Group chat';
+        set(s => ({
+          conversations: [...s.conversations, {
+            id,
+            type: isDirect ? 'direct' as const : 'group' as const,
+            title: fallbackTitle,
+            participantIds: ids,
+            createdBy: me.id,
+            createdAt: now,
+            lastMessageAt: now,
+          }],
+        }));
+        return id;
+      },
+
+      staffChatReply: (conversationId, text) => {
+        const conversation = get().conversations.find(c => c.id === conversationId);
+        if (!conversation) return;
+        if (!isBotMentioned(text)) return;
+        const me = get().currentUser;
+        if (!me || !conversation.participantIds.includes(me.id)) return;
+        setBotTyping(conversationId, true);
+        void runStaffTurn(conversationId, text);
+      },
+
       bookings: seedBookings,
       addBooking: (bookingData) => set(s => ({ bookings: [...s.bookings, { ...bookingData, id: `b${Date.now()}`, createdAt: new Date().toISOString() }] })),
       updateBooking: (id, data) => set(s => ({ bookings: s.bookings.map(b => b.id === id ? { ...b, ...data } : b) })),
 
       chatMessages: seedMessages,
+      conversations: seedConversations,
       addChatMessage: (msg) => set(s => {
         const ticket = s.tickets.find(t => t.id === msg.ticketId);
         const started = ticket?.status === 'open';
         const now = new Date().toISOString();
+        const message = { ...msg, id: `m${Date.now()}`, createdAt: now };
         return {
-          chatMessages: [...s.chatMessages, { ...msg, id: `m${Date.now()}`, createdAt: now }],
+          chatMessages: [...s.chatMessages, message],
           tickets: started
             ? s.tickets.map(t => t.id === msg.ticketId
               ? { ...t, status: 'in_progress' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: msg.senderName || t.createdByName, action: 'Conversation started, ticket moved to In Progress', entityType: 'ticket', entityId: t.id, timestamp: now }] }
               : t)
             : s.tickets,
+          conversations: msg.conversationId
+            ? s.conversations.map(c => c.id === msg.conversationId ? { ...c, lastMessageAt: now } : c)
+            : s.conversations,
         };
       }),
 

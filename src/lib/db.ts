@@ -307,7 +307,11 @@ export async function mirrorToDb(data: SharedState): Promise<void> {
   if (!isSupabaseConfigured()) return;
   const emailToId = await emailToProfileId();
   const tickets = (data.tickets as Ticket[]).map(ticketToDb);
-  const chatMessages = (data.chatMessages as ChatMessage[]).map(chatToDb);
+  // Only ticket messages belong in the chat_messages business table; staff
+  // conversation messages ride in the shared row instead.
+  const chatMessages = (data.chatMessages as ChatMessage[])
+    .filter(m => m.ticketId)
+    .map(chatToDb);
   const bookings = (data.bookings as Booking[]).map(bookingToDb);
   const payments = (data.payments as Payment[]).map(paymentToDb);
   const notifications = (data.notifications as Notification[]).map(n => {

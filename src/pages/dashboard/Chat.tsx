@@ -8,7 +8,7 @@ import FileAttachment from '../../components/ui/FileAttachment';
 import TypingIndicator from '../../components/ui/TypingIndicator';
 import ChatMessageText from '../../components/ui/ChatMessageText';
 import PageHeader from '../../components/ui/PageHeader';
-import { Send, MessageSquare, Search, ArrowLeft, Paperclip, X, Bot, ArrowRight, Cpu } from 'lucide-react';
+import { Send, MessageSquare, Search, ArrowLeft, Paperclip, X, Bot, ArrowRight, Cpu, Users, Plus, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getTriageFlow } from '../../utils/triage';
 import { cleanTicketTitle } from '../../utils/ticketTitle';
@@ -21,17 +21,21 @@ const statusVariant: Record<string, 'success' | 'warning' | 'danger' | 'info' | 
 };
 
 export default function Chat() {
-  const { currentUser, tickets, chatMessages, addChatMessage, aiChatReply, setChatLastVisit, typingUsers, startTyping, stopTyping, users, submitTriageAnswer } = useStore(
+  const { currentUser, tickets, chatMessages, conversations, addChatMessage, aiChatReply, staffChatReply, createConversation, setChatLastVisit, typingUsers, startTyping, stopTyping, users, submitTriageAnswer } = useStore(
     useShallow(s => ({
-      currentUser: s.currentUser, tickets: s.tickets, chatMessages: s.chatMessages,
-      addChatMessage: s.addChatMessage, aiChatReply: s.aiChatReply, setChatLastVisit: s.setChatLastVisit,
+      currentUser: s.currentUser, tickets: s.tickets, chatMessages: s.chatMessages, conversations: s.conversations,
+      addChatMessage: s.addChatMessage, aiChatReply: s.aiChatReply, staffChatReply: s.staffChatReply,
+      createConversation: s.createConversation, setChatLastVisit: s.setChatLastVisit,
       typingUsers: s.typingUsers, startTyping: s.startTyping, stopTyping: s.stopTyping,
       users: s.users, submitTriageAnswer: s.submitTriageAnswer,
     }))
   );
-  const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
+  const [selected, setSelected] = useState<{ kind: 'ticket' | 'conversation'; id: string } | null>(null);
   const [msg, setMsg] = useState('');
   const [search, setSearch] = useState('');
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [newChatIds, setNewChatIds] = useState<string[]>([]);
+  const [newChatTitle, setNewChatTitle] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<{ url: string; name: string; type: string } | null>(null);
@@ -50,18 +54,18 @@ export default function Chat() {
     };
   }, []);
 
-  const whoTyping = selectedTicket
+  const whoTyping = selected
     ? typingUsers
-        .filter(t => t.ticketId === selectedTicket && t.email !== currentUser?.email && t.expiresAt > Date.now())
+        .filter(t => t.ticketId === selected.id && t.email !== currentUser?.email && t.expiresAt > Date.now())
         .map(t => t.name)
     : [];
 
   const handleMsgChange = (value: string) => {
     setMsg(value);
-    if (!currentUser || !selectedTicket) return;
-    startTyping(selectedTicket, currentUser.email, currentUser.name);
+    if (!currentUser || !selected) return;
+    startTyping(selected.id, currentUser.email, currentUser.name);
     if (typingTimer.current) clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(() => stopTyping(selectedTicket, currentUser.email), 2500);
+    typingTimer.current = setTimeout(() => stopTyping(selected.id, currentUser.email), 2500);
   };
 
   const simulateReply = (ticketId: string) => {
@@ -83,53 +87,75 @@ export default function Chat() {
   };
 
   const role = currentUser?.role;
+  const isManager = role === 'super_admin' || role === 'support_manager';
+  const isStaff = isManager || role === 'technician' || role === 'field_technician';
   const myTickets = role === 'customer'
     ? tickets.filter(t => t.createdBy === currentUser?.id)
     : (role === 'technician' || role === 'field_technician')
       ? tickets.filter(t => t.assignedTo === currentUser?.id)
       : tickets;
 
-  const conversations = myTickets
-    .filter(t =>
-      chatMessages.some(m => m.ticketId === t.id) || t.status !== 'closed'
-    )
-    .sort((a, b) => {
-      const lastActive = (t: { id: string; createdAt: string }) => chatMessages
-        .filter(m => m.ticketId === t.id)
-        .reduce((max, m) => Math.max(max, new Date(m.createdAt).getTime()), new Date(t.createdAt).getTime());
-      return lastActive(b) - lastActive(a);
-    });
+  const myConversations = isStaff && currentUser
+    ? conversations
+        .filter(c => c.participantIds.includes(currentUser.id))
+        .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
+    : [];
+
+  const conversationsList = search
+    ? myConversations.filter(c => {
+        const haystack = `${c.title ?? ''} ${c.participantIds
+          .map(id => users.find(u => u.id === id)?.name ?? '')
+          .join(' ')}`.toLowerCase();
+        return haystack.includes(search.toLowerCase());
+      })
+    : myConversations;
 
   const filteredConversations = search
-    ? conversations.filter(t => {
+    ? myTickets.filter(t => {
         const haystack = `${t.title} ${t.productItem ?? ''} ${t.issueTrigger ?? ''}`.toLowerCase();
         return haystack.includes(search.toLowerCase());
       })
-    : conversations;
+    : myTickets;
 
-  const activeMessages = chatMessages
-    .filter(m => m.ticketId === selectedTicket)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  const activeMessages = selected
+    ? chatMessages
+        .filter(m => selected.kind === 'ticket' ? m.ticketId === selected.id : m.conversationId === selected.id)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    : [];
 
-  const selectedTicketData = tickets.find(t => t.id === selectedTicket);
+  const selectedTicketData = selected?.kind === 'ticket' ? tickets.find(t => t.id === selected.id) : undefined;
+  const selectedConversation = selected?.kind === 'conversation' ? myConversations.find(c => c.id === selected.id) : undefined;
 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [activeMessages.length]);
 
   const handleSend = () => {
-    if (!msg.trim() || !currentUser || !selectedTicket) return;
-    stopTyping(selectedTicket, currentUser.email);
+    if (!msg.trim() || !currentUser || !selected) return;
+    stopTyping(selected.id, currentUser.email);
     if (typingTimer.current) clearTimeout(typingTimer.current);
     const text = msg.trim();
-    const ticket = tickets.find(t => t.id === selectedTicket);
+    if (selected.kind === 'conversation') {
+      addChatMessage({
+        conversationId: selected.id,
+        senderEmail: currentUser.email,
+        senderName: currentUser.name,
+        senderRole: currentUser.role,
+        message: text,
+        isAdmin: currentUser.role !== 'customer',
+      });
+      setMsg('');
+      staffChatReply(selected.id, text);
+      return;
+    }
+    const ticket = tickets.find(t => t.id === selected.id);
     if (ticket?.triageStatus === 'ai_diagnosing' && currentUser.id === ticket.createdBy) {
-      submitTriageAnswer(selectedTicket, text);
+      submitTriageAnswer(selected.id, text);
       setMsg('');
       return;
     }
     addChatMessage({
-      ticketId: selectedTicket,
+      ticketId: selected.id,
       senderEmail: currentUser.email,
       senderName: currentUser.name,
       senderRole: currentUser.role,
@@ -137,7 +163,7 @@ export default function Chat() {
       isAdmin: currentUser.role !== 'customer',
     });
     setMsg('');
-    aiChatReply(selectedTicket, text);
+    aiChatReply(selected.id, text);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,11 +184,10 @@ export default function Chat() {
   };
 
   const handleSendFile = () => {
-    if (!pendingFile || !currentUser || !selectedTicket) return;
-    stopTyping(selectedTicket, currentUser.email);
+    if (!pendingFile || !currentUser || !selected) return;
+    stopTyping(selected.id, currentUser.email);
     if (typingTimer.current) clearTimeout(typingTimer.current);
-    addChatMessage({
-      ticketId: selectedTicket,
+    const base = {
       senderEmail: currentUser.email,
       senderName: currentUser.name,
       senderRole: currentUser.role,
@@ -171,21 +196,35 @@ export default function Chat() {
       fileUrl: pendingFile.url,
       fileName: pendingFile.name,
       fileType: pendingFile.type,
-    });
+    };
+    if (selected.kind === 'conversation') {
+      addChatMessage({ ...base, conversationId: selected.id });
+      setPendingFile(null);
+      setMsg('');
+      return;
+    }
+    addChatMessage({ ...base, ticketId: selected.id });
     setPendingFile(null);
     setMsg('');
-    if (!isSupabaseConfigured()) simulateReply(selectedTicket);
+    if (!isSupabaseConfigured()) simulateReply(selected.id);
   };
 
   const ConversationList = () => (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-slate-200 dark:border-dark-border flex-shrink-0">
-        <h3 className="font-heading font-semibold text-slate-900 dark:text-white text-sm mb-3">
-          Conversations
-          {conversations.length > 0 && (
-            <span className="ml-2 text-xs text-slate-400 font-normal">({conversations.length})</span>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-heading font-semibold text-slate-900 dark:text-white text-sm">
+            Conversations
+          </h3>
+          {isManager && (
+            <button
+              onClick={() => setShowNewChat(true)}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" /> New Chat
+            </button>
           )}
-        </h3>
+        </div>
         <div className="relative">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -198,6 +237,68 @@ export default function Chat() {
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
+        {isStaff && conversationsList.length > 0 && (
+          <>
+            <div className="px-4 pt-3 pb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+              <Users className="w-3 h-3" /> Team Chat
+            </div>
+            {conversationsList.map(c => {
+              const msgs = chatMessages.filter(m => m.conversationId === c.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+              const lastMsg = msgs[0];
+              const unreadCount = msgs.filter(m => m.senderEmail !== currentUser?.email).length;
+              const isSelected = selected?.kind === 'conversation' && selected.id === c.id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setSelected({ kind: 'conversation', id: c.id })}
+                  className={`w-full px-3 py-2.5 text-left transition-all group ${
+                    isSelected ? '' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <div className={`flex items-start gap-2 rounded-xl px-2.5 py-2 ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/10 border border-emerald-200 dark:border-emerald-800/60 shadow-sm'
+                      : 'border border-transparent'
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${c.type === 'group'
+                      ? 'bg-gradient-to-br from-sky-500 to-indigo-600 text-white'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>
+                      {c.type === 'group' ? <Users className="w-3.5 h-3.5" /> : <span className="text-xs font-bold">{(c.title ?? 'C').charAt(0)}</span>}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className={`text-sm font-semibold truncate leading-snug ${isSelected ? 'text-emerald-900 dark:text-emerald-100' : 'text-slate-900 dark:text-white'}`}>
+                          {c.title}
+                        </p>
+                        {c.type === 'group' && (
+                          <Badge variant="info" className="text-[9px] px-1.5 py-0 flex-shrink-0">{c.participantIds.length}</Badge>
+                        )}
+                      </div>
+                      {lastMsg ? (
+                        <p className="flex items-center gap-1 text-xs text-slate-500 truncate mt-0.5">
+                          <span className="flex-shrink-0 font-medium">{lastMsg.senderName}:</span>
+                          {lastMsg.fileUrl && !lastMsg.message ? (
+                            <span className="inline-flex items-center gap-1"><Paperclip className="w-3 h-3 flex-shrink-0" /> Attachment</span>
+                          ) : (
+                            <span className="truncate">{lastMsg.message}</span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic mt-0.5">No messages yet</p>
+                      )}
+                    </div>
+                    {unreadCount > 0 && !isSelected && (
+                      <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] flex items-center justify-center font-bold flex-shrink-0">{unreadCount}</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </>
+        )}
+        <div className="px-4 pt-3 pb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+          <MessageSquare className="w-3 h-3" /> Tickets
+        </div>
         {filteredConversations.length === 0 ? (
           <div className="text-center py-10 px-4">
             <MessageSquare className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
@@ -207,11 +308,11 @@ export default function Chat() {
           const msgs = chatMessages.filter(m => m.ticketId === t.id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           const lastMsg = msgs[0];
           const unreadCount = msgs.filter(m => !m.isAdmin && role !== 'customer').length;
-          const isSelected = selectedTicket === t.id;
+          const isSelected = selected?.kind === 'ticket' && selected.id === t.id;
           return (
             <button
               key={t.id}
-              onClick={() => setSelectedTicket(t.id)}
+              onClick={() => setSelected({ kind: 'ticket', id: t.id })}
               className={`w-full px-3 py-2.5 text-left transition-all group ${
                 isSelected
                   ? ''
@@ -264,14 +365,27 @@ export default function Chat() {
     </div>
   );
 
+  const headerTitle = selected?.kind === 'conversation'
+    ? (selectedConversation?.title ?? 'Team Chat')
+    : (selectedTicketData?.issueTrigger || cleanTicketTitle(selectedTicketData?.title || ''));
+  const headerSubtitle = selected?.kind === 'conversation'
+    ? (selectedConversation?.participantIds
+        .map(id => users.find(u => u.id === id)?.name ?? '')
+        .filter(Boolean)
+        .join(', ') || 'Team chat')
+    : `${selectedTicketData?.productItem ? `${selectedTicketData.productItem} · ` : ''}#${selected?.id ?? ''}`;
+  const headerAvatar = selected?.kind === 'conversation'
+    ? (selectedConversation?.title?.charAt(0) ?? 'C')
+    : (selectedTicketData?.issueTrigger || selectedTicketData?.title || '?').charAt(0);
+
   return (
     <div className="animate-fade-in">
       <PageHeader
         eyebrow="Messaging"
         title="Live Chat"
         subtitle="Follow up on your tickets and message the support team in real time."
-        actions={selectedTicket && (
-          <Link to={`/tickets/${selectedTicket}`} className="hidden sm:inline-flex">
+        actions={selected?.kind === 'ticket' && (
+          <Link to={`/tickets/${selected.id}`} className="hidden sm:inline-flex">
             <Button variant="outline" size="sm">Open Ticket <ArrowRight className="w-3.5 h-3.5" /></Button>
           </Link>
         )}
@@ -280,38 +394,48 @@ export default function Chat() {
       <Card className="card-premium overflow-hidden">
         <div className="flex" style={{ height: 'calc(100vh - 240px)', minHeight: '480px' }}>
 
-          {/* Sidebar: hidden on mobile when a ticket is selected */}
-          <div className={`border-r border-slate-200 dark:border-dark-border flex-col flex-shrink-0 ${selectedTicket ? 'hidden sm:flex w-64 lg:w-72' : 'flex w-full sm:w-64 lg:w-72'}`}>
+          {/* Sidebar: hidden on mobile when a chat is selected */}
+          <div className={`border-r border-slate-200 dark:border-dark-border flex-col flex-shrink-0 ${selected ? 'hidden sm:flex w-64 lg:w-72' : 'flex w-full sm:w-64 lg:w-72'}`}>
             <ConversationList />
           </div>
 
           {/* Chat panel */}
-          {selectedTicket ? (
+          {selected ? (
             <div className="flex-1 flex flex-col min-w-0">
               {/* Chat header */}
               <div className="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-dark-border flex items-center gap-3 bg-white dark:bg-dark-card flex-shrink-0">
                 <button
-                  onClick={() => setSelectedTicket(null)}
+                  onClick={() => setSelected(null)}
                   className="sm:hidden text-emerald-500 hover:text-emerald-600 font-medium flex-shrink-0 flex items-center gap-1 text-sm"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-emerald-500/20">
-                  {(selectedTicketData?.issueTrigger || selectedTicketData?.title || '?').charAt(0)}
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-emerald-500/20 ${
+                  selected.kind === 'conversation'
+                    ? selectedConversation?.type === 'group'
+                      ? 'bg-gradient-to-br from-sky-500 to-indigo-600'
+                      : 'bg-gradient-to-br from-slate-500 to-slate-700'
+                    : 'bg-gradient-to-br from-emerald-500 to-teal-600'
+                }`}>
+                  {headerAvatar}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                    {selectedTicketData?.issueTrigger || cleanTicketTitle(selectedTicketData?.title || '')}
+                    {headerTitle}
                   </h3>
                   <p className="text-xs text-slate-400 truncate">
-                    {selectedTicketData?.productItem ? `${selectedTicketData.productItem} · ` : ''}#{selectedTicket}
+                    {headerSubtitle}
                   </p>
                 </div>
-                {selectedTicketData && (
+                {selected.kind === 'ticket' && selectedTicketData ? (
                   <Badge variant={statusVariant[selectedTicketData.status]} className="flex-shrink-0 hidden sm:inline-flex">
                     {selectedTicketData.status.replace(/_/g, ' ')}
                   </Badge>
-                )}
+                ) : selectedConversation ? (
+                  <Badge variant={selectedConversation.type === 'group' ? 'info' : 'default'} className="flex-shrink-0 hidden sm:inline-flex">
+                    {selectedConversation.type === 'group' ? 'Group' : 'Direct'}
+                  </Badge>
+                ) : null}
               </div>
 
               {/* Messages */}
@@ -405,7 +529,7 @@ export default function Chat() {
                         {question.options?.map(opt => (
                           <button
                             key={opt}
-                            onClick={() => submitTriageAnswer(selectedTicket!, opt)}
+                            onClick={() => submitTriageAnswer(selected.id, opt)}
                             className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-violet-200 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 bg-white dark:bg-dark-card hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
                           >
                             {opt}
@@ -461,7 +585,7 @@ export default function Chat() {
                   <MessageSquare className="w-8 h-8 text-slate-400" />
                 </div>
                 <p className="font-medium text-slate-600 dark:text-slate-400">Select a conversation</p>
-                <p className="text-sm text-slate-400 mt-1">Choose a ticket to view its messages</p>
+                <p className="text-sm text-slate-400 mt-1">Choose a ticket or team chat to view its messages</p>
               </div>
             </div>
           )}
@@ -482,6 +606,76 @@ export default function Chat() {
               <X className="w-4 h-4" />
             </button>
             <img src={lightboxSrc} alt="full size" className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain" />
+          </div>
+        </div>
+      )}
+
+      {showNewChat && isManager && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setShowNewChat(false)}
+        >
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading font-semibold text-slate-900 dark:text-white">New Chat</h3>
+              <button onClick={() => setShowNewChat(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Select team members</label>
+            <div className="max-h-56 overflow-y-auto border border-slate-200 dark:border-dark-border rounded-xl mb-4">
+              {users.filter(u => u.role !== 'customer').map(u => {
+                const checked = newChatIds.includes(u.id);
+                return (
+                  <button
+                    key={u.id}
+                    onClick={() => setNewChatIds(ids => checked ? ids.filter(i => i !== u.id) : [...ids, u.id])}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors ${checked ? 'bg-emerald-50 dark:bg-emerald-900/10' : ''}`}
+                  >
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${checked ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 dark:border-slate-600'}`}>
+                      {checked && <Check className="w-3.5 h-3.5 text-white" />}
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300 flex-shrink-0">
+                      {u.name.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{u.name}</p>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 capitalize">{u.role.replace(/_/g, ' ')}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Group name (optional)</label>
+            <input
+              type="text"
+              value={newChatTitle}
+              onChange={e => setNewChatTitle(e.target.value)}
+              placeholder="e.g. Operations Squad"
+              className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none mb-4"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setShowNewChat(false); setNewChatIds([]); setNewChatTitle(''); }}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={newChatIds.length === 0}
+                onClick={() => {
+                  const id = createConversation(newChatIds, newChatTitle.trim() || undefined);
+                  setShowNewChat(false);
+                  setNewChatIds([]);
+                  setNewChatTitle('');
+                  if (id) setSelected({ kind: 'conversation', id });
+                }}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Create Chat
+              </Button>
+            </div>
           </div>
         </div>
       )}

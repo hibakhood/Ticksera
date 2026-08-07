@@ -25,6 +25,7 @@ export const GLOBAL_STATE_ID = '00000000-0000-0000-0000-000000000000';
 export interface SharedState {
   tickets: unknown[];
   chatMessages: unknown[];
+  conversations: unknown[];
   bookings: unknown[];
   payments: unknown[];
   users: unknown[];
