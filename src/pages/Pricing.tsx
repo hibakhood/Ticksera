@@ -132,9 +132,9 @@ const compareRows: { label: string; basic: CellValue; professional: CellValue; b
 ];
 
 const guarantees = [
-  { icon: RefreshCw,   grad: 'from-emerald-500 to-teal-600',    title: 'Upgrade or downgrade anytime', desc: 'Change plans from the Billing page — new plans take effect immediately.' },
+  { icon: RefreshCw,   grad: 'from-emerald-500 to-teal-600',    title: 'Upgrade or downgrade anytime', desc: 'Change plans from the Billing page, new plans take effect immediately.' },
   { icon: CreditCard,  grad: 'from-blue-500 to-sky-600',        title: 'No credit card required',      desc: 'Start with the plan that fits. No card needed to get going.' },
-  { icon: Clock,       grad: 'from-violet-500 to-purple-600',   title: 'Cancel anytime',               desc: 'Keep your subscription until you choose to end it — no questions asked.' },
+  { icon: Clock,       grad: 'from-violet-500 to-purple-600',   title: 'Cancel anytime',               desc: 'Keep your subscription until you choose to end it, no questions asked.' },
   { icon: ShieldCheck, grad: 'from-amber-500 to-orange-600',    title: '7-day money-back guarantee',   desc: 'New paid subscriptions are fully covered for the first week.' },
 ];
 
@@ -355,7 +355,7 @@ export default function Pricing() {
           </div>
 
           <p className="text-xs text-slate-400 dark:text-slate-500 text-center" style={{ marginTop: '2rem' }}>
-            All prices are in Nigerian Naira (₦). This is a demo build — no real charges are made.
+            All prices are in Nigerian Naira (₦). This is a demo build. No real charges are made.
           </p>
         </div>
       </section>
@@ -421,7 +421,7 @@ export default function Pricing() {
             <SectionLabel>Why It's Simple</SectionLabel>
             <h2 className="font-heading text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold">Pricing You Can Rely On</h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-lg mx-auto text-[0.9375rem] leading-relaxed">
-              No hidden fees, no lock-in, no surprises — just clear, honest pricing.
+              No hidden fees, no lock-in, no surprises, just clear, honest pricing.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" style={{ marginTop: '2.5rem' }}>
@@ -451,7 +451,7 @@ export default function Pricing() {
               </div>
               <h3 className="font-heading text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Need a custom agreement?</h3>
               <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
-                From large enterprises with on-site requirements to organisations with complex workflows — we'll build a plan around you.
+                From large enterprises with on-site requirements to organisations with complex workflows, and we'll build a plan around you.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link to="/contact"><Button size="lg">Contact Sales</Button></Link>

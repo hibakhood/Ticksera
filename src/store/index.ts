@@ -60,7 +60,7 @@ async function buildProfileFromAuthUser(authUser: AuthUserLike): Promise<User> {
       };
     }
   } catch {
-    // profiles table may not exist yet — fall back to auth metadata
+    // profiles table may not exist yet; fall back to auth metadata
   }
   return { ...fallback, role: resolveProfileRole(email, fallback.role) };
 }
@@ -131,7 +131,7 @@ const seedMessages: ChatMessage[] = [
   { id: 'm6', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'It powers on but I get a blue screen with error code 0x0000007B.', isAdmin: false, createdAt: day(-2) },
   { id: 'm7', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'A blue screen with **0x0000007B** usually points to a boot-device issue.\n\n**You can try this now:**\n\n• Boot into Safe Mode.\n• Run System Restore to a point before the Windows update.\n\n**Next question:**\n\nWhen did this issue start? Was it after a specific event?', isAdmin: true, createdAt: day(-1) },
   { id: 'm8', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'Yes, it started right after the latest Windows update.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm9', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below — I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
+  { id: 'm9', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA BOT', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below; I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
 ];
 
 const seedContacts: ContactMessage[] = [
@@ -267,7 +267,7 @@ function fallbackReply(mode: 'triage' | 'chat', category: TicketCategory, step: 
   if (mode === 'triage') {
     return getDiagnosticResponse(category, step, answer, useStore.getState().kbArticles);
   }
-  return "Thanks — I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
+  return "Thanks, I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
 }
 
 // Strong signals that the customer is unhappy with the BOT's help. Used only for
@@ -368,7 +368,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
   }
 
   if (mode === 'triage' && completed) {
-    reply = `${reply}\n\n**Did these steps resolve your issue?**\nIf not, tap **"Not Resolved — Request Technician"** below and a specialist will take over immediately. If it's fixed, tap **"Issue Fixed — No Need"** and we'll close the ticket.`;
+    reply = `${reply}\n\n**Did these steps resolve your issue?**\nIf not, tap **"Not Resolved: Request Technician"** below and a specialist will take over immediately. If it's fixed, tap **"Issue Fixed: No Need"** and we'll close the ticket.`;
   }
 
   // The AI determines which status the ticket should move to.
@@ -442,7 +442,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
 }
 
 // ---------------------------------------------------------------------------
-// Shared state helpers — every role reads and writes the SAME data through a
+// Shared state helpers; every role reads and writes the SAME data through a
 // single Supabase row (see src/lib/sync.ts + migrations/0003_shared_state.sql)
 // so the admin, technician, and customer dashboards stay correlated.
 // ---------------------------------------------------------------------------
@@ -534,7 +534,7 @@ const DEMO_SEED_IDS = new Set(['1', '2', '3', '4', '5', '6', '7']);
 
 /**
  * Demo seed business rows (tickets/bookings/payments/chat/notifications/contact).
- * In live mode these must never be mirrored to the database — the DB tables are
+ * In live mode these must never be mirrored to the database; the DB tables are
  * the source of truth and stay empty until real activity, so dashboard charts
  * correlate with actual rows instead of sample data.
  */
@@ -922,7 +922,7 @@ export const useStore = create<AppState>()(
                 headers: { 'content-type': 'application/json' },
                 body: JSON.stringify({ userId: id, role: data.role }),
               });
-            } catch { /* offline — store state still reflects the change */ }
+            } catch { /* offline; store state still reflects the change */ }
           })();
         }
       },
@@ -979,7 +979,7 @@ export const useStore = create<AppState>()(
         return {
           tickets: s.tickets.map(t =>
             t.id === id
-              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolvedBy: 'FIXORA BOT', resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage — no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
+              ? { ...t, triageStatus: undefined, status: 'resolved' as const, resolvedBy: 'FIXORA BOT', resolutionNotes: 'Resolved via AI self-service triage', updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: t.createdByName, action: 'Resolved via AI triage, no technician needed', entityType: 'ticket', entityId: id, timestamp: now }] }
               : t
           ),
           chatMessages: [...s.chatMessages, {
@@ -988,7 +988,7 @@ export const useStore = create<AppState>()(
             senderEmail: 'bot@fixora.com',
             senderName: 'FIXORA BOT',
             senderRole: 'bot' as const,
-            message: "That's wonderful to hear. Your issue is now resolved, and your ticket has been marked accordingly.\n\nIf you ever need help again, you can reach us anytime — just create a new ticket. Take care!",
+            message: "That's wonderful to hear. Your issue is now resolved, and your ticket has been marked accordingly.\n\nIf you ever need help again, you can reach us anytime; just create a new ticket. Take care!",
             isAdmin: true,
             createdAt: now,
           }],
@@ -1092,7 +1092,7 @@ export const useStore = create<AppState>()(
             {
               id: uuid(),
               user: 'FIXORA AI',
-              action: `Auto-routed (${result.enabled ? 'AI' : 'rules'}): ${tech ? `assigned to ${tech.name}` : 'unassigned'} — ${result.reason}`,
+              action: `Auto-routed (${result.enabled ? 'AI' : 'rules'}): ${tech ? `assigned to ${tech.name}` : 'unassigned'}, ${result.reason}`,
               entityType: 'ticket',
               entityId: id,
               timestamp: now,
@@ -1134,7 +1134,7 @@ export const useStore = create<AppState>()(
             useStore.getState().addNotification({
               userEmail: m.email,
               title: 'Ticket escalated by AI routing',
-              message: `${current.title} (${result.priority}) — ${result.reason}`,
+              message: `${current.title} (${result.priority}): ${result.reason}`,
               type: 'system',
               link: `/tickets/${id}`,
             });
@@ -1168,7 +1168,7 @@ export const useStore = create<AppState>()(
                   status: started ? ('in_progress' as const) : t.status,
                   updatedAt: now,
                   activityLogs: [
-                    ...(started ? [{ id: uuid(), user: t.createdByName, action: 'Conversation started — ticket moved to In Progress', entityType: 'ticket' as const, entityId: id, timestamp: now }] : []),
+                    ...(started ? [{ id: uuid(), user: t.createdByName, action: 'Conversation started, ticket moved to In Progress', entityType: 'ticket' as const, entityId: id, timestamp: now }] : []),
                     ...t.activityLogs,
                     { id: uuid(), user: t.createdByName, action: `AI triage: answered "${answer}"`, entityType: 'ticket', entityId: id, timestamp: now },
                   ],
@@ -1221,7 +1221,7 @@ export const useStore = create<AppState>()(
           chatMessages: [...s.chatMessages, { ...msg, id: `m${Date.now()}`, createdAt: now }],
           tickets: started
             ? s.tickets.map(t => t.id === msg.ticketId
-              ? { ...t, status: 'in_progress' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: msg.senderName || t.createdByName, action: 'Conversation started — ticket moved to In Progress', entityType: 'ticket', entityId: t.id, timestamp: now }] }
+              ? { ...t, status: 'in_progress' as const, updatedAt: now, activityLogs: [...t.activityLogs, { id: uuid(), user: msg.senderName || t.createdByName, action: 'Conversation started, ticket moved to In Progress', entityType: 'ticket', entityId: t.id, timestamp: now }] }
               : t)
             : s.tickets,
         };
@@ -1239,7 +1239,7 @@ export const useStore = create<AppState>()(
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify(msg),
             });
-          } catch { /* offline / demo mode — message stays local */ }
+          } catch { /* offline / demo mode; message stays local */ }
         })();
       },
       markContactRead: (id) => {
@@ -1342,7 +1342,7 @@ export const useStore = create<AppState>()(
       partialize: (state) => {
         if (isSupabaseConfigured()) {
           // Live mode: never persist tenant collections (tickets, chats,
-          // payments, users, contact messages, KB...) to localStorage — they
+          // payments, users, contact messages, KB...) to localStorage; they
           // contain PII and are already authoritative in Supabase. Only keep
           // the signed-in user's identity so a refresh restores the session.
           return Object.fromEntries(

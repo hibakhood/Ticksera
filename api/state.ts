@@ -1,4 +1,4 @@
-// FIXORA Shared State Gateway — the ONLY way clients may read or write the
+// FIXORA Shared State Gateway: the ONLY way clients may read or write the
 // application's shared data (tickets, chat, bookings, payments, ...).
 //
 // The SPA used to upsert the shared `user_data` row directly with the anon key,

@@ -9,13 +9,13 @@ import { useStore } from '../store';
 
 const channels = [
   { icon: Mail,    label: 'Email',    value: 'support@fixora.com', sub: 'For support and general inquiries', grad: 'from-emerald-500 to-teal-600' },
-  { icon: Phone,   label: 'Phone',    value: '+234 800 FIX ORA',    sub: 'Mon – Fri, 8am – 6pm WAT',          grad: 'from-blue-500 to-sky-600' },
+  { icon: Phone,   label: 'Phone',    value: '+234 800 FIX ORA',    sub: 'Mon - Fri, 8am - 6pm WAT',          grad: 'from-blue-500 to-sky-600' },
   { icon: MapPin,  label: 'Location', value: 'Lagos, Nigeria',      sub: 'Head office & on-site dispatch',    grad: 'from-violet-500 to-purple-600' },
 ];
 
 const quickFaqs = [
   { q: 'What happens after I send a message?', a: 'Our support team reviews your inquiry and replies within 24 hours. Urgent issues are routed straight to a technician for faster handling.' },
-  { q: 'How do I report an urgent IT issue?', a: "For immediate help, don't wait for email — log in and open a ticket. Critical issues carry a 15-minute response SLA and are escalated automatically." },
+  { q: 'How do I report an urgent IT issue?', a: "For immediate help, don't wait for email, log in and open a ticket. Critical issues carry a 15-minute response SLA and are escalated automatically." },
   { q: 'Can I talk to sales about a custom plan?', a: "Yes. Use the form below and mention 'sales' in the subject, and our team will put together a plan tailored to your organisation." },
   { q: 'Do you provide support outside Lagos?', a: 'Remote support is available nationwide, and on-site visits are scheduled around your location. See our Services page for everything we cover.' },
 ];
@@ -57,7 +57,7 @@ export default function Contact() {
           <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
             {[
               { icon: MessageCircle, label: 'Replies within 24 hours' },
-              { icon: Clock,         label: 'Mon–Fri, 8am–6pm WAT' },
+              { icon: Clock,         label: 'Mon-Fri, 8am-6pm WAT' },
               { icon: BadgeCheck,    label: 'SOC 2 aligned' },
             ].map((t, i) => (
               <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
@@ -102,15 +102,15 @@ export default function Contact() {
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">Business Hours</p>
                 </div>
                 <div className="space-y-1" style={{ paddingLeft: '3rem' }}>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Monday – Friday: 8am – 6pm WAT</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Saturday: 9am – 3pm WAT</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Monday - Friday: 8am - 6pm WAT</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Saturday: 9am - 3pm WAT</p>
                 </div>
               </div>
 
               <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800 p-5 flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
-                  Every inquiry gets a reply within 24 hours — urgent tickets are escalated to a technician immediately.
+                  Every inquiry gets a reply within 24 hours; urgent tickets are escalated to a technician immediately.
                 </p>
               </div>
 

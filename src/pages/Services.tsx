@@ -169,7 +169,7 @@ const ALL_SERVICES: ServiceDef[] = [
     coreCategory: 'hardware',
     segment: 'both',
     industries: ['hotel','school','hospital','logistics','manufacturing','real_estate','finance','sme'],
-    desc: 'Repair, setup, and troubleshooting for smartphones, tablets, and wearables — including screen fixes, battery service, and data transfer.',
+    desc: 'Repair, setup, and troubleshooting for smartphones, tablets, and wearables, including screen fixes, battery service, and data transfer.',
     products: ['iPhone', 'Samsung Galaxy', 'iPad / Tablet', 'Android Phone', 'Wearables / Other Devices'],
     triggers: ["Won't turn on", 'Battery draining fast', 'Cracked / broken screen', 'App keeps crashing', "Can't make calls or texts"],
     color: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800',
@@ -180,7 +180,7 @@ const ALL_SERVICES: ServiceDef[] = [
     coreCategory: 'software',
     segment: 'both',
     industries: ['hotel','school','hospital','logistics','manufacturing','real_estate','finance','sme'],
-    desc: 'Gmail, Drive, Meet, and admin setup — plus migration, sharing configuration, and troubleshooting for the full Google Workspace suite.',
+    desc: 'Gmail, Drive, Meet, and admin setup, plus migration, sharing configuration, and troubleshooting for the full Google Workspace suite.',
     products: ['Gmail', 'Google Drive', 'Google Meet', 'Google Calendar', 'Google Workspace Admin'],
     triggers: ['Email not working', "Can't access Drive files", 'Meeting / Meet issues', 'Calendar sync fails', 'Account recovery needed'],
     color: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-800',
@@ -191,7 +191,7 @@ const ALL_SERVICES: ServiceDef[] = [
     coreCategory: 'security',
     segment: 'both',
     industries: ['hotel','school','hospital','logistics','manufacturing','real_estate','finance','sme'],
-    desc: 'Detection and removal of viruses, ransomware, spyware, and adware — plus hardening your device so it stays clean.',
+    desc: 'Detection and removal of viruses, ransomware, spyware, and adware, plus hardening your device so it stays clean.',
     products: ['Windows Defender', 'Bitdefender', 'Kaspersky', 'Malwarebytes', 'EDR / Endpoint Protection'],
     triggers: ['Pop-ups / adware', 'Files encrypted (ransomware)', 'PC running very slow', 'Suspicious programs', 'Phishing / spam emails'],
     color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800',
@@ -202,7 +202,7 @@ const ALL_SERVICES: ServiceDef[] = [
     coreCategory: 'security',
     segment: 'both',
     industries: ['hotel','school','hospital','logistics','manufacturing','real_estate','finance','sme'],
-    desc: 'Automated backup setup, accidental file recovery, and disaster recovery planning — cloud, local, and NAS-based.',
+    desc: 'Automated backup setup, accidental file recovery, and disaster recovery planning, cloud, local, and NAS-based.',
     products: ['OneDrive', 'Google Drive', 'Synology / NAS', 'External Hard Drive', 'Veeam / Backup Software'],
     triggers: ['Files deleted by accident', 'Hard drive failed', 'Ransomware recovery', 'Need to restore a previous version', "Can't access my backups"],
     color: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-800',
@@ -213,7 +213,7 @@ const ALL_SERVICES: ServiceDef[] = [
     coreCategory: 'user_access',
     segment: 'both',
     industries: ['hotel','school','hospital','logistics','manufacturing','real_estate','finance','sme'],
-    desc: 'New device setup, data migration, app installation, and email configuration — including full onboarding for new hires.',
+    desc: 'New device setup, data migration, app installation, and email configuration, including full onboarding for new hires.',
     products: ['New laptop setup', 'New phone / tablet setup', 'Email configuration', 'Software installation', 'Employee onboarding'],
     triggers: ['Set up a new device', 'Migrating from an old device', 'Install a new app / program', 'Configure email on a device', 'Onboard a new employee'],
     color: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-800',
@@ -297,7 +297,7 @@ export default function Services() {
           </div>
           <h1 className="font-heading text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Our Services</h1>
           <p className="text-slate-300 max-w-2xl mx-auto" style={{ marginBottom: '2rem' }}>
-            End-to-end IT support across devices, connectivity, software, email &amp; productivity, security, and setup — for personal and business clients in every industry.
+            End-to-end IT support across devices, connectivity, software, email &amp; productivity, security, and setup, for personal and business clients in every industry.
           </p>
 
           {/* Segment toggle */}
@@ -418,7 +418,7 @@ export default function Services() {
             </div>
             <h2 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>Every Problem, One Clear Path</h2>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto">
-              All our services fall into six support areas. Start with what you're experiencing — we handle the rest remotely, on-site, or with AI-guided self-help.
+              All our services fall into six support areas. Start with what you're experiencing; we handle the rest remotely, on-site, or with AI-guided self-help.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -502,7 +502,7 @@ export default function Services() {
               Smart Ticket Routing
             </div>
             <h2 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.5rem' }}>How Your Ticket Gets to the Right Technician</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto">Our routing wizard guides you through 6 steps before opening a ticket — ensuring it lands with the right expert instantly.</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xl mx-auto">Our routing wizard guides you through 6 steps before opening a ticket, ensuring it lands with the right expert instantly.</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
@@ -528,7 +528,7 @@ export default function Services() {
       <section className="s-section bg-slate-900 dark:bg-slate-950">
         <div className="s-inner max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-white" style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '0.75rem' }}>Need a Custom Solution?</h2>
-          <p className="text-slate-400" style={{ marginBottom: '2rem' }}>Contact us to discuss a tailored IT support plan for your business — with SLA guarantees, dedicated technicians, and 24/7 monitoring.</p>
+          <p className="text-slate-400" style={{ marginBottom: '2rem' }}>Contact us to discuss a tailored IT support plan for your business, with SLA guarantees, dedicated technicians, and 24/7 monitoring.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/login"><Button size="lg">Get Started Free</Button></Link>
             <Link to="/contact">

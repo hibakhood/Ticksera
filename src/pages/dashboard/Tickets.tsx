@@ -35,7 +35,7 @@ function exportPDF(tickets: Ticket[]) {
       <td>${t.status.replace(/_/g, ' ')}</td>
       <td>${t.createdByName}</td>
       <td>${new Date(t.createdAt).toLocaleDateString()}</td>
-      <td>${t.slaDeadline ? new Date(t.slaDeadline).toLocaleDateString() : '—'}</td>
+      <td>${t.slaDeadline ? new Date(t.slaDeadline).toLocaleDateString() : '-'}</td>
     </tr>`).join('');
   const html = `<!DOCTYPE html><html><head><title>FIXORA Tickets</title>
     <style>
@@ -47,7 +47,7 @@ function exportPDF(tickets: Ticket[]) {
       td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
       tr:nth-child(even) td { background: #fafafa; }
     </style></head><body>
-    <h1>FIXORA — Ticket Report</h1>
+    <h1>FIXORA: Ticket Report</h1>
     <p>Generated ${new Date().toLocaleString()} · ${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}</p>
     <table><thead><tr><th>ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Created By</th><th>Date</th><th>SLA</th></tr></thead>
     <tbody>${rows}</tbody></table></body></html>`;
@@ -222,7 +222,7 @@ export default function Tickets() {
                 }`}>
                   <div className="flex flex-col sm:flex-row sm:items-start gap-3">
 
-                    {/* Left — title + meta */}
+                    {/* Left: title + meta */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${priorityDot[t.priority]}`} />
@@ -253,7 +253,7 @@ export default function Tickets() {
                       </div>
                     </div>
 
-                    {/* Right — SLA + badges */}
+                    {/* Right: SLA + badges */}
                     <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
                       <SLACountdown
                         deadline={t.slaDeadline}

@@ -32,14 +32,14 @@ const trustedBy = ['TechVentures', 'GlobeCorp', 'StartupHub', 'Medix Care', 'Nov
 const features = [
   { icon: Bot,    grad: 'from-emerald-500 to-teal-600',   title: 'AI Self-Service Triage',   desc: 'The FIXORA BOT answers instantly with step-by-step fixes and resolves many issues before a human ever gets involved.' },
   { icon: Timer,  grad: 'from-orange-500 to-amber-600',   title: 'Guaranteed SLAs',          desc: 'A 15-minute critical response, enforced with live countdowns and automatic escalation before any breach.' },
-  { icon: Route,  grad: 'from-violet-500 to-purple-600',  title: 'Zero-Triage Routing',      desc: 'Our guided wizard captures the exact industry, product, and symptom — so every ticket reaches the right specialist the first time.' },
-  { icon: Wrench, grad: 'from-sky-500 to-blue-600',       title: 'On-Site & Remote Support', desc: 'Not every problem fits in a chat. Book a technician to your office or connect remotely — same ticket, same SLA.' },
-  { icon: Users,  grad: 'from-rose-500 to-pink-600',      title: 'Industry Experts',         desc: 'Certified technicians trained on the systems your sector runs on — from hotel PMS and hospital EMR to POS and logistics.' },
+  { icon: Route,  grad: 'from-violet-500 to-purple-600',  title: 'Zero-Triage Routing',      desc: 'Our guided wizard captures the exact industry, product, and symptom, so every ticket reaches the right specialist the first time.' },
+  { icon: Wrench, grad: 'from-sky-500 to-blue-600',       title: 'On-Site & Remote Support', desc: 'Not every problem fits in a chat. Book a technician to your office or connect remotely, same ticket, same SLA.' },
+  { icon: Users,  grad: 'from-rose-500 to-pink-600',      title: 'Industry Experts',         desc: 'Certified technicians trained on the systems your sector runs on, from hotel PMS and hospital EMR to POS and logistics.' },
   { icon: Shield, grad: 'from-slate-500 to-slate-700',    title: 'Enterprise-Grade Security', desc: 'SOC 2 compliant, end-to-end encrypted, with role-based access and a full audit trail on every ticket.' },
 ];
 
 const slaLevels = [
-  { dot: 'bg-red-500',    label: 'Critical', time: '15 min', desc: 'System down — full business impact' },
+  { dot: 'bg-red-500',    label: 'Critical', time: '15 min', desc: 'System down, full business impact' },
   { dot: 'bg-orange-500', label: 'High',     time: '60 min', desc: 'Major issue affecting productivity' },
   { dot: 'bg-amber-400',  label: 'Medium',   time: '3 hrs',  desc: 'Partial disruption, workaround exists' },
   { dot: 'bg-green-500',  label: 'Low',      time: '5 hrs',  desc: 'Minor inconvenience, not urgent' },
@@ -61,19 +61,19 @@ const steps = [
     n: '01', icon: UserPlus,      badge: 'Free Sign‑Up',
     accent: 'bg-emerald-500',     ring: 'ring-emerald-500/20',
     title: 'Create Your Account',
-    desc: 'Sign up free in under a minute — no credit card required. Choose Personal or Business and pick the plan that fits your needs.',
+    desc: 'Sign up free in under a minute, no credit card required. Choose Personal or Business and pick the plan that fits your needs.',
   },
   {
     n: '02', icon: GitBranch,     badge: 'Guided Wizard',
     accent: 'bg-violet-500',      ring: 'ring-violet-500/20',
     title: 'Describe the Issue',
-    desc: 'Answer six guided questions — Client Type, Industry, Category, Product, Symptom, Priority. Our wizard pre-fills your ticket form so nothing gets lost in translation.',
+    desc: 'Answer six guided questions: Client Type, Industry, Category, Product, Symptom, Priority. Our wizard pre-fills your ticket form so nothing gets lost in translation.',
   },
   {
     n: '03', icon: Sparkles,      badge: 'AI Triage',
     accent: 'bg-sky-500',         ring: 'ring-sky-500/20',
     title: 'Instant Self‑Service',
-    desc: 'Our FIXORA BOT analyzes your issue in real time and walks you through step‑by‑step fixes. Resolve it yourself on the spot — or escalate to a live technician in one click.',
+    desc: 'Our FIXORA BOT analyzes your issue in real time and walks you through step‑by‑step fixes. Resolve it yourself on the spot, or escalate to a live technician in one click.',
   },
   {
     n: '04', icon: UserCheck,     badge: 'Smart Assignment',
@@ -85,7 +85,7 @@ const steps = [
     n: '05', icon: MessageSquare, badge: 'Live Support',
     accent: 'bg-rose-500',        ring: 'ring-rose-500/20',
     title: 'SLA & Live Chat',
-    desc: 'A live SLA countdown tracks your guaranteed response time — 15 min for critical, up to 5 hr for low priority. Chat with your technician inside the ticket, or book an on‑site / remote session.',
+    desc: 'A live SLA countdown tracks your guaranteed response time: 15 min for critical, up to 5 hr for low priority. Chat with your technician inside the ticket, or book an on‑site / remote session.',
   },
   {
     n: '06', icon: BadgeCheck,    badge: 'Resolution',
@@ -142,7 +142,7 @@ export default function Landing() {
         <div className="s-hero s-inner relative z-10 max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-12">
 
-            {/* Left — text content */}
+            {/* Left: text content */}
             <div className="flex-shrink-0 lg:w-[46%] text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
                 <Zap className="w-3.5 h-3.5" /> Enterprise IT Support Platform
@@ -152,7 +152,7 @@ export default function Landing() {
                 <span className="text-gradient">Delivered in Minutes</span>
               </h1>
               <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-xl mx-auto lg:mx-0">
-                Streamline your IT operations with an enterprise-grade helpdesk, smart technician routing, and real-time SLA tracking — all in one platform.
+                Streamline your IT operations with an enterprise-grade helpdesk, smart technician routing, and real-time SLA tracking, all in one platform.
               </p>
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mt-9">
                 <Link to={primaryTo}>
@@ -172,7 +172,7 @@ export default function Landing() {
               </p>
             </div>
 
-            {/* Right — dashboard preview */}
+            {/* Right: dashboard preview */}
             <div className="flex-1 relative w-full max-w-2xl mx-auto lg:max-w-none">
               <div className="absolute inset-0 -bottom-6 bg-emerald-500/10 rounded-3xl blur-2xl pointer-events-none" />
               <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-2xl shadow-slate-900/20 dark:shadow-emerald-900/10">
@@ -241,7 +241,7 @@ export default function Landing() {
           <SectionHeader
             label="Industries We Serve"
             title="Built for Your Sector"
-            sub="Our technicians are trained in the specific systems your industry depends on — from hospital EMR software to hotel PMS and logistics tracking."
+            sub="Our technicians are trained in the specific systems your industry depends on, from hospital EMR software to hotel PMS and logistics tracking."
           />
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {industries.map((ind, i) => {
@@ -271,7 +271,7 @@ export default function Landing() {
           <SectionHeader
             label="Response Guarantee"
             title="Guaranteed Response Times"
-            sub="Every ticket carries a binding SLA — enforced with a live countdown and automatic escalation before any breach."
+            sub="Every ticket carries a binding SLA, enforced with a live countdown and automatic escalation before any breach."
           />
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -301,7 +301,7 @@ export default function Landing() {
           <SectionHeader
             label="What We Do"
             title="Our Services"
-            sub="Hardware, Software, Networking, Security, and User Access — across personal and business clients in every industry."
+            sub="Hardware, Software, Networking, Security, and User Access, across personal and business clients in every industry."
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {services.map((s, i) => (
@@ -361,11 +361,11 @@ export default function Landing() {
               How FIXORA Works
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
-              From your first click to a verified resolution — every step maps to a real FIXORA feature, from AI self-service triage to live technician support.
+              From your first click to a verified resolution: every step maps to a real FIXORA feature, from AI self-service triage to live technician support.
             </p>
           </div>
 
-          {/* Step grid — 3 cols × 2 rows */}
+          {/* Step grid: 3 cols × 2 rows */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-800 rounded-2xl overflow-hidden border border-slate-800">
             {steps.map((s, i) => {
               const Icon = s.icon;
@@ -518,7 +518,7 @@ export default function Landing() {
               Ready to Fix Your IT?
             </h2>
             <p className="text-slate-400 text-[1.0625rem] max-w-xl mx-auto mb-10">
-              Join thousands of businesses that trust FIXORA to keep their technology running smoothly — with guaranteed SLA response times and smart technician routing.
+              Join thousands of businesses that trust FIXORA to keep their technology running smoothly, with guaranteed SLA response times and smart technician routing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to={primaryTo} className="w-full sm:w-auto">

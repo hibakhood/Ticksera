@@ -113,7 +113,7 @@ export default function CompanyUsers() {
             <p className="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
               Add up to <strong className="text-slate-700 dark:text-slate-200">15 team members</strong> on Business, or
               {' '}<strong className="text-slate-700 dark:text-slate-200">100 on Enterprise</strong>, who share your plan.
-              Only users with your organisation's email domain are accepted — keeping access secure.
+              Only users with your organisation's email domain are accepted; keeping access secure.
             </p>
 
             <div className="grid grid-cols-3 gap-3 mb-8 text-left">
@@ -286,7 +286,7 @@ export default function CompanyUsers() {
         <PageHeader
           eyebrow="Organisation"
           title="Team Members"
-          subtitle={`Manage your @${orgDomain} team — up to ${maxSeats} shared seats on your ${orgPlan} plan.`}
+          subtitle={`Manage your @${orgDomain} team; up to ${maxSeats} shared seats on your ${orgPlan} plan.`}
           actions={
             <>
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold shadow-md shadow-emerald-500/25">
@@ -488,7 +488,7 @@ export default function CompanyUsers() {
                   <Users className="w-8 h-8 text-slate-400" />
                 </div>
                 <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No team members yet</p>
-                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Invite your first teammate using the form — they'll sign in with the credentials you set.</p>
+                <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">Invite your first teammate using the form; they'll sign in with the credentials you set.</p>
               </div>
             ) : (
               <div className="space-y-2.5">

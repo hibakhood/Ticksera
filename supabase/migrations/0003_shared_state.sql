@@ -4,7 +4,7 @@
 --
 -- The SPA previously persisted its zustand store as a per-user snapshot in
 -- user_data, which kept each account's tickets/payments invisible to the other
--- roles — the admin and technician dashboards never saw customer-created data.
+-- roles; the admin and technician dashboards never saw customer-created data.
 -- This migration introduces a well-known shared row
 -- (user_id = 00000000-0000-0000-0000-000000000000) that every authenticated user
 -- can read and upsert, and pre-creates it so the app can seed it on first load.

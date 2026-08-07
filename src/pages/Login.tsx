@@ -44,7 +44,7 @@ export default function Login() {
     if (STAFF_ROLES.includes(role)) return '/dashboard';
     const { payments, users } = useStore.getState();
     const user = users.find(u => u.id === userId);
-    // Company member — check if org owner has active Enterprise plan
+    // Company member: check if org owner has active Enterprise plan
     if (user?.orgOwnerEmail) {
       const owner = users.find(u => u.email === user.orgOwnerEmail);
       const ownerHasEnterprise = owner
@@ -52,7 +52,7 @@ export default function Login() {
         : false;
       return ownerHasEnterprise ? '/dashboard' : '/billing';
     }
-    // Regular customer — needs their own active plan
+    // Regular customer: needs their own active plan
     return hasActivePlan(payments, userId) ? '/dashboard' : '/billing';
   };
 
@@ -213,7 +213,7 @@ export default function Login() {
               <span className="text-emerald-400">Made Simple</span>
             </h2>
             <p className="text-slate-400 leading-relaxed">
-              Real-time ticket management, live technician chat, and smart SLA tracking — all in one place.
+              Real-time ticket management, live technician chat, and smart SLA tracking, all in one place.
             </p>
           </div>
 
@@ -511,7 +511,7 @@ export default function Login() {
 
           {!isResetMode && !supabaseLive && (
             <p className="text-center text-xs text-slate-400 mb-5">
-              Demo build — all demo accounts use password{' '}
+              Demo build: all demo accounts use password{' '}
               <code className="font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">fixora123</code>
             </p>
           )}

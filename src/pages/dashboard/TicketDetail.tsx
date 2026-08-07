@@ -390,7 +390,7 @@ export default function TicketDetail() {
                   {triageActive ? (
                     <>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">FIXORA BOT — Diagnosing Your Issue</h3>
+                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">FIXORA BOT: Diagnosing Your Issue</h3>
                         <Badge variant="info">Question {Math.min(triageStep + 1, triageFlow!.questions.length)} of {triageFlow!.questions.length}</Badge>
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
@@ -421,13 +421,13 @@ export default function TicketDetail() {
                           size="sm"
                           onClick={() => resolveViaTriage(ticket.id)}
                         >
-                          <CheckCircle className="w-3.5 h-3.5" /> Issue Fixed — No Need
+                          <CheckCircle className="w-3.5 h-3.5" /> Issue Fixed: No Need
                         </Button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete — Did the FIXORA BOT resolve your issue?</h3>
+                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete: Did the FIXORA BOT resolve your issue?</h3>
                       <p className="text-xs text-gray-500 mt-0.5">
                         The BOT finished its diagnosis and shared troubleshooting steps in the chat.
                         If the issue is fixed, close the ticket below. If not, request a technician and we'll route you immediately.
@@ -445,10 +445,10 @@ export default function TicketDetail() {
                               message: 'I need to speak with a technician directly.',
                               isAdmin: false,
                             });
-                            requestTechnician(ticket.id, 'AI triage completed — customer still needs technician');
+                            requestTechnician(ticket.id, 'AI triage completed; customer still needs technician');
                           }}
                         >
-                          <Wrench className="w-3.5 h-3.5" /> Not Resolved — Request Technician
+                          <Wrench className="w-3.5 h-3.5" /> Not Resolved: Request Technician
                         </Button>
                         <Button
                           variant="outline"
@@ -456,7 +456,7 @@ export default function TicketDetail() {
                           className="border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
                           onClick={() => resolveViaTriage(ticket.id)}
                         >
-                          <CheckCircle className="w-3.5 h-3.5" /> Issue Fixed — No Need
+                          <CheckCircle className="w-3.5 h-3.5" /> Issue Fixed: No Need
                         </Button>
                       </div>
                     </>
@@ -471,14 +471,14 @@ export default function TicketDetail() {
               <div className="flex items-start gap-3">
                 <Wrench className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Technician requested — you're in the queue</p>
+                  <p className="font-semibold text-gray-900 dark:text-white text-sm">Technician requested; you're in the queue</p>
                   <p className="text-xs text-gray-500 mt-0.5">A support agent will be assigned shortly. You'll be notified here once someone picks up your ticket.</p>
                 </div>
               </div>
             </Card>
           )}
 
-          {/* Escalation — success banner */}
+          {/* Escalation: success banner */}
           {escalateSubmitted && ticket.status === 'escalated' && (
             <Card className="p-5 border-l-4 border-l-orange-500 bg-orange-50/30 dark:bg-orange-900/5">
               <div className="flex items-start gap-3">
@@ -534,7 +534,7 @@ export default function TicketDetail() {
                 <div className="mt-4 space-y-3">
                   <TextArea
                     label="Reason for escalation"
-                    placeholder="Describe why this ticket needs escalation — e.g. no response for 24h, issue worsening, business-critical impact..."
+                    placeholder="Describe why this ticket needs escalation; e.g. no response for 24h, issue worsening, business-critical impact..."
                     rows={3}
                     value={escalateReason}
                     onChange={e => setEscalateReason(e.target.value)}
@@ -815,7 +815,7 @@ export default function TicketDetail() {
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Your Ticket</h3>
               <p className="text-xs text-gray-500 mb-4">
                 {ticket.status === 'resolved'
-                  ? 'All set? Close the ticket to archive it — you can also rate the resolution above.'
+                  ? 'All set? Close the ticket to archive it; you can also rate the resolution above.'
                   : 'Resolved it yourself or no longer need help? Close the ticket and it gets archived with its full history.'}
               </p>
               <Button variant="outline" size="sm" className="w-full" onClick={handleCloseTicket}>Close Ticket</Button>

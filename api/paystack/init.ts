@@ -1,6 +1,6 @@
-// FIXORA Payments — Paystack checkout initialization (Vercel Edge function).
+// FIXORA Payments: Paystack checkout initialization (Vercel Edge function).
 //
-// Env vars (set in Vercel — secret key is server-only, never ship to the client):
+// Env vars (set in Vercel; secret key is server-only, never ship to the client):
 //   PAYSTACK_SECRET_KEY   required (sk_test_... / sk_live_... from the Paystack dashboard)
 //
 // Prices are computed server-side so a client can't underpay by tampering with the request.

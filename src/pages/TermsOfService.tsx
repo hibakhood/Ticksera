@@ -71,7 +71,7 @@ const sections = [
       },
       {
         subtitle: '3.3 Automatic Renewal',
-        text: 'Subscriptions automatically renew at the end of each billing period unless cancelled before the renewal date. You can cancel or change your plan at any time from the Billing section of your dashboard — changes take effect immediately.',
+        text: 'Subscriptions automatically renew at the end of each billing period unless cancelled before the renewal date. You can cancel or change your plan at any time from the Billing section of your dashboard; changes take effect immediately.',
       },
       {
         subtitle: '3.4 Price Changes',
@@ -241,7 +241,7 @@ const sections = [
 ];
 
 const facts = [
-  { icon: FileCheck,  title: 'Cancel anytime',     desc: 'Change or end your plan whenever you like — no lock-in.' },
+  { icon: FileCheck,  title: 'Cancel anytime',     desc: 'Change or end your plan whenever you like, no lock-in.' },
   { icon: Activity,   title: '99.9% uptime',       desc: 'Our target monthly platform availability.' },
   { icon: ShieldCheck, title: '7-day guarantee',   desc: 'Money-back guarantee on new paid subscriptions.' },
   { icon: Scale,      title: 'Lagos law governs',  desc: 'Terms are governed by the laws of the Federal Republic of Nigeria.' },

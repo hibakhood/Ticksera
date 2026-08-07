@@ -1,4 +1,4 @@
-// FIXORA AI Agent — Vercel serverless function (Edge runtime).
+// FIXORA AI Agent: Vercel serverless function (Edge runtime).
 // Provider-agnostic: calls any OpenAI-compatible /chat/completions endpoint.
 //
 // Env vars (set in Vercel):
@@ -83,10 +83,10 @@ function pruneAiBudget(): void {
 function buildSystemPrompt(body: AgentBody, kbContext: string): string {
   const t = body.ticket ?? {};
   const meta = [
-    `Ticket title: ${t.title ?? '—'}`,
-    `Description: ${t.description ?? '—'}`,
-    `Category: ${t.category ?? '—'}`,
-    `Priority: ${t.priority ?? '—'}`,
+    `Ticket title: ${t.title ?? 'N/A'}`,
+    `Description: ${t.description ?? 'N/A'}`,
+    `Category: ${t.category ?? 'N/A'}`,
+    `Priority: ${t.priority ?? 'N/A'}`,
     t.productItem ? `Product: ${t.productItem}` : '',
     t.issueTrigger ? `Trigger: ${t.issueTrigger}` : '',
   ]
@@ -126,7 +126,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
     const roster = (body.technicians ?? [])
       .map(t =>
         [
-          `- ${t.id} | ${t.name} | ${t.role.replace(/_/g, ' ')} | ${t.location ?? '—'}` +
+          `- ${t.id} | ${t.name} | ${t.role.replace(/_/g, ' ')} | ${t.location ?? 'N/A'}` +
           (t.skills?.length ? ` | skills: ${t.skills.join(', ')}` : '') +
           (t.bio ? ` | ${t.bio}` : '') +
           ` | active tickets: ${t.load}`,
@@ -141,7 +141,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       '<customer_data>',
       meta,
       `Escalated already: ${body.ticket?.escalated ? 'yes' : 'no'}`,
-      `SLA deadline: ${body.ticket?.slaDeadline ?? '—'}`,
+      `SLA deadline: ${body.ticket?.slaDeadline ?? 'N/A'}`,
       '',
       'Available technicians:',
       roster || '(none)',

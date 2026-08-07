@@ -12,7 +12,7 @@ const values = [
 
 const milestones = [
   { year: '2020', title: 'Founded in Lagos', desc: 'A small team of technicians starts fixing office IT that everyone else ignored.' },
-  { year: '2022', title: 'FIXORA Platform Launches', desc: 'Guided ticket routing goes live — every request captured and dispatched in minutes.' },
+  { year: '2022', title: 'FIXORA Platform Launches', desc: 'Guided ticket routing goes live; every request captured and dispatched in minutes.' },
   { year: '2023', title: 'AI Triage Introduced', desc: 'AI-assisted diagnostics and smart routing on every ticket, cutting triage time to zero.' },
   { year: '2024', title: 'SLA Guarantees', desc: 'Binding response targets with live countdowns and automatic escalation.' },
   { year: '2025', title: 'Enterprise Scale', desc: '500+ enterprise clients across hospitality, healthcare, finance, and manufacturing.' },
@@ -95,8 +95,8 @@ export default function About() {
           />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {[
-              { icon: Target, label: 'Our Mission', grad: 'from-emerald-500 to-teal-600', text: 'We believe technology should empower businesses, not slow them down. Our mission is to eliminate IT friction with fast, reliable, transparent support — backed by binding SLAs and expert technicians your team can trust.' },
-              { icon: Eye,    label: 'Our Vision',  grad: 'from-sky-500 to-indigo-600',   text: 'We want to become Africa\'s most trusted IT support platform — where any business, from a three-person startup to a nationwide enterprise, can resolve IT issues in minutes, not days.' },
+              { icon: Target, label: 'Our Mission', grad: 'from-emerald-500 to-teal-600', text: 'We believe technology should empower businesses, not slow them down. Our mission is to eliminate IT friction with fast, reliable, transparent support, backed by binding SLAs and expert technicians your team can trust.' },
+              { icon: Eye,    label: 'Our Vision',  grad: 'from-sky-500 to-indigo-600',   text: 'We want to become Africa\'s most trusted IT support platform, where any business, from a three-person startup to a nationwide enterprise, can resolve IT issues in minutes, not days.' },
             ].map((m, i) => (
               <div key={i} className="card-premium group bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl p-8">
                 <div className={`chip-icon bg-gradient-to-br ${m.grad} shadow-lg mb-6 group-hover:scale-105 transition-transform duration-300`}>
@@ -174,7 +174,7 @@ export default function About() {
           <SectionHeader
             label="Meet the Team"
             title="The People Driving FIXORA's Mission Forward"
-            sub="Engineers, technicians, and support specialists — working together to keep you running."
+            sub="Engineers, technicians, and support specialists, working together to keep you running."
           />
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
             {team.map((member, i) => (
@@ -209,7 +209,7 @@ export default function About() {
               </div>
               <h3 className="font-heading text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Ready to fix IT for good?</h3>
               <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
-                Join 500+ businesses that resolve IT issues in minutes — not days.
+                Join 500+ businesses that resolve IT issues in minutes, not days.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link to="/login"><Button size="lg">Get Started Free</Button></Link>

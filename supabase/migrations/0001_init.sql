@@ -1,5 +1,5 @@
 -- 0001_init.sql
--- FIXORA Enterprise — initial schema, Row-Level Security, and profile trigger.
+-- FIXORA Enterprise: initial schema, Row-Level Security, and profile trigger.
 -- Run this in the Supabase SQL editor (Dashboard → SQL Editor → New query).
 
 -- ---------------------------------------------------------------------------

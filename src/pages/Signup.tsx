@@ -99,13 +99,13 @@ export default function Signup() {
               <span className="text-emerald-400">For You & Your Business</span>
             </h2>
             <p className="text-slate-400 leading-relaxed">
-              Submit tickets, book technicians, and track resolutions — all in one place. Start free, no credit card needed.
+              Submit tickets, book technicians, and track resolutions, all in one place. Start free, no credit card needed.
             </p>
           </div>
 
           <div className="space-y-3.5">
             {[
-              { icon: Zap,    text: 'Plans from ₦5,000/month — upgrade anytime' },
+              { icon: Zap,    text: 'Plans from ₦5,000/month, upgrade anytime' },
               { icon: Shield, text: 'SOC 2 compliant & end-to-end encrypted' },
               { icon: Users,  text: 'Trusted by 500+ businesses across Africa' },
             ].map((f, i) => (
@@ -127,7 +127,7 @@ export default function Signup() {
                   <User className="w-3 h-3 text-emerald-400" />
                 </div>
                 <p className="text-xs text-slate-400 leading-snug">
-                  <strong className="text-slate-200">Personal</strong> — individuals who register independently · Basic / Professional
+                  <strong className="text-slate-200">Personal</strong>: individuals who register independently · Basic / Professional
                 </p>
               </div>
               <div className="flex items-center gap-2.5">
@@ -135,7 +135,7 @@ export default function Signup() {
                   <Building2 className="w-3 h-3 text-blue-400" />
                 </div>
                 <p className="text-xs text-slate-400 leading-snug">
-                  <strong className="text-slate-200">Business / Organizations</strong> — companies subscribing for employees · Business / Enterprise
+                  <strong className="text-slate-200">Business / Organizations</strong>: companies subscribing for employees · Business / Enterprise
                 </p>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function Signup() {
               <Sparkles className="w-3 h-3" /> {activeDef.plans}
             </div>
             <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-white">Create your account</h1>
-            <p className="mt-1.5 text-slate-500 dark:text-slate-400">Pick how you'll use FIXORA — start free, upgrade anytime</p>
+            <p className="mt-1.5 text-slate-500 dark:text-slate-400">Pick how you'll use FIXORA, start free, upgrade anytime</p>
           </div>
 
           {/* Account type selector */}

@@ -1,4 +1,4 @@
-// FIXORA Contact — server-side contact form intake (Vercel Edge function).
+// FIXORA Contact: server-side contact form intake (Vercel Edge function).
 //
 // The contact form previously inserted straight into `contact_messages` from
 // the browser using the anon key and the permissive `contact_insert_public`

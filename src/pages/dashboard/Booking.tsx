@@ -57,7 +57,7 @@ export default function Booking() {
     preferredDate: today,
     preferredTime: '',
     contactPhone: '',
-    description: fromTicket ? `Re: Ticket #${fromTicket.id} — ${fromTicket.title}` : '',
+    description: fromTicket ? `Re: Ticket #${fromTicket.id}: ${fromTicket.title}` : '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 

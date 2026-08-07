@@ -251,7 +251,7 @@ export default function Admin() {
       const activePmt = payments
         .filter(p => p.userId === owner.id && ['Business', 'Enterprise'].includes(p.plan) && p.status === 'completed')
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-      const plan = activePmt?.plan ?? (owner.organization ? 'Business' : '—');
+      const plan = activePmt?.plan ?? (owner.organization ? 'Business' : '-');
       const maxSeats = plan === 'Enterprise' ? 100 : 15;
       const orgTickets = tickets.filter(t => {
         const creator = users.find(u => u.id === t.createdBy);
@@ -718,7 +718,7 @@ export default function Admin() {
                   <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 mb-5">
                     <Shield className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                      Employee accounts are <strong className="text-slate-700 dark:text-slate-300">admin-provisioned only</strong> — they cannot self-register. The employee will log in at <span className="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded text-[11px]">/login</span> using the email you set here.
+                      Employee accounts are <strong className="text-slate-700 dark:text-slate-300">admin-provisioned only</strong>; they cannot self-register. The employee will log in at <span className="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded text-[11px]">/login</span> using the email you set here.
                     </p>
                   </div>
 
@@ -796,7 +796,7 @@ export default function Admin() {
                             </select>
                             <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           </div>
-                          <p className="text-xs text-slate-400 mt-1">Customers self-register — not listed here</p>
+                          <p className="text-xs text-slate-400 mt-1">Customers self-register, not listed here</p>
                         </div>
                       </div>
 
@@ -927,7 +927,7 @@ export default function Admin() {
                               Delete
                             </Button>
                           ) : (
-                            <span className="text-xs text-slate-400">—</span>
+                            <span className="text-xs text-slate-400">-</span>
                           )}
                         </td>
                       </tr>
@@ -1061,7 +1061,7 @@ export default function Admin() {
                     return (
                       <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="py-3.5 pl-6 font-mono text-xs text-slate-500">{p.reference}</td>
-                        <td className="py-3.5 px-4 text-xs text-slate-500">{payer?.name ?? '—'}</td>
+                        <td className="py-3.5 px-4 text-xs text-slate-500">{payer?.name ?? '-'}</td>
                         <td className="py-3.5 px-4 font-medium text-slate-900 dark:text-white">{p.plan}</td>
                         <td className="py-3.5 px-4 font-semibold text-slate-900 dark:text-white">₦{p.amount.toLocaleString()}</td>
                         <td className="py-3.5 px-4"><Badge variant={p.status === 'completed' ? 'success' : p.status === 'pending' ? 'warning' : 'danger'}>{p.status}</Badge></td>
@@ -1122,7 +1122,7 @@ export default function Admin() {
                             <p className="font-medium text-slate-900 dark:text-white">{b.serviceType}</p>
                             {b.description && <p className="text-[11px] text-slate-400 truncate max-w-[180px]">{b.description}</p>}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-500 text-xs hidden sm:table-cell">{customer?.name ?? '—'}</td>
+                          <td className="py-3.5 px-4 text-slate-500 text-xs hidden sm:table-cell">{customer?.name ?? '-'}</td>
                           <td className="py-3.5 px-4">
                             <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${b.sessionType === 'remote' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'}`}>
                               {b.sessionType === 'remote' ? <Monitor className="w-3 h-3" /> : <MapPin className="w-3 h-3" />} {b.sessionType}
@@ -1245,10 +1245,10 @@ export default function Admin() {
                       <div className={`h-full rounded-full bg-gradient-to-r ${p.color}`} style={{ width: `${Math.min((subs / Math.max(planSubs('Business'), planSubs('Professional'), planSubs('Basic'), 1)) * 100, 100)}%` }} />
                     </div>
                     <p className="text-xs text-slate-400 mt-3 leading-relaxed">
-                      {p.name === 'Basic' && 'For individuals who occasionally need IT support — 5 tickets/month.'}
-                      {p.name === 'Professional' && 'For professionals and power users — unlimited tickets and live chat.'}
-                      {p.name === 'Business' && 'For small and medium businesses — up to 15 team members and a dedicated manager.'}
-                      {p.name === 'Enterprise' && 'For large organizations — unlimited users & teams with custom workflows.'}
+                      {p.name === 'Basic' && 'For individuals who occasionally need IT support; 5 tickets/month.'}
+                      {p.name === 'Professional' && 'For professionals and power users; unlimited tickets and live chat.'}
+                      {p.name === 'Business' && 'For small and medium businesses; up to 15 team members and a dedicated manager.'}
+                      {p.name === 'Enterprise' && 'For large organizations; unlimited users & teams with custom workflows.'}
                     </p>
                   </Card>
                 );
@@ -1266,7 +1266,7 @@ export default function Admin() {
                       Manage Subscriptions
                       <span className="ml-2 text-sm font-normal text-slate-400">({subscribers.length})</span>
                     </h3>
-                    <p className="text-xs text-slate-400">Upgrade or downgrade any customer's plan — personal and organization accounts</p>
+                    <p className="text-xs text-slate-400">Upgrade or downgrade any customer's plan; personal and organization accounts</p>
                   </div>
                 </div>
               </div>

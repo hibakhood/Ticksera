@@ -8,7 +8,7 @@ const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_tech
 
 const quickPrompts = [
   'How do I reset a password?',
-  'Network is slow — what should I check?',
+  'Network is slow; what should I check?',
   'How do I book a technician?',
   'How do I create a ticket?',
 ];
@@ -56,7 +56,7 @@ export default function Assistant() {
 
     const lines = matches.map(a => {
       const snippet = a.content.replace(/[#*`>]/g, '').trim().slice(0, 140);
-      return `• ${a.title} — ${snippet}${a.content.length > 140 ? '…' : ''}`;
+      return `• ${a.title}: ${snippet}${a.content.length > 140 ? '…' : ''}`;
     });
     return `I found ${matches.length === 1 ? 'a helpful article' : `${matches.length} helpful articles`} in the knowledge base:\n\n${lines.join('\n\n')}`;
   };
@@ -93,7 +93,7 @@ export default function Assistant() {
       <PageHeader
         eyebrow="Fixora Assistant"
         title="AI Assistant"
-        subtitle="Ask a question and get instant answers from the knowledge base — no ticket needed."
+        subtitle="Ask a question and get instant answers from the knowledge base; no ticket needed."
         actions={(
           <button
             onClick={() => setMessages([])}

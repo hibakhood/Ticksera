@@ -148,7 +148,7 @@ export default function Customers() {
                     {c.plan ? (
                       <Badge variant={planColor[c.plan] ?? 'default'}>{c.plan}</Badge>
                     ) : (
-                      <span className="text-xs text-slate-400">—</span>
+                      <span className="text-xs text-slate-400">-</span>
                     )}
                   </td>
                   <td className="py-3.5 px-4">

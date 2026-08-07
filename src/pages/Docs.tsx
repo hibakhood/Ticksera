@@ -36,7 +36,7 @@ const sections = [
     id: 'getting-started',
     icon: Zap,
     title: 'Getting Started',
-    intro: 'Get up and running with FIXORA in minutes — from creating your account to submitting your first ticket.',
+    intro: 'Get up and running with FIXORA in minutes, from creating your account to submitting your first ticket.',
     items: [
       {
         q: 'Creating your account',
@@ -44,11 +44,11 @@ const sections = [
       },
       {
         q: 'Using a demo account',
-        a: 'This is a demo build — every seeded account signs in with the password fixora123. Type the email and password on the Login page: admin@fixora.com (Super Admin), manager@fixora.com (Support Manager), tech@fixora.com (Technician), field@fixora.com (Field Technician), or customer@fixora.com (Customer).',
+        a: 'This is a demo build; every seeded account signs in with the password fixora123. Type the email and password on the Login page: admin@fixora.com (Super Admin), manager@fixora.com (Support Manager), tech@fixora.com (Technician), field@fixora.com (Field Technician), or customer@fixora.com (Customer).',
       },
       {
         q: 'Choosing the right plan',
-        a: 'FIXORA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo — most popular), Business (₦50,000/mo — up to 15 team seats), and Enterprise (custom pricing). New customers pick a plan on the Billing page; existing customers can upgrade or downgrade any time from My Plan. Payment methods are Card, Bank Transfer, USSD, and Mobile Pay.',
+        a: 'FIXORA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo, most popular), Business (₦50,000/mo, up to 15 team seats), and Enterprise (custom pricing). New customers pick a plan on the Billing page; existing customers can upgrade or downgrade any time from My Plan. Payment methods are Card, Bank Transfer, USSD, and Mobile Pay.',
       },
       {
         q: 'Setting up your profile',
@@ -56,7 +56,7 @@ const sections = [
       },
       {
         q: 'Submitting your first ticket',
-        a: 'Click Get IT Help on the dashboard to open the guided wizard. Personal tickets have 5 steps: Client Type, Core Category, Product, Issue, and Priority — business tickets add an Industry step. Choose the option closest to your problem; pick Other to type your own product or issue. Set a priority, then open the ticket form to review and submit.',
+        a: 'Click Get IT Help on the dashboard to open the guided wizard. Personal tickets have 5 steps: Client Type, Core Category, Product, Issue, and Priority; business tickets add an Industry step. Choose the option closest to your problem; pick Other to type your own product or issue. Set a priority, then open the ticket form to review and submit.',
       },
       {
         q: 'What happens after I sign in?',
@@ -76,15 +76,15 @@ const sections = [
     items: [
       {
         q: 'Priority levels explained',
-        a: 'Four priorities drive your response SLA: Critical (15-minute SLA — full outage or data-loss risk), High (60-minute SLA — major issue affecting productivity), Medium (3-hour SLA — partial disruption with a workaround), and Low (5-hour SLA — minor, non-urgent).',
+        a: 'Four priorities drive your response SLA: Critical (15-minute SLA, full outage or data-loss risk), High (60-minute SLA, major issue affecting productivity), Medium (3-hour SLA, partial disruption with a workaround), and Low (5-hour SLA, minor, non-urgent).',
       },
       {
         q: 'Ticket statuses',
-        a: 'Open — awaiting the first message. In Progress — a conversation has started, so the ticket moves out of Open automatically. Pending — awaiting initial action. Assigned — a technician is allocated. Waiting for Customer — we need information from you. Escalated — flagged for a manager. Resolved — fixed and verified. Closed — archived, usually after the customer rates the resolution or closes the ticket.',
+        a: 'Open: awaiting the first message. In Progress: a conversation has started, so the ticket moves out of Open automatically. Pending: awaiting initial action. Assigned: a technician is allocated. Waiting for Customer: we need information from you. Escalated: flagged for a manager. Resolved: fixed and verified. Closed: archived, usually after the customer rates the resolution or closes the ticket.',
       },
       {
         q: 'AI triage on new tickets',
-        a: 'Non-critical tickets opened by customers start in AI triage. The FIXORA BOT greets you in the discussion thread and walks you through diagnostic questions. Answer in chat to progress the triage — and when it needs a human, it routes to a technician. You can also request a technician directly at any time.',
+        a: 'Non-critical tickets opened by customers start in AI triage. The FIXORA BOT greets you in the discussion thread and walks you through diagnostic questions. Answer in chat to progress the triage; when it needs a human, it routes to a technician. You can also request a technician directly at any time.',
       },
       {
         q: 'SLA tracking',
@@ -92,7 +92,7 @@ const sections = [
       },
       {
         q: 'Discussion & attachments',
-        a: 'Use the Discussion section to message your technician in real time. A typing indicator shows when the other side is composing. Click the paperclip to attach images, PDFs, or Office documents — a preview appears before you send, and images open full-screen.',
+        a: 'Use the Discussion section to message your technician in real time. A typing indicator shows when the other side is composing. Click the paperclip to attach images, PDFs, or Office documents, a preview appears before you send, and images open full-screen.',
       },
       {
         q: 'Updating status (staff)',
@@ -100,7 +100,7 @@ const sections = [
       },
       {
         q: 'Escalating a ticket',
-        a: 'If a ticket isn\'t progressing, open it and use the Request Escalation card. Enter a reason and confirm — the ticket moves to Escalated, the escalation level increases, the reason is logged, and all support managers and admins are notified.',
+        a: 'If a ticket isn\'t progressing, open it and use the Request Escalation card. Enter a reason and confirm; the ticket moves to Escalated, the escalation level increases, the reason is logged, and all support managers and admins are notified.',
       },
       {
         q: 'Assigning a technician (admins)',
@@ -108,7 +108,7 @@ const sections = [
       },
       {
         q: 'Rating & closing tickets',
-        a: 'Once your ticket is Resolved, the creator is asked to rate the resolution — the rating targets whoever fixed it, the FIXORA BOT or the technician. Submitting the rating closes the ticket, and a Close Ticket button is also available if you\'d rather skip the rating. You can close a ticket from its page any time after a conversation has started. Every close is recorded in the activity timeline.',
+        a: 'Once your ticket is Resolved, the creator is asked to rate the resolution; the rating targets whoever fixed it, the FIXORA BOT or the technician. Submitting the rating closes the ticket, and a Close Ticket button is also available if you\'d rather skip the rating. You can close a ticket from its page any time after a conversation has started. Every close is recorded in the activity timeline.',
       },
       {
         q: 'Exporting tickets',
@@ -124,7 +124,7 @@ const sections = [
     items: [
       {
         q: 'AI triage on tickets',
-        a: 'Non-critical customer tickets enter AI triage automatically. The FIXORA BOT posts diagnostic questions in the ticket\'s discussion thread, reads your answers to steer the diagnosis, and shares step-by-step troubleshooting. It tries to resolve the issue before any technician is involved. The ticket is only auto-routed to a technician when you say the BOT\'s help didn\'t resolve it — tap "Not Resolved — Request Technician" and a specialist takes over with your full diagnostic history. Critical issues and staff-created tickets bypass the BOT and route directly.',
+        a: 'Non-critical customer tickets enter AI triage automatically. The FIXORA BOT posts diagnostic questions in the ticket\'s discussion thread, reads your answers to steer the diagnosis, and shares step-by-step troubleshooting. It tries to resolve the issue before any technician is involved. The ticket is only auto-routed to a technician when you say the BOT\'s help didn\'t resolve it; tap "Not Resolved: Request Technician" and a specialist takes over with your full diagnostic history. Critical issues and staff-created tickets bypass the BOT and route directly.',
       },
       {
         q: 'Who decides the ticket status?',
@@ -132,11 +132,11 @@ const sections = [
       },
       {
         q: 'The AI Assistant (staff)',
-        a: 'Open AI Assistant from the sidebar and ask questions in plain English, such as "How do I reset a password?" or "Network is slow — what should I check?". It searches the knowledge base by keyword and returns up to three matching articles. If nothing matches, it suggests opening a ticket or booking a session.',
+        a: 'Open AI Assistant from the sidebar and ask questions in plain English, such as "How do I reset a password?" or "Network is slow; what should I check?". It searches the knowledge base by keyword and returns up to three matching articles. If nothing matches, it suggests opening a ticket or booking a session.',
       },
       {
         q: 'Improving answers',
-        a: 'The Assistant searches the knowledge base, so answers improve as your team adds articles. Admins can publish new guides from the Knowledge Base page — the Assistant picks them up immediately.',
+        a: 'The Assistant searches the knowledge base, so answers improve as your team adds articles. Admins can publish new guides from the Knowledge Base page; the Assistant picks them up immediately.',
       },
     ],
   },
@@ -144,11 +144,11 @@ const sections = [
     id: 'chat',
     icon: MessageSquare,
     title: 'Live Chat',
-    intro: 'Live Chat is built around your tickets — real-time messaging with the technician handling your request.',
+    intro: 'Live Chat is built around your tickets: real-time messaging with the technician handling your request.',
     items: [
       {
         q: 'Starting a conversation',
-        a: 'Open Live Chat from the sidebar. The conversation list shows your tickets that have messages or aren\'t yet closed. Click a conversation to view and send messages — sending routes straight into that ticket\'s discussion thread.',
+        a: 'Open Live Chat from the sidebar. The conversation list shows your tickets that have messages or aren\'t yet closed. Click a conversation to view and send messages; sending routes straight into that ticket\'s discussion thread.',
       },
       {
         q: 'Sharing files & screenshots',
@@ -184,7 +184,7 @@ const sections = [
       },
       {
         q: 'The calendar',
-        a: 'The Calendar is a read-only month view of your bookings, colour-coded by status, with an Upcoming list of your next sessions. Use the Book Session button on the page — or on any individual day — to schedule more.',
+        a: 'The Calendar is a read-only month view of your bookings, colour-coded by status, with an Upcoming list of your next sessions. Use the Book Session button on the page, or on any individual day, to schedule more.',
       },
     ],
   },
@@ -204,7 +204,7 @@ const sections = [
       },
       {
         q: 'Status Breakdown donut',
-        a: 'The donut shows your current ticket mix by status — Open, In Progress, Resolved, and Escalated — with a colour legend. A healthy queue is dominated by Resolved.',
+        a: 'The donut shows your current ticket mix by status: Open, In Progress, Resolved, and Escalated, with a colour legend. A healthy queue is dominated by Resolved.',
       },
       {
         q: 'Recent Tickets',
@@ -232,7 +232,7 @@ const sections = [
       },
       {
         q: 'Adding articles (admins)',
-        a: 'Admins can publish new guides with the New Article button — give it a title, markdown content, a category, and comma-separated tags. Published articles are immediately searchable by staff and by the AI Assistant.',
+        a: 'Admins can publish new guides with the New Article button; give it a title, markdown content, a category, and comma-separated tags. Published articles are immediately searchable by staff and by the AI Assistant.',
       },
     ],
   },
@@ -252,11 +252,11 @@ const sections = [
       },
       {
         q: 'Managing members',
-        a: 'Remove a member with the X button on their row. Team members see a read-only "Your Team" list — only the organisation owner can add or remove people.',
+        a: 'Remove a member with the X button on their row. Team members see a read-only "Your Team" list; only the organisation owner can add or remove people.',
       },
       {
         q: 'Roles & permissions',
-        a: 'Roles control access across the platform. Customer — own tickets, chat, and bookings. Technician / Field Technician — assigned tickets and the support queue. Support Manager — full ticket management plus team oversight. Super Admin — full platform access including the admin panel. Staff employee accounts are created by admins from the Technicians tab.',
+        a: 'Roles control access across the platform. Customer: own tickets, chat, and bookings. Technician / Field Technician: assigned tickets and the support queue. Support Manager: full ticket management plus team oversight. Super Admin: full platform access including the admin panel. Staff employee accounts are created by admins from the Technicians tab.',
       },
     ],
   },
@@ -272,11 +272,11 @@ const sections = [
       },
       {
         q: 'Changing plans',
-        a: 'Pick a new plan and choose Upgrade or Downgrade, confirm in the modal, select a payment method, and complete the (demo) payment. Changes take effect immediately — downgrading cancels your current plan right away, so you lose access to higher-tier features immediately.',
+        a: 'Pick a new plan and choose Upgrade or Downgrade, confirm in the modal, select a payment method, and complete the (demo) payment. Changes take effect immediately; downgrading cancels your current plan right away, so you lose access to higher-tier features immediately.',
       },
       {
         q: 'Payment methods',
-        a: 'Four methods are supported: Card, Bank Transfer, USSD, and Mobile Pay. This is a demo — no real charges are made.',
+        a: 'Four methods are supported: Card, Bank Transfer, USSD, and Mobile Pay. This is a demo; no real charges are made.',
       },
       {
         q: 'Payment history',
@@ -296,7 +296,7 @@ const sections = [
     items: [
       {
         q: 'Active session management',
-        a: 'Your Profile page lists every active login session — device, browser, location, IP, and last-active time, with the current session marked. Sign out any session individually, or sign out all other sessions in one click.',
+        a: 'Your Profile page lists every active login session: device, browser, location, IP, and last-active time, with the current session marked. Sign out any session individually, or sign out all other sessions in one click.',
       },
       {
         q: 'Role-based access control',
@@ -304,7 +304,7 @@ const sections = [
       },
       {
         q: 'Demo build data',
-        a: 'This is a demo build — all data is stored locally in your browser under the fixora-store localStorage key. Clearing your site data resets the demo to its seeded state.',
+        a: 'This is a demo build; all data is stored locally in your browser under the fixora-store localStorage key. Clearing your site data resets the demo to its seeded state.',
       },
     ],
   },
@@ -324,7 +324,7 @@ const sections = [
       },
       {
         q: 'Reading & clearing',
-        a: 'Click a notification to jump to the related ticket or page — it\'s marked read automatically. Use Mark all read to clear everything at once.',
+        a: 'Click a notification to jump to the related ticket or page; it\'s marked read automatically. Use Mark all read to clear everything at once.',
       },
     ],
   },
@@ -360,7 +360,7 @@ const sections = [
       },
       {
         q: 'Support Queue & assignments',
-        a: 'Every ticket in one place. Assign any ticket to a technician directly from the queue — the ticket moves to Assigned and the technician is notified.',
+        a: 'Every ticket in one place. Assign any ticket to a technician directly from the queue; the ticket moves to Assigned and the technician is notified.',
       },
       {
         q: 'Technicians & staff accounts',
@@ -372,7 +372,7 @@ const sections = [
       },
       {
         q: 'Payments, bookings & messages',
-        a: 'Payments lists all transactions. Bookings lets you assign a technician to a pending request to confirm it. Messages collects contact-form submissions from the Contact page — mark them read as you handle them.',
+        a: 'Payments lists all transactions. Bookings lets you assign a technician to a pending request to confirm it. Messages collects contact-form submissions from the Contact page; mark them read as you handle them.',
       },
       {
         q: 'Plans & subscriptions',
@@ -582,7 +582,7 @@ export default function Docs() {
                 </div>
                 <h3 className="font-heading text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Didn't find what you need?</h3>
                 <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.5rem' }}>
-                  Browse common questions or reach our team — we're happy to help.
+                  Browse common questions or reach our team; we're happy to help.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link to="/faq" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">Browse the FAQ <ChevronRight className="w-4 h-4" /></Link>

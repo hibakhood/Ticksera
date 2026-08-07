@@ -188,7 +188,7 @@ export default function NewTicket() {
             <Lightbulb className="w-5 h-5 text-accent-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                Found related articles — you might not need to submit a ticket:
+                Found related articles; you might not need to submit a ticket:
               </p>
               <ul className="space-y-1">
                 {suggestions.slice(0, 3).map(a => (

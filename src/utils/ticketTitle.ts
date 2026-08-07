@@ -3,8 +3,8 @@ export function cleanTicketTitle(title: string): string {
 }
 
 export function buildTicketTitle(productItem: string, issueTrigger: string): string {
-  const product = productItem.replace(/\s*—\s*/g, ' · ').trim();
+  const product = productItem.replace(/\s*\u2014\s*/g, ': ').trim();
   const issue = issueTrigger.trim();
-  if (product && issue) return `${product} — ${issue}`;
+  if (product && issue) return `${product}: ${issue}`;
   return `${product}${issue}`;
 }

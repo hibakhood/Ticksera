@@ -11,7 +11,7 @@ export function json(data: unknown, status = 200): Response {
 }
 
 // Simple in-memory fixed-window rate limiter keyed by client IP. Vercel Edge
-// isolates are ephemeral and per-instance, so this is approximate — it still
+// isolates are ephemeral and per-instance, so this is approximate; it still
 // meaningfully raises the cost of automated abuse. Expired buckets are evicted
 // so the map does not grow without bound.
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
@@ -154,7 +154,7 @@ export async function persistSharedPayment(
       if (!rpc.ok) return false;
       const out = (await rpc.json()) as { ok?: boolean };
       if (out.ok === true) return true;
-      // Stale version — re-read and retry.
+      // Stale version; re-read and retry.
     } catch {
       return false;
     }

@@ -1,6 +1,6 @@
-// FIXORA Payments — Paystack transaction verification (Vercel Edge function).
+// FIXORA Payments: Paystack transaction verification (Vercel Edge function).
 //
-// Verifies a Paystack transaction, then — when Supabase is configured — writes the
+// Verifies a Paystack transaction, then, when Supabase is configured, writes the
 // authoritative payment record into the SHARED application-state row using the
 // service role key (bypassing RLS) so clients can never self-certify a payment and
 // so the admin revenue dashboard reflects every customer's payment immediately.
@@ -78,7 +78,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   // Ownership is resolved from the caller's Supabase session (server-side,
   // unforgeable). The client-supplied metadata.user_id is NEVER trusted for
-  // ownership — without a valid session the payment is returned but not
+  // ownership: without a valid session the payment is returned but not
   // persisted under anyone's account.
   const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
   const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();

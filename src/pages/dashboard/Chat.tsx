@@ -280,7 +280,7 @@ export default function Chat() {
       <Card className="card-premium overflow-hidden">
         <div className="flex" style={{ height: 'calc(100vh - 240px)', minHeight: '480px' }}>
 
-          {/* Sidebar — hidden on mobile when a ticket is selected */}
+          {/* Sidebar: hidden on mobile when a ticket is selected */}
           <div className={`border-r border-slate-200 dark:border-dark-border flex-col flex-shrink-0 ${selectedTicket ? 'hidden sm:flex w-64 lg:w-72' : 'flex w-full sm:w-64 lg:w-72'}`}>
             <ConversationList />
           </div>

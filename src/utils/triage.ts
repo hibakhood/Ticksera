@@ -145,7 +145,7 @@ export function buildHandoffGreeting(customerName: string, priority: string, tit
   return [
     `Hello ${customerName}, welcome to Fixora. I'm **FIXORA**, your AI support assistant, and I'll be handling this ticket for you.`,
     '',
-    `Your request — "${title}" — has been received as **${priority} priority**, and I'm already on it.`,
+    `Your request ("${title}") has been received as **${priority} priority**, and I'm already on it.`,
     '',
     "Here's how I'll work with you:",
     '',
@@ -169,7 +169,7 @@ export function getDiagnosticResponse(category: TicketCategory, questionIndex: n
       'Run System Restore to a point before the issue started.',
     ],
     networking: [
-      'Power cycle the router — unplug it for 30 seconds, then plug it back in.',
+      'Power cycle the router: unplug it for 30 seconds, then plug it back in.',
       'Check if other devices can connect, to isolate the problem.',
       'Move the device closer to the router to rule out signal interference.',
     ],
@@ -195,7 +195,7 @@ export function getDiagnosticResponse(category: TicketCategory, questionIndex: n
   const primary = findKbArticles(kbArticles, category, 1)[0];
   const related = findKbArticles(kbArticles, category, 4).filter(a => a.id !== primary?.id);
 
-  const lines: string[] = ["That's all I need — here's what I found."];
+  const lines: string[] = ["That's all I need. Here's what I found."];
 
   if (primary) {
     const steps = primary.content
@@ -218,7 +218,7 @@ export function getDiagnosticResponse(category: TicketCategory, questionIndex: n
     '',
     'Try the steps above and let me know if your issue is resolved.',
     '',
-    "If you're still having trouble, you can request a technician below — I've prepared your case for them.",
+    "If you're still having trouble, you can request a technician below. I've prepared your case for them.",
   );
 
   return lines.join('\n');

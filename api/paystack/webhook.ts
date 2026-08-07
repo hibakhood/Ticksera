@@ -1,4 +1,4 @@
-// FIXORA Payments — Paystack webhook (Vercel Edge function).
+// FIXORA Payments: Paystack webhook (Vercel Edge function).
 //
 // Receives server-side payment events from Paystack. This is the authoritative
 // binding of a charge to a payer: the webhook carries no client-supplied

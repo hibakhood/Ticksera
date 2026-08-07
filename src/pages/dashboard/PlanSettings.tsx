@@ -441,7 +441,7 @@ export default function PlanSettings() {
                 <div className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-dark-border">
                   <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Payment is processed securely by <strong className="text-slate-700 dark:text-slate-200">Paystack</strong> — pay by card, bank transfer, USSD, or mobile money.
+                    Payment is processed securely by <strong className="text-slate-700 dark:text-slate-200">Paystack</strong>; pay by card, bank transfer, USSD, or mobile money.
                     You'll be redirected to Paystack to complete the payment, and your plan activates automatically once verified.
                   </p>
                 </div>

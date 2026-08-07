@@ -39,7 +39,7 @@ const CORE_CATEGORIES = [
 
 const PRODUCTS: Record<string, string[]> = {
   hardware: ['Desktop PC', 'Laptop', 'MacBook', 'Server / Rack', 'Printer', 'POS Machine', 'Projector', 'UPS / Battery Backup', 'Barcode / QR Scanner', 'Monitor / Display', 'Tablet / iPad', 'Webcam / Camera', 'Other Hardware'],
-  software: ['Microsoft 365 — Outlook', 'Microsoft 365 — Teams', 'Microsoft 365 — Word / Excel', 'Google Workspace', 'Windows OS', 'macOS', 'Antivirus / Security Software', 'Accounting Software', 'ERP / CRM System', 'Custom In-House Software', 'Other Software'],
+  software: ['Microsoft 365: Outlook', 'Microsoft 365: Teams', 'Microsoft 365: Word / Excel', 'Google Workspace', 'Windows OS', 'macOS', 'Antivirus / Security Software', 'Accounting Software', 'ERP / CRM System', 'Custom In-House Software', 'Other Software'],
   network: ['WiFi Router', 'Network Switch', 'Wireless Access Point', 'VPN Connection', 'Ethernet / Cabling', 'Firewall / UTM', 'ISP / Internet Line', 'Network Printer', 'Other Network Device'],
   security: ['CCTV Camera', 'DVR / NVR System', 'Access Control System', 'Biometric Scanner', 'Alarm System', 'Network Firewall', 'Other Security Device'],
   user_access: ['Email Account', 'VPN Access', 'Active Directory / Domain', 'Software License', 'Password Reset', 'User Permissions', 'Shared Drive Access', 'Other Access Issue'],
@@ -54,7 +54,7 @@ const TRIGGERS: Record<string, string[]> = {
 };
 
 const PRIORITIES = [
-  { value: 'critical' as TicketPriority, label: 'Critical', sla: '15-min SLA', icon: Zap, dot: 'bg-red-500', chip: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400', desc: 'System down — full business impact' },
+  { value: 'critical' as TicketPriority, label: 'Critical', sla: '15-min SLA', icon: Zap, dot: 'bg-red-500', chip: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400', desc: 'System down, full business impact' },
   { value: 'high' as TicketPriority, label: 'High', sla: '60-min SLA', icon: AlertCircle, dot: 'bg-orange-500', chip: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400', desc: 'Major issue affecting productivity' },
   { value: 'medium' as TicketPriority, label: 'Medium', sla: '3-hour SLA', icon: TrendingUp, dot: 'bg-amber-400', chip: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400', desc: 'Partial disruption, workaround exists' },
   { value: 'low' as TicketPriority, label: 'Low', sla: '5-hour SLA', icon: Clock, dot: 'bg-green-500', chip: 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400', desc: 'Minor inconvenience, not urgent' },
@@ -266,7 +266,7 @@ export default function TicketWizard({ open, onClose }: Props) {
           {/* Body */}
           <div key={actualStep} className="flex-1 overflow-y-auto px-6 sm:px-7 py-5" style={{ animation: 'wizardStepIn 0.25s ease' }}>
 
-            {/* Step 1 — Client Segment */}
+            {/* Step 1: Client Segment */}
             {actualStep === 1 && (
               <div className="space-y-4">
                 <StepHeader step={1} total={totalSteps} title="Who is this ticket for?" sub="This helps us route to the right support team." />
@@ -297,7 +297,7 @@ export default function TicketWizard({ open, onClose }: Props) {
               </div>
             )}
 
-            {/* Step 2 — Industry (Business only) */}
+            {/* Step 2: Industry (Business only) */}
             {actualStep === 2 && (
               <div className="space-y-4">
                 <StepHeader step={2} total={totalSteps} title="What is your industry?" sub="We'll assign the right specialist for your sector." />
@@ -322,7 +322,7 @@ export default function TicketWizard({ open, onClose }: Props) {
               </div>
             )}
 
-            {/* Step 3 — Core Category */}
+            {/* Step 3: Core Category */}
             {actualStep === 3 && (
               <div className="space-y-4">
                 <StepHeader step={3} total={totalSteps} title="What type of issue is this?" sub="Select the area that best matches your problem." />
@@ -348,7 +348,7 @@ export default function TicketWizard({ open, onClose }: Props) {
               </div>
             )}
 
-            {/* Step 4 — Product / Item */}
+            {/* Step 4: Product / Item */}
             {actualStep === 4 && coreCategory && (
               <div className="space-y-4">
                 <StepHeader step={4} total={totalSteps} title="Which product or item is affected?" sub="Select the specific device or software involved." />
@@ -378,7 +378,7 @@ export default function TicketWizard({ open, onClose }: Props) {
               </div>
             )}
 
-            {/* Step 5 — Issue Trigger */}
+            {/* Step 5: Issue Trigger */}
             {actualStep === 5 && coreCategory && (
               <div className="space-y-4">
                 <StepHeader step={5} total={totalSteps} title="What is the symptom or error?" sub="Select what's happening or describe it briefly." />
@@ -408,7 +408,7 @@ export default function TicketWizard({ open, onClose }: Props) {
               </div>
             )}
 
-            {/* Step 6 — Priority */}
+            {/* Step 6: Priority */}
             {actualStep === 6 && (
               <div className="space-y-4">
                 <StepHeader step={6} total={totalSteps} title="How urgent is this issue?" sub="This sets the SLA response time for your ticket." />

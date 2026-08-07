@@ -1,13 +1,13 @@
-# Fixora Enterprise — Production Deployment & Hardening Runbook
+# Fixora Enterprise: Production Deployment & Hardening Runbook
 
 This runbook lists the **manual steps only you can do** (Supabase dashboard /
 Vercel / Paystack) plus what the codebase now does on its own. It pairs with
-`AUDIT.md` — each item below references the issue it closes.
+`AUDIT.md`; each item below references the issue it closes.
 
 ## 1. Apply the database migrations
 
 In the Supabase Dashboard → **SQL Editor**, run these files **in order** (they
-must be applied even though migrations 0001–0006 exist in the repo):
+must be applied even though migrations 0001-0006 exist in the repo):
 
 | File | Fixes | Notes |
 | --- | --- | --- |
@@ -24,8 +24,8 @@ must be applied even though migrations 0001–0006 exist in the repo):
 
 ## 2. Supabase: enable & configure security features
 
-- **Email confirmations ON** — Authentication → Providers → Email → confirmations.
-- **MFA** — Authentication → Multi-factor → TOTP enabled (the app exposes
+- **Email confirmations ON**: Authentication → Providers → Email → confirmations.
+- **MFA**: Authentication → Multi-factor → TOTP enabled (the app exposes
   enroll/verify in **Profile → Two-Factor Authentication**, and login will ask
   for a code once a user has one). Enforce it for staff with an
   **Auth policy** (SQL): e.g.
@@ -33,11 +33,11 @@ must be applied even though migrations 0001–0006 exist in the repo):
   create policy "mfa_enroll_staff" on auth.mfa_factors
     for insert with check (auth.uid() = user_id);
   ```
-- **Storage** — bucket `attachments` is created by migration 0012. Verify it is
+- **Storage**: bucket `attachments` is created by migration 0012. Verify it is
   **public** (Storage → Buckets → `attachments` → Public). If you prefer a
   private bucket, change `src/lib/uploads.ts` to `createSignedUrl` instead of
   `getPublicUrl`.
-- **Service role key** — keep `SUPABASE_SERVICE_ROLE_KEY` server-side only. It
+- **Service role key**: keep `SUPABASE_SERVICE_ROLE_KEY` server-side only. It
   must **never** be in the client bundle (`VITE_*`).
 
 ## 3. Vercel environment variables
@@ -52,7 +52,7 @@ Set these in the Vercel project (Settings → Environment Variables):
 | `SUPABASE_SERVICE_ROLE_KEY` | Server service-role key. |
 | `SUPER_ADMIN_EMAILS` | Comma list; **must mirror** `VITE_SUPER_ADMIN_EMAIL` (bootstrap admins + server-side staff check). |
 | `PAYSTACK_SECRET_KEY` | Enables checkout. |
-| `PAYSTACK_WEBHOOK_SECRET` | **New** — signature secret for `/api/paystack/webhook`. |
+| `PAYSTACK_WEBHOOK_SECRET` | **New**: signature secret for `/api/paystack/webhook`. |
 | `RESEND_API_KEY` | Transactional email (optional). |
 | `AI_API_KEY` | Enables the AI agent (OpenRouter). Leave empty to keep the deterministic bot. |
 | `AI_DAILY_LIMIT_PER_USER` | Optional per-user AI budget/day (default 60). |
@@ -64,44 +64,44 @@ Set these in the Vercel project (Settings → Environment Variables):
 3. Events: select **charge.success** (send all if unsure).
 4. Copy the **Webhook Secret** into `PAYSTACK_WEBHOOK_SECRET` in Vercel.
 5. Keep `metadata.plan` = `Basic | Professional | Business` on
-   `transaction.initialize` (the client already does this) — the webhook only
+   `transaction.initialize` (the client already does this); the webhook only
    records matching plan/amount charges.
 
 ## 5. What the code now does (no action needed)
 
-- **C2 — lost-update protection**: every client save is version-checked by the
+- **C2: lost-update protection**: every client save is version-checked by the
   DB RPC; stale writes get a 409 and the client reloads, merges and retries.
   Payments are appended through the same atomic RPC and deduped by reference.
-- **M1 — write sanitization**: customer-writable records are filtered
+- **M1: write sanitization**: customer-writable records are filtered
   server-side (`users` → self only, no `role`/`email`; chat sender fields are
   forced; notifications scoped to the caller).
-- **M3 — least privilege**: the `/api/state` read view is role-scoped.
+- **M3: least privilege**: the `/api/state` read view is role-scoped.
   Customers see only their own data + published KB; technicians get no
   payments/contact-messages/user-directory; managers see everything.
-- **M4 — contact form**: intake now goes through `POST /api/contact`
+- **M4: contact form**: intake now goes through `POST /api/contact`
   (rate-limited, honeypot-protected, server-side write). The public insert
   policy is dropped by migration 0009.
-- **H1 — role changes**: `POST /api/role` (managers only) persists to
+- **H1: role changes**: `POST /api/role` (managers only) persists to
   `profiles` via `set_user_role`; nobody can change their own role.
-- **H4 — MFA**: enroll/disable in Profile; login challenges with a 6-digit code.
-- **H5 — audit logging**: sensitive actions (`role.changed`, `payment.verified`,
+- **H4: MFA**: enroll/disable in Profile; login challenges with a 6-digit code.
+- **H5: audit logging**: sensitive actions (`role.changed`, `payment.verified`,
   `payment.webhook`, `contact.submitted`) are written to `audit_logs` via the
   service-role RPC + emitted as structured JSON logs in Vercel.
-- **H6 — tests**: `npm run test` (Vitest) runs in CI alongside typecheck + build.
-- **H7 — storage**: in live mode localStorage keeps only `currentUser`, never
+- **H6: tests**: `npm run test` (Vitest) runs in CI alongside typecheck + build.
+- **H7: storage**: in live mode localStorage keeps only `currentUser`, never
   tenant collections.
-- **H3 — AI cost caps**: per-user daily budget + per-IP rate limit; over budget
+- **H3: AI cost caps**: per-user daily budget + per-IP rate limit; over budget
   the deterministic bot takes over.
 
 ## 6. Known remaining limitations (documented, not blocking)
 
-- **C3b — single-row shared state**: the `user_data` row remains the real-time
+- **C3b: single-row shared state**: the `user_data` row remains the real-time
   backbone. This is fine at 10k users; the long-term architecture is multiple
   RPCs over the relational tables. Itemized in `AUDIT.md`.
-- **L2 — id generation** is timestamp-based (`t<ts>`, `c<ts>`, …) rather than
+- **L2: id generation** is timestamp-based (`t<ts>`, `c<ts>`, …) rather than
   UUID; collision risk is negligible at this scale.
 - Demo-mode fallback still exists **by design** when `VITE_SUPABASE_URL` /
-  `VITE_SUPABASE_ANON_KEY` are missing — a misconfig silently reverts to demo
+  `VITE_SUPABASE_ANON_KEY` are missing; a misconfig silently reverts to demo
   auth (`fixora123`). Ensure those vars are set in production.
 
 ## 7. Verify after deploy
