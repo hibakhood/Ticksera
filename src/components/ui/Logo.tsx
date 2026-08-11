@@ -5,27 +5,13 @@ interface LogoProps {
 
 export default function Logo({ size = 32, className = '' }: LogoProps) {
   return (
-    <svg
+    <img
+      src="/ticksera-logo.png"
+      alt="TICKSERA"
       width={size}
       height={size}
-      viewBox="0 0 36 36"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="TICKSERA"
-    >
-      <rect width="36" height="36" rx="9" fill="#10b981" />
-      <path
-        d="M9 10H22V13.5H13V17.5H20V21H13V27H9V10Z"
-        fill="white"
-      />
-      <circle cx="25.5" cy="23.5" r="3" fill="white" opacity="0.85" />
-      <path
-        d="M23.5 13.5H27.5M25.5 11.5V15.5"
-        stroke="white"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
+      style={{ objectFit: 'contain' }}
+    />
   );
 }
