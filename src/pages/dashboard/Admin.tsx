@@ -776,7 +776,7 @@ export default function Admin() {
                         <Input
                           label="Work Email"
                           type="email"
-                          placeholder="john@fixora.com"
+                          placeholder="john@ticksera.com"
                           value={newEmployee.email}
                           onChange={e => { setNewEmployee(v => ({ ...v, email: e.target.value })); setAddError(''); }}
                           required

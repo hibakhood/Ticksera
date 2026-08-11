@@ -1,4 +1,4 @@
-// FIXORA Role: server-side staff role changes (Vercel Edge function).
+// TICKSERA Role: server-side staff role changes (Vercel Edge function).
 //
 // Role changes used to mutate only the in-memory store and never reached the
 // database, so staff privileges were not enforced anywhere. This endpoint

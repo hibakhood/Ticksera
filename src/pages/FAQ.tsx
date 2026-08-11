@@ -13,9 +13,9 @@ const FAQS: FaqCategory[] = [
     label: 'Getting Started',
     grad: 'from-emerald-500 to-teal-600',
     faqs: [
-      { q: 'What is FIXORA?', a: 'FIXORA is an enterprise-grade IT support platform that helps businesses manage technical support tickets, technician scheduling, and customer communication in one place.' },
+      { q: 'What is TICKSERA?', a: 'TICKSERA is an enterprise-grade IT support platform that helps businesses manage technical support tickets, technician scheduling, and customer communication in one place.' },
       { q: 'How do I get IT help?', a: 'Sign up for a free account, navigate to the Tickets section, and click "Get IT Help". Describe your issue and our AI assistant will walk you through diagnostic steps. If the issue isn\'t resolved, you can request a technician.' },
-      { q: 'How does the AI assistant and smart triage work?', a: 'When you open a ticket, our guided wizard quickly collects the essentials: client type, industry, category, product, and symptom. FIXORA\'s AI then triages the request instantly, recommending diagnostic steps and routing it to the right specialist so you skip the queue entirely.' },
+      { q: 'How does the AI assistant and smart triage work?', a: 'When you open a ticket, our guided wizard quickly collects the essentials: client type, industry, category, product, and symptom. TICKSERA\'s AI then triages the request instantly, recommending diagnostic steps and routing it to the right specialist so you skip the queue entirely.' },
       { q: 'How do I track my ticket and its SLA?', a: 'Every ticket is tracked live from your dashboard. The SLA countdown starts the moment you submit, and tickets that approach or breach their response target are automatically escalated, with real-time status and a full activity history on each ticket.' },
     ],
   },
@@ -38,7 +38,7 @@ const FAQS: FaqCategory[] = [
     label: 'Plans & Billing',
     grad: 'from-violet-500 to-purple-600',
     faqs: [
-      { q: 'What plans are available?', a: 'FIXORA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo, most popular), Business (₦50,000/mo for teams up to 15), and Enterprise (custom pricing for large organisations). All paid plans include a full customer dashboard, ticket management, and remote support.' },
+      { q: 'What plans are available?', a: 'TICKSERA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo, most popular), Business (₦50,000/mo for teams up to 15), and Enterprise (custom pricing for large organisations). All paid plans include a full customer dashboard, ticket management, and remote support.' },
       { q: 'Can I upgrade or downgrade?', a: 'Absolutely. You can upgrade, downgrade, or cancel at any time from the Billing section of your dashboard. Changes take effect immediately.' },
       { q: 'What payment methods do you accept?', a: 'We accept Card, Bank Transfer, USSD, and Mobile Pay. This is a demo build; no real charges are made.' },
     ],
@@ -57,7 +57,7 @@ const FAQS: FaqCategory[] = [
     label: 'Security & Trust',
     grad: 'from-rose-500 to-red-600',
     faqs: [
-      { q: 'How secure is FIXORA?', a: 'We use end-to-end encryption, role-based access controls, and follow SOC 2 compliance standards. All data is stored securely with regular backups.' },
+      { q: 'How secure is TICKSERA?', a: 'We use end-to-end encryption, role-based access controls, and follow SOC 2 compliance standards. All data is stored securely with regular backups.' },
     ],
   },
 ];
@@ -112,7 +112,7 @@ export default function FAQ() {
             Support Center
           </div>
           <h1 className="font-heading text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Frequently Asked Questions</h1>
-          <p className="text-slate-300">Everything you need to know about getting IT help with FIXORA.</p>
+          <p className="text-slate-300">Everything you need to know about getting IT help with TICKSERA.</p>
 
           {/* Search */}
           <div className="relative max-w-xl mx-auto" style={{ marginTop: '2rem' }}>

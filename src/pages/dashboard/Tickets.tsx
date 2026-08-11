@@ -22,7 +22,7 @@ function exportCSV(tickets: Ticket[]) {
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `fixora-tickets-${new Date().toISOString().split('T')[0]}.csv`; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = `ticksera-tickets-${new Date().toISOString().split('T')[0]}.csv`; a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -37,7 +37,7 @@ function exportPDF(tickets: Ticket[]) {
       <td>${new Date(t.createdAt).toLocaleDateString()}</td>
       <td>${t.slaDeadline ? new Date(t.slaDeadline).toLocaleDateString() : '-'}</td>
     </tr>`).join('');
-  const html = `<!DOCTYPE html><html><head><title>FIXORA Tickets</title>
+  const html = `<!DOCTYPE html><html><head><title>TICKSERA Tickets</title>
     <style>
       body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; color: #1e293b; }
       h1 { color: #10b981; font-size: 20px; margin-bottom: 4px; }
@@ -47,7 +47,7 @@ function exportPDF(tickets: Ticket[]) {
       td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
       tr:nth-child(even) td { background: #fafafa; }
     </style></head><body>
-    <h1>FIXORA: Ticket Report</h1>
+    <h1>TICKSERA: Ticket Report</h1>
     <p>Generated ${new Date().toLocaleString()} · ${tickets.length} ticket${tickets.length !== 1 ? 's' : ''}</p>
     <table><thead><tr><th>ID</th><th>Title</th><th>Priority</th><th>Status</th><th>Created By</th><th>Date</th><th>SLA</th></tr></thead>
     <tbody>${rows}</tbody></table></body></html>`;

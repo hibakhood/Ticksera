@@ -200,7 +200,7 @@ export default function DashboardLayout() {
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
-          <span className="font-heading text-lg font-bold text-white tracking-tight">FIXORA</span>
+          <span className="font-heading text-lg font-bold text-white tracking-tight">TICKSERA</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="ml-auto lg:hidden text-slate-500 hover:text-white p-1 rounded-lg transition-colors"
@@ -275,7 +275,7 @@ export default function DashboardLayout() {
           </button>
 
           <div className="hidden lg:flex items-center gap-1.5">
-            <span className="text-xs text-slate-400">FIXORA</span>
+            <span className="text-xs text-slate-400">TICKSERA</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
             <span className="font-semibold text-slate-900 dark:text-white text-sm">{pageTitle}</span>
           </div>

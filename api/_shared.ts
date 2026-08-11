@@ -1,4 +1,4 @@
-// Shared helpers for FIXORA Vercel Edge functions.
+// Shared helpers for TICKSERA Vercel Edge functions.
 // Files prefixed with `_` are not deployed as routes by Vercel.
 
 export const GLOBAL_STATE_ID = '00000000-0000-0000-0000-000000000000';

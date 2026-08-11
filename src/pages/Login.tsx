@@ -14,10 +14,10 @@ const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_tech
 type AuthMode = 'signin' | 'forgot' | 'reset' | 'done' | 'mfa';
 
 export default function Login() {
-  const [email, setEmail]       = useState(() => localStorage.getItem('fixora_remember_email') ?? '');
+  const [email, setEmail]       = useState(() => localStorage.getItem('ticksera_remember_email') ?? '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(!!localStorage.getItem('fixora_remember_email'));
+  const [remember, setRemember] = useState(!!localStorage.getItem('ticksera_remember_email'));
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
 
@@ -65,8 +65,8 @@ export default function Login() {
       const res = await login(email.trim().toLowerCase(), password);
       if (res.ok) {
         const { currentUser } = useStore.getState();
-        if (remember) localStorage.setItem('fixora_remember_email', email.trim().toLowerCase());
-        else localStorage.removeItem('fixora_remember_email');
+        if (remember) localStorage.setItem('ticksera_remember_email', email.trim().toLowerCase());
+        else localStorage.removeItem('ticksera_remember_email');
         navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
       } else if (res.mfaRequired) {
         setMode('mfa');
@@ -84,8 +84,8 @@ export default function Login() {
     const user = users.find(u => u.email === normalized);
     const ok = await login(normalized, password);
     if (ok.ok && user) {
-      if (remember) localStorage.setItem('fixora_remember_email', normalized);
-      else localStorage.removeItem('fixora_remember_email');
+      if (remember) localStorage.setItem('ticksera_remember_email', normalized);
+      else localStorage.removeItem('ticksera_remember_email');
       navigate(getDestination(user.id, user.role));
     } else if (!user) {
       setError('No account found with that email address.');
@@ -200,7 +200,7 @@ export default function Login() {
 
         <Link to="/" className="flex items-center gap-3 relative z-10">
           <Logo size={36} />
-          <span className="font-heading text-xl font-bold text-white tracking-tight">FIXORA</span>
+          <span className="font-heading text-xl font-bold text-white tracking-tight">TICKSERA</span>
         </Link>
 
         <div className="relative z-10 space-y-8">
@@ -252,7 +252,7 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-slate-500 text-xs relative z-10">© {new Date().getFullYear()} FIXORA. All rights reserved.</p>
+        <p className="text-slate-500 text-xs relative z-10">© {new Date().getFullYear()} TICKSERA. All rights reserved.</p>
       </div>
 
       {/* ── Right panel ── */}
@@ -261,7 +261,7 @@ export default function Login() {
 
           <div className="lg:hidden flex items-center justify-center gap-3 mb-10">
             <Logo size={36} />
-            <span className="font-heading text-2xl font-bold text-slate-900 dark:text-white">FIXORA</span>
+            <span className="font-heading text-2xl font-bold text-slate-900 dark:text-white">TICKSERA</span>
           </div>
 
           <div className="mb-8">
@@ -273,7 +273,7 @@ export default function Login() {
               {isResetMode ? 'Reset your password' : 'Welcome back'}
             </h1>
             <p className="mt-1.5 text-slate-500 dark:text-slate-400">
-              {isResetMode ? "We'll get you back in, fast." : 'Sign in to access your FIXORA workspace'}
+              {isResetMode ? "We'll get you back in, fast." : 'Sign in to access your TICKSERA workspace'}
             </p>
           </div>
 
@@ -512,7 +512,7 @@ export default function Login() {
           {!isResetMode && !supabaseLive && (
             <p className="text-center text-xs text-slate-400 mb-5">
               Demo build: all demo accounts use password{' '}
-              <code className="font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">fixora123</code>
+              <code className="font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">ticksera123</code>
             </p>
           )}
 

@@ -75,7 +75,7 @@ export default function Chat() {
     if (currentUser?.role === 'customer') {
       const assignee = users.find(u => u.id === ticket.assignedTo);
       replierName = assignee?.name || users.find(u => u.role === 'technician')?.name || 'Support';
-      const replierEmail = assignee?.email || 'support@fixora.com';
+      const replierEmail = assignee?.email || 'support@ticksera.com';
       simTimer.current = setTimeout(() => startTyping(ticketId, replierEmail, replierName), 400);
       simTimer.current = setTimeout(() => stopTyping(ticketId, replierEmail), 2200);
     } else {

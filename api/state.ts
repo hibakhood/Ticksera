@@ -1,4 +1,4 @@
-// FIXORA Shared State Gateway: the ONLY way clients may read or write the
+// TICKSERA Shared State Gateway: the ONLY way clients may read or write the
 // application's shared data (tickets, chat, bookings, payments, ...).
 //
 // The SPA used to upsert the shared `user_data` row directly with the anon key,
@@ -30,7 +30,7 @@ import { GLOBAL_STATE_ID, json, rateLimit, getAuthedUser, getStaffRole, isManage
 
 const COLLECTIONS = ['tickets', 'chatMessages', 'conversations', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'] as const;
 const MAX_BODY_BYTES = 1024 * 1024;
-const BOT_EMAIL = 'bot@fixora.com';
+const BOT_EMAIL = 'bot@ticksera.com';
 
 type Row = Record<string, unknown>;
 

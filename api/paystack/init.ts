@@ -1,4 +1,4 @@
-// FIXORA Payments: Paystack checkout initialization (Vercel Edge function).
+// TICKSERA Payments: Paystack checkout initialization (Vercel Edge function).
 //
 // Env vars (set in Vercel; secret key is server-only, never ship to the client):
 //   PAYSTACK_SECRET_KEY   required (sk_test_... / sk_live_... from the Paystack dashboard)
@@ -50,7 +50,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   const callback = body.callback && body.callback.startsWith('/') ? body.callback : '/billing';
   const origin = new URL(req.url).origin;
-  const reference = `FIXORA-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const reference = `TICKSERA-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
   const payload = {
     email,

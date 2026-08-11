@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fixora dev server - uses the local Node 22 toolchain directly (no PATH needed).
+# Ticksera dev server - uses the local Node 22 toolchain directly (no PATH needed).
 set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"

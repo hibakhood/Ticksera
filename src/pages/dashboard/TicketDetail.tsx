@@ -88,7 +88,7 @@ export default function TicketDetail() {
     if (!ticket || !id) return;
     if (currentUser?.role === 'customer') {
       const assignee = users.find(u => u.id === ticket.assignedTo);
-      const replierEmail = assignee?.email || 'support@fixora.com';
+      const replierEmail = assignee?.email || 'support@ticksera.com';
       const replierName = assignee?.name || 'Support';
       simTimer.current = setTimeout(() => startTyping(id, replierEmail, replierName), 400);
       simTimer.current = setTimeout(() => stopTyping(id, replierEmail), 2200);
@@ -390,7 +390,7 @@ export default function TicketDetail() {
                   {triageActive ? (
                     <>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">FIXORA BOT: Diagnosing Your Issue</h3>
+                        <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">TICKSERA BOT: Diagnosing Your Issue</h3>
                         <Badge variant="info">Question {Math.min(triageStep + 1, triageFlow!.questions.length)} of {triageFlow!.questions.length}</Badge>
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
@@ -427,7 +427,7 @@ export default function TicketDetail() {
                     </>
                   ) : (
                     <>
-                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete: Did the FIXORA BOT resolve your issue?</h3>
+                      <h3 className="font-heading font-semibold text-gray-900 dark:text-white text-sm">Triage Complete: Did the TICKSERA BOT resolve your issue?</h3>
                       <p className="text-xs text-gray-500 mt-0.5">
                         The BOT finished its diagnosis and shared troubleshooting steps in the chat.
                         If the issue is fixed, close the ticket below. If not, request a technician and we'll route you immediately.
@@ -600,9 +600,9 @@ export default function TicketDetail() {
             <Card className="p-6 border-2 border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-900/5">
               <h3 className="font-heading font-semibold text-gray-900 dark:text-white mb-1">Rate This Resolution</h3>
               <p className="text-sm text-gray-500 mb-4">
-                {ticket.resolvedBy === 'FIXORA BOT'
-                  ? 'How satisfied are you with the FIXORA BOT\u2019s help? Your rating helps the BOT get better.'
-                  : `How satisfied are you with the support you received from ${ticket.resolvedBy ?? 'the Fixora team'}?`}
+                {ticket.resolvedBy === 'TICKSERA BOT'
+                  ? 'How satisfied are you with the TICKSERA BOT\u2019s help? Your rating helps the BOT get better.'
+                  : `How satisfied are you with the support you received from ${ticket.resolvedBy ?? 'the Ticksera team'}?`}
               </p>
               <div className="flex items-center gap-1 mb-4">
                 {[1, 2, 3, 4, 5].map(s => (

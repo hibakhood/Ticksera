@@ -26,7 +26,7 @@ export default function PublicNavbar() {
         <div className="flex items-center h-16">
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <Logo size={34} />
-            <span className="font-heading text-2xl font-black text-slate-900 dark:text-white tracking-tight">FIXORA</span>
+            <span className="font-heading text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
           </Link>
 
           <div className="hidden md:flex items-center justify-center gap-0.5 flex-1">

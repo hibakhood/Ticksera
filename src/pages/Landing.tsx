@@ -30,7 +30,7 @@ const stats = [
 const trustedBy = ['TechVentures', 'GlobeCorp', 'StartupHub', 'Medix Care', 'Nova Bank', 'Apex Logistics'];
 
 const features = [
-  { icon: Bot,    grad: 'from-emerald-500 to-teal-600',   title: 'AI Self-Service Triage',   desc: 'The FIXORA BOT answers instantly with step-by-step fixes and resolves many issues before a human ever gets involved.' },
+  { icon: Bot,    grad: 'from-emerald-500 to-teal-600',   title: 'AI Self-Service Triage',   desc: 'The TICKSERA BOT answers instantly with step-by-step fixes and resolves many issues before a human ever gets involved.' },
   { icon: Timer,  grad: 'from-orange-500 to-amber-600',   title: 'Guaranteed SLAs',          desc: 'A 15-minute critical response, enforced with live countdowns and automatic escalation before any breach.' },
   { icon: Route,  grad: 'from-violet-500 to-purple-600',  title: 'Zero-Triage Routing',      desc: 'Our guided wizard captures the exact industry, product, and symptom, so every ticket reaches the right specialist the first time.' },
   { icon: Wrench, grad: 'from-sky-500 to-blue-600',       title: 'On-Site & Remote Support', desc: 'Not every problem fits in a chat. Book a technician to your office or connect remotely, same ticket, same SLA.' },
@@ -73,7 +73,7 @@ const steps = [
     n: '03', icon: Sparkles,      badge: 'AI Triage',
     accent: 'bg-sky-500',         ring: 'ring-sky-500/20',
     title: 'Instant Self‑Service',
-    desc: 'Our FIXORA BOT analyzes your issue in real time and walks you through step‑by‑step fixes. Resolve it yourself on the spot, or escalate to a live technician in one click.',
+    desc: 'Our TICKSERA BOT analyzes your issue in real time and walks you through step‑by‑step fixes. Resolve it yourself on the spot, or escalate to a live technician in one click.',
   },
   {
     n: '04', icon: UserCheck,     badge: 'Smart Assignment',
@@ -96,7 +96,7 @@ const steps = [
 ];
 
 const testimonials = [
-  { name: 'Adebayo Ogundimu', role: 'CTO, TechVentures',        initial: 'A', text: 'FIXORA transformed our IT operations completely. Response times dropped by 80% and our team hasn\'t looked back since.' },
+  { name: 'Adebayo Ogundimu', role: 'CTO, TechVentures',        initial: 'A', text: 'TICKSERA transformed our IT operations completely. Response times dropped by 80% and our team hasn\'t looked back since.' },
   { name: 'Fatima Al-Hassan',  role: 'IT Director, GlobeCorp',   initial: 'F', text: 'The SLA tracking and ticket workflows are genuinely game-changing. Best helpdesk platform we\'ve ever deployed.' },
   { name: 'Chen Wei',          role: 'Ops Manager, StartupHub',  initial: 'C', text: 'From ticket creation to final resolution, everything is seamless. The live chat feature alone saves us hours every day.' },
 ];
@@ -180,11 +180,11 @@ export default function Landing() {
                   <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-mono ml-2.5 truncate">app.fixora.io/dashboard</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-mono ml-2.5 truncate">app.ticksera.io/dashboard</span>
                 </div>
                 <img
                   src="/dashboard-preview.png"
-                  alt="FIXORA Dashboard Preview"
+                  alt="TICKSERA Dashboard Preview"
                   className="w-full block"
                   loading="eager"
                 />
@@ -326,9 +326,9 @@ export default function Landing() {
       <section className="s-section bg-slate-50 dark:bg-dark-bg/60">
         <div className="s-inner max-w-7xl mx-auto">
           <SectionHeader
-            label="Why FIXORA"
-            title="The Fixora Difference"
-            sub="We're not another helpdesk queue. Fixora pairs AI self-service with guaranteed SLAs, industry specialists, and support that comes to you."
+            label="Why TICKSERA"
+            title="The Ticksera Difference"
+            sub="We're not another helpdesk queue. Ticksera pairs AI self-service with guaranteed SLAs, industry specialists, and support that comes to you."
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {features.map((f, i) => (
@@ -358,10 +358,10 @@ export default function Landing() {
               The Process
             </span>
             <h2 className="font-heading text-white text-3xl sm:text-4xl font-bold">
-              How FIXORA Works
+              How TICKSERA Works
             </h2>
             <p className="text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
-              From your first click to a verified resolution: every step maps to a real FIXORA feature, from AI self-service triage to live technician support.
+              From your first click to a verified resolution: every step maps to a real TICKSERA feature, from AI self-service triage to live technician support.
             </p>
           </div>
 
@@ -425,7 +425,7 @@ export default function Landing() {
           <SectionHeader
             label="Customer Stories"
             title="Trusted Worldwide"
-            sub="Thousands of businesses rely on FIXORA every day to keep their IT running smoothly."
+            sub="Thousands of businesses rely on TICKSERA every day to keep their IT running smoothly."
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {testimonials.map((t, i) => (
@@ -518,7 +518,7 @@ export default function Landing() {
               Ready to Fix Your IT?
             </h2>
             <p className="text-slate-400 text-[1.0625rem] max-w-xl mx-auto mb-10">
-              Join thousands of businesses that trust FIXORA to keep their technology running smoothly, with guaranteed SLA response times and smart technician routing.
+              Join thousands of businesses that trust TICKSERA to keep their technology running smoothly, with guaranteed SLA response times and smart technician routing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to={primaryTo} className="w-full sm:w-auto">

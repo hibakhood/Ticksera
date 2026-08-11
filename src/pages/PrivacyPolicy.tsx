@@ -17,7 +17,7 @@ const sections = [
     content: [
       {
         subtitle: '1.1 Account Information',
-        text: 'When you register for FIXORA, we collect personal information such as your full name, email address, phone number, company name, and billing information. This information is required to create and maintain your account.',
+        text: 'When you register for TICKSERA, we collect personal information such as your full name, email address, phone number, company name, and billing information. This information is required to create and maintain your account.',
       },
       {
         subtitle: '1.2 Support Ticket Data',
@@ -58,7 +58,7 @@ const sections = [
       },
       {
         subtitle: '2.4 Legal & Compliance',
-        text: 'We may process your data to comply with applicable laws, respond to lawful government or regulatory requests, enforce our Terms of Service, and protect the rights, property, and safety of FIXORA and its users.',
+        text: 'We may process your data to comply with applicable laws, respond to lawful government or regulatory requests, enforce our Terms of Service, and protect the rights, property, and safety of TICKSERA and its users.',
       },
     ],
   },
@@ -75,7 +75,7 @@ const sections = [
       },
       {
         subtitle: '3.2 Business Transfers',
-        text: 'If FIXORA is involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you before your data becomes subject to a different privacy policy.',
+        text: 'If TICKSERA is involved in a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction. We will notify you before your data becomes subject to a different privacy policy.',
       },
       {
         subtitle: '3.3 Legal Requirements',
@@ -83,7 +83,7 @@ const sections = [
       },
       {
         subtitle: '3.4 No Sale of Personal Data',
-        text: 'FIXORA does not sell, rent, or trade your personal information to third parties for marketing purposes under any circumstances.',
+        text: 'TICKSERA does not sell, rent, or trade your personal information to third parties for marketing purposes under any circumstances.',
       },
     ],
   },
@@ -138,7 +138,7 @@ const sections = [
     content: [
       {
         subtitle: '6.1 Access & Portability',
-        text: 'You have the right to request a copy of the personal data we hold about you in a structured, machine-readable format. Submit a request via your account settings or by emailing privacy@fixora.com.',
+        text: 'You have the right to request a copy of the personal data we hold about you in a structured, machine-readable format. Submit a request via your account settings or by emailing privacy@ticksera.com.',
       },
       {
         subtitle: '6.2 Correction',
@@ -171,7 +171,7 @@ const sections = [
       },
       {
         subtitle: '7.3 No Third-Party Advertising Cookies',
-        text: 'FIXORA does not use advertising or cross-site tracking cookies. We do not participate in ad networks or retargeting programs.',
+        text: 'TICKSERA does not use advertising or cross-site tracking cookies. We do not participate in ad networks or retargeting programs.',
       },
     ],
   },
@@ -184,7 +184,7 @@ const sections = [
     content: [
       {
         subtitle: '8.1 Contact Us',
-        text: 'For privacy-related enquiries, data subject requests, or to report a concern, contact our Data Protection Officer at: privacy@fixora.com or write to FIXORA Technologies Ltd, Lagos, Nigeria.',
+        text: 'For privacy-related enquiries, data subject requests, or to report a concern, contact our Data Protection Officer at: privacy@ticksera.com or write to TICKSERA Technologies Ltd, Lagos, Nigeria.',
       },
       {
         subtitle: '8.2 Policy Updates',
@@ -246,7 +246,7 @@ export default function PrivacyPolicy() {
             Privacy <span className="text-gradient">Policy</span>
           </h1>
           <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
-            FIXORA Technologies Ltd ("FIXORA", "we", "our", or "us") is committed to protecting your privacy. This policy explains what personal data we collect, how we use it, how we keep it safe, and your rights regarding your information when you use our platform and services.
+            TICKSERA Technologies Ltd ("TICKSERA", "we", "our", or "us") is committed to protecting your privacy. This policy explains what personal data we collect, how we use it, how we keep it safe, and your rights regarding your information when you use our platform and services.
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-8">
             {[
@@ -316,7 +316,7 @@ export default function PrivacyPolicy() {
                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Questions?</p>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" style={{ marginBottom: '0.75rem' }}>
-                    For data requests or privacy enquiries, email privacy@fixora.com.
+                    For data requests or privacy enquiries, email privacy@ticksera.com.
                   </p>
                   <Link to="/contact" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
                     Contact support <ChevronRight className="w-3 h-3" />
@@ -359,7 +359,7 @@ export default function PrivacyPolicy() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Questions about this policy?{' '}
                   <Link to="/contact" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">Contact our team →</Link>
-                  {' '}or email <span className="text-emerald-600 dark:text-emerald-400 font-semibold">privacy@fixora.com</span>
+                  {' '}or email <span className="text-emerald-600 dark:text-emerald-400 font-semibold">privacy@ticksera.com</span>
                 </p>
               </div>
 
@@ -370,7 +370,7 @@ export default function PrivacyPolicy() {
                 <div className="relative z-10">
                   <h3 className="font-heading text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Your data stays yours.</h3>
                   <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
-                    See how FIXORA protects your information every day, or reach out with any question.
+                    See how TICKSERA protects your information every day, or reach out with any question.
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Link to="/docs"><Button size="lg">Read the Docs</Button></Link>

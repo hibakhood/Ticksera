@@ -36,7 +36,7 @@ const sections = [
     id: 'getting-started',
     icon: Zap,
     title: 'Getting Started',
-    intro: 'Get up and running with FIXORA in minutes, from creating your account to submitting your first ticket.',
+    intro: 'Get up and running with TICKSERA in minutes, from creating your account to submitting your first ticket.',
     items: [
       {
         q: 'Creating your account',
@@ -44,11 +44,11 @@ const sections = [
       },
       {
         q: 'Using a demo account',
-        a: 'This is a demo build; every seeded account signs in with the password fixora123. Type the email and password on the Login page: admin@fixora.com (Super Admin), manager@fixora.com (Support Manager), tech@fixora.com (Technician), field@fixora.com (Field Technician), or customer@fixora.com (Customer).',
+        a: 'This is a demo build; every seeded account signs in with the password ticksera123. Type the email and password on the Login page: admin@ticksera.com (Super Admin), manager@ticksera.com (Support Manager), tech@ticksera.com (Technician), field@ticksera.com (Field Technician), or customer@ticksera.com (Customer).',
       },
       {
         q: 'Choosing the right plan',
-        a: 'FIXORA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo, most popular), Business (₦50,000/mo, up to 15 team seats), and Enterprise (custom pricing). New customers pick a plan on the Billing page; existing customers can upgrade or downgrade any time from My Plan. Payment methods are Card, Bank Transfer, USSD, and Mobile Pay.',
+        a: 'TICKSERA offers four plans: Basic (₦5,000/mo), Professional (₦15,000/mo, most popular), Business (₦50,000/mo, up to 15 team seats), and Enterprise (custom pricing). New customers pick a plan on the Billing page; existing customers can upgrade or downgrade any time from My Plan. Payment methods are Card, Bank Transfer, USSD, and Mobile Pay.',
       },
       {
         q: 'Setting up your profile',
@@ -84,7 +84,7 @@ const sections = [
       },
       {
         q: 'AI triage on new tickets',
-        a: 'Non-critical tickets opened by customers start in AI triage. The FIXORA BOT greets you in the discussion thread and walks you through diagnostic questions. Answer in chat to progress the triage; when it needs a human, it routes to a technician. You can also request a technician directly at any time.',
+        a: 'Non-critical tickets opened by customers start in AI triage. The TICKSERA BOT greets you in the discussion thread and walks you through diagnostic questions. Answer in chat to progress the triage; when it needs a human, it routes to a technician. You can also request a technician directly at any time.',
       },
       {
         q: 'SLA tracking',
@@ -108,7 +108,7 @@ const sections = [
       },
       {
         q: 'Rating & closing tickets',
-        a: 'Once your ticket is Resolved, the creator is asked to rate the resolution; the rating targets whoever fixed it, the FIXORA BOT or the technician. Submitting the rating closes the ticket, and a Close Ticket button is also available if you\'d rather skip the rating. You can close a ticket from its page any time after a conversation has started. Every close is recorded in the activity timeline.',
+        a: 'Once your ticket is Resolved, the creator is asked to rate the resolution; the rating targets whoever fixed it, the TICKSERA BOT or the technician. Submitting the rating closes the ticket, and a Close Ticket button is also available if you\'d rather skip the rating. You can close a ticket from its page any time after a conversation has started. Every close is recorded in the activity timeline.',
       },
       {
         q: 'Exporting tickets',
@@ -120,15 +120,15 @@ const sections = [
     id: 'ai',
     icon: Sparkles,
     title: 'AI Triage & Assistant',
-    intro: 'FIXORA uses AI to speed up diagnosis and help staff find answers fast.',
+    intro: 'TICKSERA uses AI to speed up diagnosis and help staff find answers fast.',
     items: [
       {
         q: 'AI triage on tickets',
-        a: 'Non-critical customer tickets enter AI triage automatically. The FIXORA BOT posts diagnostic questions in the ticket\'s discussion thread, reads your answers to steer the diagnosis, and shares step-by-step troubleshooting. It tries to resolve the issue before any technician is involved. The ticket is only auto-routed to a technician when you say the BOT\'s help didn\'t resolve it; tap "Not Resolved: Request Technician" and a specialist takes over with your full diagnostic history. Critical issues and staff-created tickets bypass the BOT and route directly.',
+        a: 'Non-critical customer tickets enter AI triage automatically. The TICKSERA BOT posts diagnostic questions in the ticket\'s discussion thread, reads your answers to steer the diagnosis, and shares step-by-step troubleshooting. It tries to resolve the issue before any technician is involved. The ticket is only auto-routed to a technician when you say the BOT\'s help didn\'t resolve it; tap "Not Resolved: Request Technician" and a specialist takes over with your full diagnostic history. Critical issues and staff-created tickets bypass the BOT and route directly.',
       },
       {
         q: 'Who decides the ticket status?',
-        a: 'The FIXORA BOT reads each conversation and moves the ticket to the status it believes fits: In Progress while you\'re being helped, Resolved when you confirm a fix worked, Escalated when the issue isn\'t getting fixed, and Closed when you ask to close it. Every AI status change is logged in the activity timeline. Admins and assigned technicians can always override any status manually from the Update Status control.',
+        a: 'The TICKSERA BOT reads each conversation and moves the ticket to the status it believes fits: In Progress while you\'re being helped, Resolved when you confirm a fix worked, Escalated when the issue isn\'t getting fixed, and Closed when you ask to close it. Every AI status change is logged in the activity timeline. Admins and assigned technicians can always override any status manually from the Update Status control.',
       },
       {
         q: 'The AI Assistant (staff)',
@@ -304,7 +304,7 @@ const sections = [
       },
       {
         q: 'Demo build data',
-        a: 'This is a demo build; all data is stored locally in your browser under the fixora-store localStorage key. Clearing your site data resets the demo to its seeded state.',
+        a: 'This is a demo build; all data is stored locally in your browser under the ticksera-store localStorage key. Clearing your site data resets the demo to its seeded state.',
       },
     ],
   },
@@ -344,7 +344,7 @@ const sections = [
       },
       {
         q: 'Signing out & switching accounts',
-        a: 'Open the user menu in the top-right corner of the dashboard and choose Sign Out. To explore other roles, sign in with a demo account using the password fixora123.',
+        a: 'Open the user menu in the top-right corner of the dashboard and choose Sign Out. To explore other roles, sign in with a demo account using the password ticksera123.',
       },
     ],
   },
@@ -459,7 +459,7 @@ export default function Docs() {
                 </div>
                 <div>
                   <h1 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '2rem', fontWeight: 700 }}>Documentation</h1>
-                  <p className="text-slate-500 dark:text-slate-400 text-sm">Everything you need to use FIXORA.</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm">Everything you need to use TICKSERA.</p>
                 </div>
               </div>
             </div>

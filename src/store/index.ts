@@ -76,7 +76,7 @@ function resolveProfileRole(email: string, dbRole: string): User['role'] {
 
 function genRef(): string {
   const hex = Math.random().toString(16).substring(2, 8).toUpperCase();
-  return `FIXORA-${hex}`;
+  return `TICKSERA-${hex}`;
 }
 
 let syncing = false;
@@ -96,13 +96,13 @@ const SLA_HOURS: Record<string, number> = { low: 5, medium: 3, high: 1, critical
 
 // Seed data
 const seedUsers: User[] = [
-  { id: '1', email: 'admin@fixora.com',    name: 'Ibrahim O. Akande', role: 'super_admin',      password: 'fixora123', phone: '+234 800 000 0001', location: 'Lagos, NG',        bio: 'Platform administrator',   createdAt: day(-90) },
-  { id: '2', email: 'manager@fixora.com',  name: 'Sarah Chen',     role: 'support_manager',  password: 'fixora123', phone: '+234 800 000 0002', location: 'Lagos, NG',        bio: 'Support team lead',        createdAt: day(-60) },
-  { id: '3', email: 'tech@fixora.com',     name: 'Mike Obi',       role: 'technician',       password: 'fixora123', phone: '+234 800 000 0003', location: 'Abuja, NG',        bio: 'Senior technician',        skills: ['computer_repair', 'microsoft365', 'server', 'software', 'remote'], createdAt: day(-45) },
-  { id: '4', email: 'field@fixora.com',    name: 'Grace Adeyemi',  role: 'field_technician', password: 'fixora123', phone: '+234 800 000 0004', location: 'Port Harcourt, NG', bio: 'Field support specialist', skills: ['cctv', 'printer', 'computer_repair', 'networking', 'internet'], createdAt: day(-30) },
-  { id: '5', email: 'customer@fixora.com', name: 'David Okonkwo',  role: 'customer',         password: 'fixora123', phone: '+234 800 000 0005', location: 'Lagos, NG',        bio: 'Business owner',           createdAt: day(-20) },
-  { id: '6', email: 'jane@company.com',    name: 'Jane Doe',       role: 'customer',         password: 'fixora123', phone: '+234 800 000 0006', location: 'Kano, NG',         bio: 'IT Manager',               createdAt: day(-15) },
-  { id: '7', email: 'tech2@fixora.com',    name: 'Emeka Nwosu',    role: 'technician',       password: 'fixora123', phone: '+234 800 000 0007', location: 'Lagos, NG',        bio: 'Network specialist',       skills: ['networking', 'internet', 'printer', 'cctv', 'server'], createdAt: day(-40) },
+  { id: '1', email: 'admin@ticksera.com',    name: 'Ibrahim O. Akande', role: 'super_admin',      password: 'ticksera123', phone: '+234 800 000 0001', location: 'Lagos, NG',        bio: 'Platform administrator',   createdAt: day(-90) },
+  { id: '2', email: 'manager@ticksera.com',  name: 'Sarah Chen',     role: 'support_manager',  password: 'ticksera123', phone: '+234 800 000 0002', location: 'Lagos, NG',        bio: 'Support team lead',        createdAt: day(-60) },
+  { id: '3', email: 'tech@ticksera.com',     name: 'Mike Obi',       role: 'technician',       password: 'ticksera123', phone: '+234 800 000 0003', location: 'Abuja, NG',        bio: 'Senior technician',        skills: ['computer_repair', 'microsoft365', 'server', 'software', 'remote'], createdAt: day(-45) },
+  { id: '4', email: 'field@ticksera.com',    name: 'Grace Adeyemi',  role: 'field_technician', password: 'ticksera123', phone: '+234 800 000 0004', location: 'Port Harcourt, NG', bio: 'Field support specialist', skills: ['cctv', 'printer', 'computer_repair', 'networking', 'internet'], createdAt: day(-30) },
+  { id: '5', email: 'customer@ticksera.com', name: 'David Okonkwo',  role: 'customer',         password: 'ticksera123', phone: '+234 800 000 0005', location: 'Lagos, NG',        bio: 'Business owner',           createdAt: day(-20) },
+  { id: '6', email: 'jane@company.com',    name: 'Jane Doe',       role: 'customer',         password: 'ticksera123', phone: '+234 800 000 0006', location: 'Kano, NG',         bio: 'IT Manager',               createdAt: day(-15) },
+  { id: '7', email: 'tech2@ticksera.com',    name: 'Emeka Nwosu',    role: 'technician',       password: 'ticksera123', phone: '+234 800 000 0007', location: 'Lagos, NG',        bio: 'Network specialist',       skills: ['networking', 'internet', 'printer', 'cctv', 'server'], createdAt: day(-40) },
 ];
 
 const seedTickets: Ticket[] = [
@@ -131,22 +131,22 @@ const seedConversations: Conversation[] = [
 
 const seedMessages: ChatMessage[] = [
   { id: 'm1', ticketId: 't2', senderEmail: 'jane@company.com', senderName: 'Jane Doe', senderRole: 'customer', message: 'The network dropped again just now. This is really affecting our work.', isAdmin: false, createdAt: day(-2) },
-  { id: 'm2', ticketId: 't2', senderEmail: 'tech@fixora.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'I understand the urgency. I\'m checking the router logs now. Can you confirm if the issue happens on both 2.4GHz and 5GHz bands?', isAdmin: true, createdAt: day(-2) },
+  { id: 'm2', ticketId: 't2', senderEmail: 'tech@ticksera.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'I understand the urgency. I\'m checking the router logs now. Can you confirm if the issue happens on both 2.4GHz and 5GHz bands?', isAdmin: true, createdAt: day(-2) },
   { id: 'm3', ticketId: 't2', senderEmail: 'jane@company.com', senderName: 'Jane Doe', senderRole: 'customer', message: 'It happens on both bands. We have an Ubiquiti UniFi setup.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm4', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'How long will this take to fix? I need my laptop for a presentation tomorrow.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm5', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'Hello David, welcome to Fixora. I\'m **FIXORA**, your AI support assistant.\n\nLet\'s diagnose your laptop boot issue together.\n\n**First question:**\n\nDoes the computer turn on at all? Do you see any lights or hear fans?', isAdmin: true, createdAt: day(-2) },
-  { id: 'm6', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'It powers on but I get a blue screen with error code 0x0000007B.', isAdmin: false, createdAt: day(-2) },
-  { id: 'm7', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'A blue screen with **0x0000007B** usually points to a boot-device issue.\n\n**You can try this now:**\n\n• Boot into Safe Mode.\n• Run System Restore to a point before the Windows update.\n\n**Next question:**\n\nWhen did this issue start? Was it after a specific event?', isAdmin: true, createdAt: day(-1) },
-  { id: 'm8', ticketId: 't1', senderEmail: 'customer@fixora.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'Yes, it started right after the latest Windows update.', isAdmin: false, createdAt: day(-1) },
-  { id: 'm9', ticketId: 't1', senderEmail: 'bot@fixora.com', senderName: 'FIXORA', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below; I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
-  { id: 'm10', conversationId: 'conv1', senderEmail: 'tech@fixora.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'Anyone free to take the CCTV outage in Port Harcourt tomorrow?', isAdmin: true, createdAt: day(-1) },
-  { id: 'm11', conversationId: 'conv1', senderEmail: 'manager@fixora.com', senderName: 'Sarah Chen', senderRole: 'support_manager', message: 'Grace, can you cover it?', isAdmin: true, createdAt: day(-1) },
-  { id: 'm12', conversationId: 'conv2', senderEmail: 'admin@fixora.com', senderName: 'Ibrahim O. Akande', senderRole: 'super_admin', message: 'Review the AI routing logs when you get a chance.', isAdmin: true, createdAt: day(-2) },
-  { id: 'm13', conversationId: 'conv4', senderEmail: 'field@fixora.com', senderName: 'Grace Adeyemi', senderRole: 'field_technician', message: 'Confirming I can cover Port Harcourt tomorrow.', isAdmin: true, createdAt: day(-1) },
+  { id: 'm4', ticketId: 't1', senderEmail: 'customer@ticksera.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'How long will this take to fix? I need my laptop for a presentation tomorrow.', isAdmin: false, createdAt: day(-1) },
+  { id: 'm5', ticketId: 't1', senderEmail: 'bot@ticksera.com', senderName: 'TICKSERA', senderRole: 'bot', message: 'Hello David, welcome to Ticksera. I\'m **TICKSERA**, your AI support assistant.\n\nLet\'s diagnose your laptop boot issue together.\n\n**First question:**\n\nDoes the computer turn on at all? Do you see any lights or hear fans?', isAdmin: true, createdAt: day(-2) },
+  { id: 'm6', ticketId: 't1', senderEmail: 'customer@ticksera.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'It powers on but I get a blue screen with error code 0x0000007B.', isAdmin: false, createdAt: day(-2) },
+  { id: 'm7', ticketId: 't1', senderEmail: 'bot@ticksera.com', senderName: 'TICKSERA', senderRole: 'bot', message: 'A blue screen with **0x0000007B** usually points to a boot-device issue.\n\n**You can try this now:**\n\n• Boot into Safe Mode.\n• Run System Restore to a point before the Windows update.\n\n**Next question:**\n\nWhen did this issue start? Was it after a specific event?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm8', ticketId: 't1', senderEmail: 'customer@ticksera.com', senderName: 'David Okonkwo', senderRole: 'customer', message: 'Yes, it started right after the latest Windows update.', isAdmin: false, createdAt: day(-1) },
+  { id: 'm9', ticketId: 't1', senderEmail: 'bot@ticksera.com', senderName: 'TICKSERA', senderRole: 'bot', message: 'Thanks, David. A blue screen with **0x0000007B** right after a Windows update points to a boot-device or driver conflict.\n\n**Step-by-step fix:**\n\n1. Boot into Safe Mode.\n2. Run System Restore to a point before the Windows update.\n3. If that doesn\'t help, check the disk drive connection in your BIOS.\n\n**Related guides:**\n\n• How to troubleshoot boot issues\n• Windows blue screen error guide\n\nTry the steps above and let me know if your issue is resolved.\n\nIf you\'re still having trouble, you can request a technician below; I\'ve prepared your case for them.', isAdmin: true, createdAt: day(-1) },
+  { id: 'm10', conversationId: 'conv1', senderEmail: 'tech@ticksera.com', senderName: 'Mike Obi', senderRole: 'technician', message: 'Anyone free to take the CCTV outage in Port Harcourt tomorrow?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm11', conversationId: 'conv1', senderEmail: 'manager@ticksera.com', senderName: 'Sarah Chen', senderRole: 'support_manager', message: 'Grace, can you cover it?', isAdmin: true, createdAt: day(-1) },
+  { id: 'm12', conversationId: 'conv2', senderEmail: 'admin@ticksera.com', senderName: 'Ibrahim O. Akande', senderRole: 'super_admin', message: 'Review the AI routing logs when you get a chance.', isAdmin: true, createdAt: day(-2) },
+  { id: 'm13', conversationId: 'conv4', senderEmail: 'field@ticksera.com', senderName: 'Grace Adeyemi', senderRole: 'field_technician', message: 'Confirming I can cover Port Harcourt tomorrow.', isAdmin: true, createdAt: day(-1) },
 ];
 
 const seedContacts: ContactMessage[] = [
-  { id: 'c1', name: 'John Smith', email: 'john@example.com', subject: 'Partnership inquiry', message: 'We are interested in becoming a reseller for FIXORA services.', isRead: false, createdAt: day(-3) },
+  { id: 'c1', name: 'John Smith', email: 'john@example.com', subject: 'Partnership inquiry', message: 'We are interested in becoming a reseller for TICKSERA services.', isRead: false, createdAt: day(-3) },
   { id: 'c2', name: 'Mary Johnson', email: 'mary@startup.io', subject: 'Enterprise pricing', message: 'Looking for custom enterprise pricing for 200+ employees.', isRead: true, createdAt: day(-5) },
 ];
 
@@ -165,11 +165,11 @@ const seedKB: KBArticle[] = [
 ];
 
 const seedNotifications: Notification[] = [
-  { id: 'n1', userEmail: 'admin@fixora.com', title: 'New ticket submitted', message: 'David Okonkwo submitted a new ticket: Laptop not booting', type: 'ticket', isRead: false, link: '/tickets/t1', createdAt: day(-2) },
-  { id: 'n2', userEmail: 'tech@fixora.com', title: 'Ticket assigned to you', message: 'You have been assigned ticket: Office network keeps dropping', type: 'assignment', isRead: false, link: '/tickets/t2', createdAt: day(-2) },
-  { id: 'n3', userEmail: 'customer@fixora.com', title: 'Ticket resolved', message: 'Your ticket "Microsoft 365 license activation" has been resolved', type: 'ticket', isRead: true, link: '/tickets/t5', createdAt: day(-5) },
-  { id: 'n4', userEmail: 'admin@fixora.com', title: 'New payment received', message: 'Payment of ₦15,000 received for Professional plan', type: 'payment', isRead: true, createdAt: day(-30) },
-  { id: 'n5', userEmail: 'manager@fixora.com', title: 'SLA breach warning', message: 'Ticket t4 is approaching SLA deadline', type: 'system', isRead: false, link: '/tickets/t4', createdAt: day(-1) },
+  { id: 'n1', userEmail: 'admin@ticksera.com', title: 'New ticket submitted', message: 'David Okonkwo submitted a new ticket: Laptop not booting', type: 'ticket', isRead: false, link: '/tickets/t1', createdAt: day(-2) },
+  { id: 'n2', userEmail: 'tech@ticksera.com', title: 'Ticket assigned to you', message: 'You have been assigned ticket: Office network keeps dropping', type: 'assignment', isRead: false, link: '/tickets/t2', createdAt: day(-2) },
+  { id: 'n3', userEmail: 'customer@ticksera.com', title: 'Ticket resolved', message: 'Your ticket "Microsoft 365 license activation" has been resolved', type: 'ticket', isRead: true, link: '/tickets/t5', createdAt: day(-5) },
+  { id: 'n4', userEmail: 'admin@ticksera.com', title: 'New payment received', message: 'Payment of ₦15,000 received for Professional plan', type: 'payment', isRead: true, createdAt: day(-30) },
+  { id: 'n5', userEmail: 'manager@ticksera.com', title: 'SLA breach warning', message: 'Ticket t4 is approaching SLA deadline', type: 'system', isRead: false, link: '/tickets/t4', createdAt: day(-1) },
 ];
 
 interface AppState {
@@ -268,8 +268,8 @@ interface AppState {
   revokeAllOtherSessions: () => void;
 }
 
-const BOT_EMAIL = 'bot@fixora.com';
-const BOT_NAME = 'FIXORA';
+const BOT_EMAIL = 'bot@ticksera.com';
+const BOT_NAME = 'TICKSERA';
 
 // Bounded recovery attempts: after the knowledge-base fix fails, the AI gets up
 // to this many chances to reason through an alternative solution before the
@@ -291,7 +291,7 @@ function fallbackReply(mode: 'triage' | 'chat' | 'recovery', category: TicketCat
   if (mode === 'recovery') {
     return "I'm sorry the suggested steps didn't fix it. I've passed your case to a technician who will take over shortly.";
   }
-  return "Thanks, I've noted your message. A Fixora specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
+  return "Thanks, I've noted your message. A Ticksera specialist will get back to you shortly. If it's urgent, request a technician to escalate.";
 }
 
 // Strong signals that the customer is unhappy with the BOT's help. Used only for
@@ -344,9 +344,9 @@ function inferSuggestedStatus(text: string): AgentStatus {
   return 'in_progress';
 }
 
-// Staff conversations: the bot only joins when called by its name (FIXORA).
+// Staff conversations: the bot only joins when called by its name (TICKSERA).
 function isBotMentioned(text: string): boolean {
-  return /\bfixora\b/i.test(text || '');
+  return /\bticksera\b/i.test(text || '');
 }
 
 function staffRoster(users: User[]): { name: string; role: string }[] {
@@ -367,7 +367,7 @@ function staffFallbackReply(text: string): string {
       hits.map(a => `• **${a.title}**`).join('\n') +
       '\n\nAsk me and I can pull up the full guide.';
   }
-  return "I'm FIXORA. I don't have a perfect answer in my knowledge base for that right now. If it's urgent, tag a technician to pick it up directly.";
+  return "I'm TICKSERA. I don't have a perfect answer in my knowledge base for that right now. If it's urgent, tag a technician to pick it up directly.";
 }
 
 async function runStaffTurn(conversationId: string, text: string) {
@@ -411,7 +411,7 @@ async function runStaffTurn(conversationId: string, text: string) {
         id: `m${Date.now()}b`,
         conversationId,
         senderEmail: BOT_EMAIL,
-        senderName: 'FIXORA',
+        senderName: 'TICKSERA',
         senderRole: 'bot' as const,
         message: reply,
         isAdmin: true,
@@ -528,7 +528,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
         id: `m${Date.now()}b`,
         ticketId,
         senderEmail: BOT_EMAIL,
-        senderName: 'FIXORA',
+        senderName: 'TICKSERA',
         senderRole: 'bot' as const,
         message: reply,
         isAdmin: true,
@@ -556,7 +556,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     }
   }
 
-  // NOTE: no auto-route here. The FIXORA BOT resolves the issue first; the ticket is
+  // NOTE: no auto-route here. The TICKSERA BOT resolves the issue first; the ticket is
   // only routed to a technician when the customer explicitly says it isn't resolved
   // (requestTechnician) or when the ticket bypasses the BOT entirely (critical / staff).
 }
@@ -1078,8 +1078,8 @@ export const useStore = create<AppState>()(
           chatMessages: [...s.chatMessages, {
             id: `m${Date.now()}`,
             ticketId: id,
-            senderEmail: 'bot@fixora.com',
-            senderName: 'FIXORA',
+            senderEmail: 'bot@ticksera.com',
+            senderName: 'TICKSERA',
             senderRole: 'bot' as const,
             message: triageGreeting,
             isAdmin: true,
@@ -1107,8 +1107,8 @@ export const useStore = create<AppState>()(
           chatMessages: [...s.chatMessages, {
             id: `m${Date.now()}`,
             ticketId: id,
-            senderEmail: 'bot@fixora.com',
-            senderName: 'FIXORA',
+            senderEmail: 'bot@ticksera.com',
+            senderName: 'TICKSERA',
             senderRole: 'bot' as const,
             message: "That's wonderful to hear. Your issue is now resolved, and your ticket has been marked accordingly.\n\nIf you ever need help again, you can reach us anytime; just create a new ticket. Take care!",
             isAdmin: true,
@@ -1131,8 +1131,8 @@ export const useStore = create<AppState>()(
             chatMessages: [...s.chatMessages, {
               id: `m${Date.now()}`,
               ticketId: id,
-              senderEmail: 'bot@fixora.com',
-              senderName: 'FIXORA',
+              senderEmail: 'bot@ticksera.com',
+              senderName: 'TICKSERA',
               senderRole: 'bot' as const,
               message: "Your request has been received.\n\nA technician will be assigned to your ticket shortly, and you'll be notified here the moment they pick it up. Your case details and diagnostic summary have been shared with them.",
               isAdmin: true,
@@ -1140,7 +1140,7 @@ export const useStore = create<AppState>()(
             }],
             notifications: [...s.notifications, {
               id: `n${Date.now()}`,
-              userEmail: 'admin@fixora.com',
+              userEmail: 'admin@ticksera.com',
               title: 'Technician requested',
               message: `${ticket.createdByName} requested a technician for: ${ticket.title}`,
               type: 'assignment',
@@ -1173,7 +1173,7 @@ export const useStore = create<AppState>()(
           }));
         if (technicians.length === 0) {
           s.addNotification({
-            userEmail: 'admin@fixora.com',
+            userEmail: 'admin@ticksera.com',
             title: 'No technicians available',
             message: `Ticket "${ticket.title}" needs routing but the technician roster is empty.`,
             type: 'system',
@@ -1213,7 +1213,7 @@ export const useStore = create<AppState>()(
             ...current.activityLogs,
             {
               id: uuid(),
-              user: 'FIXORA AI',
+              user: 'TICKSERA AI',
               action: `Auto-routed (${result.enabled ? 'AI' : 'rules'}): ${tech ? `assigned to ${tech.name}` : 'unassigned'}, ${result.reason}`,
               entityType: 'ticket',
               entityId: id,
@@ -1302,7 +1302,7 @@ export const useStore = create<AppState>()(
             {
               id: `m${Date.now()}a`,
               ticketId: id,
-              senderEmail: user?.email || 'customer@fixora.com',
+              senderEmail: user?.email || 'customer@ticksera.com',
               senderName: user?.name || ticket.createdByName,
               senderRole: user?.role || ('customer' as const),
               message: answer,
@@ -1514,7 +1514,7 @@ export const useStore = create<AppState>()(
       revokeAllOtherSessions: () => set(s => ({ activeSessions: s.activeSessions.filter(sess => sess.current) })),
     }),
     {
-      name: 'fixora-store',
+      name: 'ticksera-store',
       version: 7,
       partialize: (state) => {
         if (isSupabaseConfigured()) {
@@ -1577,9 +1577,9 @@ export const useStore = create<AppState>()(
         if (version < 6) {
           const users = state.users as Array<Record<string, unknown>> | undefined;
           const DEFAULT_SKILLS: Record<string, string[]> = {
-            'tech@fixora.com': ['computer_repair', 'microsoft365', 'server', 'software', 'remote'],
-            'field@fixora.com': ['cctv', 'printer', 'computer_repair', 'networking', 'internet'],
-            'tech2@fixora.com': ['networking', 'internet', 'printer', 'cctv', 'server'],
+            'tech@ticksera.com': ['computer_repair', 'microsoft365', 'server', 'software', 'remote'],
+            'field@ticksera.com': ['cctv', 'printer', 'computer_repair', 'networking', 'internet'],
+            'tech2@ticksera.com': ['networking', 'internet', 'printer', 'cctv', 'server'],
           };
           if (Array.isArray(users)) {
             users.forEach(u => {

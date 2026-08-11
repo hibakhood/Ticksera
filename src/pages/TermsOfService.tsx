@@ -17,15 +17,15 @@ const sections = [
     content: [
       {
         subtitle: '1.1 Agreement',
-        text: 'By accessing or using the FIXORA platform (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you are using the Service on behalf of a company or organisation, you represent that you have authority to bind that entity to these Terms.',
+        text: 'By accessing or using the TICKSERA platform (the "Service"), you agree to be bound by these Terms of Service ("Terms"). If you are using the Service on behalf of a company or organisation, you represent that you have authority to bind that entity to these Terms.',
       },
       {
         subtitle: '1.2 Eligibility',
-        text: 'You must be at least 18 years old and capable of forming a legally binding contract to use the Service. By using FIXORA, you confirm that you meet these requirements.',
+        text: 'You must be at least 18 years old and capable of forming a legally binding contract to use the Service. By using TICKSERA, you confirm that you meet these requirements.',
       },
       {
         subtitle: '1.3 Modifications',
-        text: 'FIXORA reserves the right to update or modify these Terms at any time. We will provide at least 14 days\' notice of material changes via email or in-app notification. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.',
+        text: 'TICKSERA reserves the right to update or modify these Terms at any time. We will provide at least 14 days\' notice of material changes via email or in-app notification. Continued use of the Service after changes take effect constitutes acceptance of the revised Terms.',
       },
     ],
   },
@@ -42,7 +42,7 @@ const sections = [
       },
       {
         subtitle: '2.2 Account Security',
-        text: 'You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account. You must notify us immediately at security@fixora.com if you suspect unauthorised access to your account.',
+        text: 'You are responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account. You must notify us immediately at security@ticksera.com if you suspect unauthorised access to your account.',
       },
       {
         subtitle: '2.3 One Account Per User',
@@ -63,7 +63,7 @@ const sections = [
     content: [
       {
         subtitle: '3.1 Plan Selection',
-        text: 'FIXORA offers Basic, Professional, Business, and Enterprise subscription plans. The features available to you depend on your selected plan. Plan details, including ticket limits and feature access, are described on our Pricing page and may be updated from time to time.',
+        text: 'TICKSERA offers Basic, Professional, Business, and Enterprise subscription plans. The features available to you depend on your selected plan. Plan details, including ticket limits and feature access, are described on our Pricing page and may be updated from time to time.',
       },
       {
         subtitle: '3.2 Billing Cycle',
@@ -121,7 +121,7 @@ const sections = [
     content: [
       {
         subtitle: '5.1 Uptime Commitment',
-        text: 'FIXORA targets 99.9% monthly platform uptime, excluding scheduled maintenance windows. Uptime is calculated as the percentage of minutes in a calendar month during which the core platform features are accessible.',
+        text: 'TICKSERA targets 99.9% monthly platform uptime, excluding scheduled maintenance windows. Uptime is calculated as the percentage of minutes in a calendar month during which the core platform features are accessible.',
       },
       {
         subtitle: '5.2 Scheduled Maintenance',
@@ -129,7 +129,7 @@ const sections = [
       },
       {
         subtitle: '5.3 Support Response Times',
-        text: 'Response time SLAs for support tickets are defined by your subscription plan. FIXORA commits to making reasonable efforts to meet stated SLA targets but does not guarantee response or resolution times for issues outside our control.',
+        text: 'Response time SLAs for support tickets are defined by your subscription plan. TICKSERA commits to making reasonable efforts to meet stated SLA targets but does not guarantee response or resolution times for issues outside our control.',
       },
       {
         subtitle: '5.4 Service Credits',
@@ -145,16 +145,16 @@ const sections = [
     title: 'Intellectual Property',
     content: [
       {
-        subtitle: '6.1 FIXORA Ownership',
-        text: 'All intellectual property rights in the FIXORA platform, including software, design, trademarks, logos, and documentation, are owned by FIXORA Technologies Ltd. Nothing in these Terms grants you any rights in our intellectual property other than the limited licence to use the Service.',
+        subtitle: '6.1 TICKSERA Ownership',
+        text: 'All intellectual property rights in the TICKSERA platform, including software, design, trademarks, logos, and documentation, are owned by TICKSERA Technologies Ltd. Nothing in these Terms grants you any rights in our intellectual property other than the limited licence to use the Service.',
       },
       {
         subtitle: '6.2 Your Content',
-        text: 'You retain ownership of all content you submit to the Service. By submitting content, you grant FIXORA a limited, non-exclusive licence to use, store, and process that content solely to provide and improve the Service.',
+        text: 'You retain ownership of all content you submit to the Service. By submitting content, you grant TICKSERA a limited, non-exclusive licence to use, store, and process that content solely to provide and improve the Service.',
       },
       {
         subtitle: '6.3 Feedback',
-        text: 'Any feedback, suggestions, or ideas you provide about the Service may be used by FIXORA without restriction or compensation. Such feedback does not create any intellectual property rights for you.',
+        text: 'Any feedback, suggestions, or ideas you provide about the Service may be used by TICKSERA without restriction or compensation. Such feedback does not create any intellectual property rights for you.',
       },
     ],
   },
@@ -171,7 +171,7 @@ const sections = [
       },
       {
         subtitle: '7.2 Data Processing',
-        text: 'For Enterprise customers subject to GDPR or similar regulations, FIXORA will enter into a Data Processing Agreement (DPA) upon request. Contact legal@fixora.com to initiate this process.',
+        text: 'For Enterprise customers subject to GDPR or similar regulations, TICKSERA will enter into a Data Processing Agreement (DPA) upon request. Contact legal@ticksera.com to initiate this process.',
       },
     ],
   },
@@ -187,7 +187,7 @@ const sections = [
         text: 'You may cancel your account at any time through the Billing section of your dashboard. Cancellation takes effect immediately upon confirmation.',
       },
       {
-        subtitle: '8.2 Termination by FIXORA',
+        subtitle: '8.2 Termination by TICKSERA',
         text: 'We may suspend or terminate your account immediately, without notice, if you materially breach these Terms, engage in fraudulent activity, fail to pay outstanding fees, or if continued service creates legal or security risks.',
       },
       {
@@ -209,11 +209,11 @@ const sections = [
       },
       {
         subtitle: '9.2 Liability Cap',
-        text: 'To the maximum extent permitted by law, FIXORA\'s total cumulative liability to you for any claims arising from or relating to these Terms or the Service shall not exceed the total fees paid by you in the 12 months preceding the claim.',
+        text: 'To the maximum extent permitted by law, TICKSERA\'s total cumulative liability to you for any claims arising from or relating to these Terms or the Service shall not exceed the total fees paid by you in the 12 months preceding the claim.',
       },
       {
         subtitle: '9.3 Consequential Damages',
-        text: 'FIXORA shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunities, even if advised of the possibility of such damages.',
+        text: 'TICKSERA shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business opportunities, even if advised of the possibility of such damages.',
       },
     ],
   },
@@ -234,7 +234,7 @@ const sections = [
       },
       {
         subtitle: '10.3 Contact for Legal Matters',
-        text: 'Legal notices should be sent to: legal@fixora.com or FIXORA Technologies Ltd, Legal Department, Lagos, Nigeria.',
+        text: 'Legal notices should be sent to: legal@ticksera.com or TICKSERA Technologies Ltd, Legal Department, Lagos, Nigeria.',
       },
     ],
   },
@@ -292,7 +292,7 @@ export default function TermsOfService() {
             Terms of <span className="text-gradient">Service</span>
           </h1>
           <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
-            Please read these Terms of Service carefully before using the FIXORA platform. These Terms constitute a legally binding agreement between you and FIXORA Technologies Ltd governing your access to and use of our IT support platform and related services.
+            Please read these Terms of Service carefully before using the TICKSERA platform. These Terms constitute a legally binding agreement between you and TICKSERA Technologies Ltd governing your access to and use of our IT support platform and related services.
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-8">
             {[
@@ -362,7 +362,7 @@ export default function TermsOfService() {
                     <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">Questions?</p>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" style={{ marginBottom: '0.75rem' }}>
-                    For legal matters, email legal@fixora.com.
+                    For legal matters, email legal@ticksera.com.
                   </p>
                   <Link to="/contact" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
                     Contact support <ChevronRight className="w-3 h-3" />
@@ -405,7 +405,7 @@ export default function TermsOfService() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Questions about these terms?{' '}
                   <Link to="/contact" className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">Contact our team →</Link>
-                  {' '}or email <span className="text-emerald-600 dark:text-emerald-400 font-semibold">legal@fixora.com</span>
+                  {' '}or email <span className="text-emerald-600 dark:text-emerald-400 font-semibold">legal@ticksera.com</span>
                 </p>
               </div>
 

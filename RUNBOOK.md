@@ -1,4 +1,4 @@
-# Fixora Enterprise: Production Deployment & Hardening Runbook
+# Ticksera Enterprise: Production Deployment & Hardening Runbook
 
 This runbook lists the **manual steps only you can do** (Supabase dashboard /
 Vercel / Paystack) plus what the codebase now does on its own. It pairs with
@@ -102,7 +102,7 @@ Set these in the Vercel project (Settings → Environment Variables):
   UUID; collision risk is negligible at this scale.
 - Demo-mode fallback still exists **by design** when `VITE_SUPABASE_URL` /
   `VITE_SUPABASE_ANON_KEY` are missing; a misconfig silently reverts to demo
-  auth (`fixora123`). Ensure those vars are set in production.
+  auth (`ticksera123`). Ensure those vars are set in production.
 
 ## 7. Verify after deploy
 

@@ -38,7 +38,7 @@ const fsSource = `
   const float maxOffsetSpread = 2.0;
   const int linesPerGroup = 16;
 
-  /* FIXORA brand: emerald-green lines on dark navy/slate background */
+  /* TICKSERA brand: emerald-green lines on dark navy/slate background */
   const vec4 lineColor = vec4(0.06, 0.72, 0.50, 1.0);
 
   #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
@@ -80,7 +80,7 @@ const fsSource = `
     space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
 
     vec4 lines = vec4(0.0);
-    /* Dark navy → dark teal gradient, matches FIXORA's dark bg palette */
+    /* Dark navy → dark teal gradient, matches TICKSERA's dark bg palette */
     vec4 bgColor1 = vec4(0.04, 0.06, 0.09, 1.0);
     vec4 bgColor2 = vec4(0.03, 0.08, 0.07, 1.0);
 

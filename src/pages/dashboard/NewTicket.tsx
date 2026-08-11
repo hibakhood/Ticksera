@@ -119,7 +119,7 @@ export default function NewTicket() {
     });
 
     addNotification({
-      userEmail: 'admin@fixora.com',
+      userEmail: 'admin@ticksera.com',
       title: 'New ticket submitted',
       message: `${currentUser.name} submitted: ${form.title}`,
       type: 'ticket',

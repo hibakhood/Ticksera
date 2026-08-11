@@ -12,7 +12,7 @@ const values = [
 
 const milestones = [
   { year: '2020', title: 'Founded in Lagos', desc: 'A small team of technicians starts fixing office IT that everyone else ignored.' },
-  { year: '2022', title: 'FIXORA Platform Launches', desc: 'Guided ticket routing goes live; every request captured and dispatched in minutes.' },
+  { year: '2022', title: 'TICKSERA Platform Launches', desc: 'Guided ticket routing goes live; every request captured and dispatched in minutes.' },
   { year: '2023', title: 'AI Triage Introduced', desc: 'AI-assisted diagnostics and smart routing on every ticket, cutting triage time to zero.' },
   { year: '2024', title: 'SLA Guarantees', desc: 'Binding response targets with live countdowns and automatic escalation.' },
   { year: '2025', title: 'Enterprise Scale', desc: '500+ enterprise clients across hospitality, healthcare, finance, and manufacturing.' },
@@ -67,7 +67,7 @@ export default function About() {
             Built to Fix IT, <span className="text-gradient">Fast</span>
           </h1>
           <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
-            FIXORA was founded with a single mission: make enterprise IT support fast, transparent, and stress-free. We combine smart technology with experienced technicians to deliver support that actually works.
+            TICKSERA was founded with a single mission: make enterprise IT support fast, transparent, and stress-free. We combine smart technology with experienced technicians to deliver support that actually works.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
             {[
@@ -91,7 +91,7 @@ export default function About() {
           <SectionHeader
             label="Who We Are"
             title="Technology Should Empower, Not Slow You Down"
-            sub="Two ideas drive everything we build at FIXORA."
+            sub="Two ideas drive everything we build at TICKSERA."
           />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {[
@@ -152,7 +152,7 @@ export default function About() {
           <SectionHeader
             label="Our Journey"
             title="From a Small Team to a Support Platform"
-            sub="A few milestones that shaped how FIXORA works today."
+            sub="A few milestones that shaped how TICKSERA works today."
           />
           <div className="relative" style={{ paddingLeft: '2rem' }}>
             <div className="absolute left-[7px] top-1 bottom-1 w-px bg-slate-200 dark:bg-dark-border" aria-hidden />
@@ -173,7 +173,7 @@ export default function About() {
         <div className="s-inner max-w-6xl mx-auto">
           <SectionHeader
             label="Meet the Team"
-            title="The People Driving FIXORA's Mission Forward"
+            title="The People Driving TICKSERA's Mission Forward"
             sub="Engineers, technicians, and support specialists, working together to keep you running."
           />
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">

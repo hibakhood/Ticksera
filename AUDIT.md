@@ -1,4 +1,4 @@
-# FIXORA Enterprise: Production-Readiness Audit
+# TICKSERA Enterprise: Production-Readiness Audit
 
 **Date:** 2026-08-06
 **Scope:** Frontend (React 19 / Vite 7 / zustand 5 / react-router 7), Vercel Edge API (`/api/*`), Supabase (schema, RLS, migrations 0001-0012), Paystack billing, AI agent gateway, CI, deploy config.
@@ -112,8 +112,8 @@ path**; an XL architectural change, plus the ops items in roadmap #13-#15.
 - **Status: ✅ PARTIALLY FIXED in this change set**; `api/agent.ts` now enforces a **per-user daily budget** (`AI_DAILY_LIMIT_PER_USER`, default 60 calls/day, keyed by authed email or client IP as a fallback); over budget it returns `{enabled:false}` and the deterministic rule-based bot takes over, and it emits `logEvent('agent.budget_exceeded', …)`. **Still outstanding (defense in depth, not blocking):** content moderation / PII filtering on customer text and formal prompt-injection hardening beyond the boundary directive.
 
 ### H4: Weak enterprise auth posture + silent demo-mode fallback
-- **Files:** `src/store/index.ts:749-755, 764-770, 802-815, 816-823`, `src/pages/Login.tsx:130-133`, `src/lib/supabase.ts:6-8`, `src/store/index.ts:96-104` (seed users with `password: 'fixora123'`).
-- No MFA/TOTP for staff or admins; app-side password policy is **6 characters** (`Login.tsx:130`); no lockout beyond Supabase defaults; super-admin emails are enumerable. If `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are missing or placeholder in a deployed build, `isSupabaseConfigured()` returns false and the app **silently runs in demo mode**: plaintext passwords, seed accounts (`fixora123`), and `demoLogin`/local-store auth become the only path; a misconfig turns prod into a demo with well-known credentials.
+- **Files:** `src/store/index.ts:749-755, 764-770, 802-815, 816-823`, `src/pages/Login.tsx:130-133`, `src/lib/supabase.ts:6-8`, `src/store/index.ts:96-104` (seed users with `password: 'ticksera123'`).
+- No MFA/TOTP for staff or admins; app-side password policy is **6 characters** (`Login.tsx:130`); no lockout beyond Supabase defaults; super-admin emails are enumerable. If `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are missing or placeholder in a deployed build, `isSupabaseConfigured()` returns false and the app **silently runs in demo mode**: plaintext passwords, seed accounts (`ticksera123`), and `demoLogin`/local-store auth become the only path; a misconfig turns prod into a demo with well-known credentials.
 - **Status: ✅ PARTIALLY FIXED in this change set**; **Supabase TOTP MFA is implemented**: enroll/verify/disable in `Profile.tsx` (QR + secret), a login challenge (`Login.tsx` `mfa` mode, 6-digit code), and session restore on verify. **Still outstanding:** raising the minimum password length, and the deliberate demo-mode fallback when Supabase is unconfigured (now documented in `RUNBOOK.md` §6 as a deployment check, not silently surprising).
 
 ### H5: No logging, monitoring, alerting, or audit trail (despite "SOC 2" claims)

@@ -187,7 +187,7 @@ export default function Billing() {
         <div className="max-w-6xl mx-auto flex items-center justify-between" style={{ padding: '1rem 1.5rem' }}>
           <Link to="/" className="flex items-center gap-2.5">
             <Logo size={32} />
-            <span className="font-heading text-lg font-bold text-slate-900 dark:text-white">FIXORA</span>
+            <span className="font-heading text-lg font-bold text-slate-900 dark:text-white">TICKSERA</span>
           </Link>
           <div className="flex items-center gap-4">
             {currentUser && (

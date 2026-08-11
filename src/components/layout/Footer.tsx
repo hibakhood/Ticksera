@@ -22,7 +22,7 @@ export default function Footer() {
           <div className="md:col-span-4">
             <Link to="/" className="flex items-center gap-3 mb-4">
               <Logo size={36} />
-              <span className="font-heading text-xl font-bold text-white tracking-tight">FIXORA</span>
+              <span className="font-heading text-xl font-bold text-white tracking-tight">TICKSERA</span>
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-6 max-w-xs">
               Enterprise IT support platform built for speed, reliability, and scale. Trusted by 500+ businesses across Africa.
@@ -66,7 +66,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="text-[11px] text-slate-500 mb-0.5">Email</p>
-                  <p className="text-sm text-slate-300">support@fixora.com</p>
+                  <p className="text-sm text-slate-300">support@ticksera.com</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -92,7 +92,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-14 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xs text-slate-500">© {new Date().getFullYear()} FIXORA Technologies Ltd. All rights reserved.</span>
+          <span className="text-xs text-slate-500">© {new Date().getFullYear()} TICKSERA Technologies Ltd. All rights reserved.</span>
           <div className="flex items-center gap-6 text-xs text-slate-500">
             <Link to="/privacy" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-slate-300 transition-colors">Terms of Service</Link>

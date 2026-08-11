@@ -1,4 +1,4 @@
-// FIXORA Payments: Paystack transaction verification (Vercel Edge function).
+// TICKSERA Payments: Paystack transaction verification (Vercel Edge function).
 //
 // Verifies a Paystack transaction, then, when Supabase is configured, writes the
 // authoritative payment record into the SHARED application-state row using the

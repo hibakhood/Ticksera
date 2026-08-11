@@ -86,7 +86,7 @@ export default function Signup() {
 
         <Link to="/" className="flex items-center gap-3 relative z-10">
           <Logo size={36} />
-          <span className="font-heading text-xl font-bold text-white tracking-tight">FIXORA</span>
+          <span className="font-heading text-xl font-bold text-white tracking-tight">TICKSERA</span>
         </Link>
 
         <div className="relative z-10 space-y-8">
@@ -142,7 +142,7 @@ export default function Signup() {
           </div>
         </div>
 
-        <p className="text-slate-500 text-xs relative z-10">© {new Date().getFullYear()} FIXORA. All rights reserved.</p>
+        <p className="text-slate-500 text-xs relative z-10">© {new Date().getFullYear()} TICKSERA. All rights reserved.</p>
       </div>
 
       {/* ── Right panel ── */}
@@ -151,7 +151,7 @@ export default function Signup() {
 
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
             <Logo size={36} />
-            <span className="font-heading text-2xl font-bold text-slate-900 dark:text-white">FIXORA</span>
+            <span className="font-heading text-2xl font-bold text-slate-900 dark:text-white">TICKSERA</span>
           </div>
 
           <div className="mb-6">
@@ -159,7 +159,7 @@ export default function Signup() {
               <Sparkles className="w-3 h-3" /> {activeDef.plans}
             </div>
             <h1 className="font-heading text-3xl font-bold text-slate-900 dark:text-white">Create your account</h1>
-            <p className="mt-1.5 text-slate-500 dark:text-slate-400">Pick how you'll use FIXORA, start free, upgrade anytime</p>
+            <p className="mt-1.5 text-slate-500 dark:text-slate-400">Pick how you'll use TICKSERA, start free, upgrade anytime</p>
           </div>
 
           {/* Account type selector */}

@@ -129,7 +129,7 @@ export default function Dashboard() {
     <>
     <div className="space-y-6 animate-fade-in premium-surface rounded-2xl p-1">
       <PageHeader
-        eyebrow="FIXORA Workspace"
+        eyebrow="TICKSERA Workspace"
         title={`${greeting()}, ${currentUser?.name?.split(' ')[0]}`}
         subtitle={subtitle}
         actions={role === 'customer' ? (

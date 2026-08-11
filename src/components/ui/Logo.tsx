@@ -12,7 +12,7 @@ export default function Logo({ size = 32, className = '' }: LogoProps) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-label="FIXORA"
+      aria-label="TICKSERA"
     >
       <rect width="36" height="36" rx="9" fill="#10b981" />
       <path

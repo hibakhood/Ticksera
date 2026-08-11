@@ -1,4 +1,4 @@
-// FIXORA AI Agent: Vercel serverless function (Edge runtime).
+// TICKSERA AI Agent: Vercel serverless function (Edge runtime).
 // Provider-agnostic: calls any OpenAI-compatible /chat/completions endpoint.
 //
 // Env vars (set in Vercel):
@@ -122,7 +122,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
     .join('\n');
 
   const staffContext = Array.isArray(body.staff) && body.staff.length > 0
-    ? '\nFixora staff roster (name and role):\n' +
+    ? '\nTicksera staff roster (name and role):\n' +
       body.staff.map(s => `- ${s.name ?? 'Unknown'} | ${(s.role ?? 'staff').replace(/_/g, ' ')}`).join('\n')
     : '';
 
@@ -137,7 +137,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
 
   if (body.mode === 'triage') {
     return [
-      'You are FIXORA, the friendly AI support assistant for Fixora IT Support.',
+      'You are TICKSERA, the friendly AI support assistant for Ticksera IT Support.',
       'A customer opened a ticket and you are diagnosing it step by step.',
       '',
       BOUNDARY,
@@ -175,7 +175,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       )
       .join('\n');
     return [
-      'You are the Fixora ticket routing engine. Route incoming tickets to the most suitable technician.',
+      'You are the Ticksera ticket routing engine. Route incoming tickets to the most suitable technician.',
       'A new or escalated ticket arrived and needs classification + assignment.',
       '',
       BOUNDARY,
@@ -204,7 +204,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
 
   if (body.mode === 'recovery') {
     return [
-      'You are FIXORA, the friendly AI support assistant for Fixora IT Support.',
+      'You are TICKSERA, the friendly AI support assistant for Ticksera IT Support.',
       'A customer tried the step-by-step fix from our knowledge base, but the issue is still not resolved. They are following up with you.',
       '',
       BOUNDARY,
@@ -233,8 +233,8 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
 
   if (body.mode === 'staff') {
     return [
-      'You are FIXORA, the AI assistant for the Fixora internal team. You are participating in a staff chat with your colleagues.',
-      'You can identify every Fixora staff member and their role from the roster below.',
+      'You are TICKSERA, the AI assistant for the Ticksera internal team. You are participating in a staff chat with your colleagues.',
+      'You can identify every Ticksera staff member and their role from the roster below.',
       '',
       BOUNDARY,
       '<customer_data>',
@@ -247,7 +247,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
       '',
       'Rules:',
       '- Answer your colleagues accurately and concisely using your own technical knowledge, the staff roster, and the knowledge base when relevant.',
-      '- If asked about Fixora staff, use the roster to answer (who handles what, who to contact, what role they hold).',
+      '- If asked about Ticksera staff, use the roster to answer (who handles what, who to contact, what role they hold).',
       '- Keep replies short and under 120 words. Never claim to be human.',
       '',
       ...DASH_RULES,
@@ -257,7 +257,7 @@ function buildSystemPrompt(body: AgentBody, kbContext: string): string {
   }
 
   return [
-    'You are FIXORA, the friendly AI support assistant for Fixora IT Support.',
+    'You are TICKSERA, the friendly AI support assistant for Ticksera IT Support.',
     'A customer is chatting with you inside a support ticket. Help them conversationally: answer questions, suggest next steps, or reassure them a human technician will join if needed.',
     '',
     BOUNDARY,
@@ -367,8 +367,8 @@ export default async function handler(req: Request): Promise<Response> {
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${apiKey}`,
-        'http-referer': 'https://fixora-enterprise.vercel.app',
-        'x-title': 'FIXORA',
+        'http-referer': 'https://ticksera-enterprise.vercel.app',
+        'x-title': 'TICKSERA',
       },
       body: JSON.stringify({
         model,

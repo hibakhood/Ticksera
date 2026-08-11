@@ -91,7 +91,7 @@ export default function Assistant() {
   return (
     <div className="space-y-6 animate-fade-in premium-surface rounded-2xl p-1">
       <PageHeader
-        eyebrow="Fixora Assistant"
+        eyebrow="Ticksera Assistant"
         title="AI Assistant"
         subtitle="Ask a question and get instant answers from the knowledge base; no ticket needed."
         actions={(
@@ -114,7 +114,7 @@ export default function Assistant() {
               </div>
               <h3 className="font-heading font-bold text-slate-900 dark:text-white text-lg">How can I help you today?</h3>
               <p className="text-sm text-slate-400 mt-1.5 max-w-sm">
-                I'm trained on the Fixora knowledge base. Ask about troubleshooting steps, services, bookings, or how to create a ticket.
+                I'm trained on the Ticksera knowledge base. Ask about troubleshooting steps, services, bookings, or how to create a ticket.
               </p>
               <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-md">
                 {quickPrompts.map(p => (
@@ -208,7 +208,7 @@ export default function Assistant() {
               <Zap className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" />
               <input
                 type="text"
-                placeholder="Ask anything about Fixora services or troubleshooting..."
+                placeholder="Ask anything about Ticksera services or troubleshooting..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all placeholder-slate-400"
@@ -225,7 +225,7 @@ export default function Assistant() {
           {lastMsgIsAi && (
             <p className="text-[11px] text-slate-400 mt-2.5">
               <Sparkles className="w-3 h-3 inline mr-1 text-emerald-500" />
-              Assistant responses come from the Fixora knowledge base. For unresolved issues, escalate to a ticket or a technician.
+              Assistant responses come from the Ticksera knowledge base. For unresolved issues, escalate to a ticket or a technician.
             </p>
           )}
         </div>

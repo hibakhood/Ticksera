@@ -122,7 +122,7 @@ export function findKbArticles(articles: KBArticle[], category: TicketCategory, 
 export function buildTriageGreeting(category: TicketCategory, customerName: string): string {
   const flow = getTriageFlow(category);
   return [
-    `Hello ${customerName}, welcome to Fixora. I'm **FIXORA**, your AI support assistant.`,
+    `Hello ${customerName}, welcome to Ticksera. I'm **TICKSERA**, your AI support assistant.`,
     '',
     flow.greeting,
     '',
@@ -143,7 +143,7 @@ export function buildHandoffGreeting(customerName: string, priority: string, tit
     ? '\nBecause this is marked **critical**, a Level 1 technician has also been alerted and will jump in alongside me if needed.'
     : '';
   return [
-    `Hello ${customerName}, welcome to Fixora. I'm **FIXORA**, your AI support assistant, and I'll be handling this ticket for you.`,
+    `Hello ${customerName}, welcome to Ticksera. I'm **TICKSERA**, your AI support assistant, and I'll be handling this ticket for you.`,
     '',
     `Your request ("${title}") has been received as **${priority} priority**, and I'm already on it.`,
     '',

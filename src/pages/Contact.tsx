@@ -8,7 +8,7 @@ import { TextArea } from '../components/ui/Input';
 import { useStore } from '../store';
 
 const channels = [
-  { icon: Mail,    label: 'Email',    value: 'support@fixora.com', sub: 'For support and general inquiries', grad: 'from-emerald-500 to-teal-600' },
+  { icon: Mail,    label: 'Email',    value: 'support@ticksera.com', sub: 'For support and general inquiries', grad: 'from-emerald-500 to-teal-600' },
   { icon: Phone,   label: 'Phone',    value: '+234 800 FIX ORA',    sub: 'Mon - Fri, 8am - 6pm WAT',          grad: 'from-blue-500 to-sky-600' },
   { icon: MapPin,  label: 'Location', value: 'Lagos, Nigeria',      sub: 'Head office & on-site dispatch',    grad: 'from-violet-500 to-purple-600' },
 ];
