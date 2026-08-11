@@ -319,8 +319,8 @@ export default function Admin() {
       setAddError('A password is required for the employee to sign in.');
       return;
     }
-    if (newEmployee.password.length < 6) {
-      setAddError('Password must be at least 6 characters.');
+    if (newEmployee.password.length < 8) {
+      setAddError('Password must be at least 8 characters.');
       return;
     }
     if (newEmployee.password !== newEmployee.confirmPassword) {
@@ -805,7 +805,7 @@ export default function Admin() {
                           <Input
                             label="Initial Password"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="Min. 6 characters"
+                            placeholder="Min. 8 characters"
                             value={newEmployee.password}
                             onChange={e => { setNewEmployee(v => ({ ...v, password: e.target.value })); setAddError(''); }}
                             required

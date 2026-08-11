@@ -6,8 +6,12 @@
 // and overwrite them. That is gone: this function talks to the database with the
 // service-role key and enforces per-record authorization:
 //
-//   - staff  (super_admin / support_manager / technician / field_technician)
-//            read and write everything,
+//   - managers (super_admin / support_manager) read and write everything;
+//   - technicians (technician / field_technician) read their operational
+//     collections but may only WRITE records they own or work on (their tickets,
+//     their chat messages, their profile, their notifications) and can never
+//     write payments, the user directory, contact messages, KB content, or
+//     conversations. Sender identity/role is forced server-side.
 //   - customers read only their own records and may only write records they own.
 //     Customers can NEVER write payments (those come from paystack/verify.ts)
 //     or contact messages (those go to the public contact_messages table).
@@ -22,10 +26,11 @@
 
 export const config = { runtime: 'edge', maxDuration: 30 };
 
-import { GLOBAL_STATE_ID, json, rateLimit, getAuthedUser, getStaffRole, isManagerRole } from './_shared';
+import { GLOBAL_STATE_ID, json, rateLimit, getAuthedUser, getStaffRole, isManagerRole, writeAudit } from './_shared';
 
 const COLLECTIONS = ['tickets', 'chatMessages', 'conversations', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'] as const;
 const MAX_BODY_BYTES = 1024 * 1024;
+const BOT_EMAIL = 'bot@fixora.com';
 
 type Row = Record<string, unknown>;
 
@@ -141,6 +146,94 @@ function allowForUser(user: { id: string; email: string }): (col: string, rec: R
   };
 }
 
+const PAYMENT_PLANS = new Set(['Basic', 'Professional', 'Business', 'Enterprise']);
+const PAYMENT_STATUSES = new Set(['pending', 'completed', 'failed', 'refunded']);
+
+/** Reject malformed payment records a manager writes (financial integrity). */
+function validPayment(rec: Row): boolean {
+  const amount = rec.amount;
+  const plan = String(rec.plan ?? '');
+  const status = String(rec.status ?? '');
+  return (
+    typeof amount === 'number' &&
+    Number.isFinite(amount) &&
+    amount >= 0 &&
+    amount <= 1_000_000_000 &&
+    PAYMENT_PLANS.has(plan) &&
+    PAYMENT_STATUSES.has(status) &&
+    typeof rec.userId === 'string' &&
+    rec.userId.length > 0 &&
+    typeof rec.reference === 'string' &&
+    rec.reference.length > 0
+  );
+}
+
+/** Least-privilege write scope for non-manager staff (technicians / field techs). */
+function technicianAllow(
+  user: { id: string; email: string },
+  myTicketIds: Set<string>,
+  convIndex: Map<string, Set<string>>
+): (col: string, rec: Row) => boolean {
+  return (col, rec) => {
+    switch (col) {
+      case 'tickets':
+        return rec.createdBy === user.id || rec.assignedTo === user.id;
+      case 'chatMessages': {
+        const cid = String(rec.conversationId ?? '');
+        if (cid) return convIndex.get(cid)?.has(user.id) ?? false;
+        return String(rec.senderEmail ?? '').toLowerCase() === user.email || myTicketIds.has(String(rec.ticketId ?? ''));
+      }
+      case 'users':
+        return rec.id === user.id;
+      case 'notifications':
+        return String(rec.userEmail ?? '').toLowerCase() === user.email;
+      case 'bookings':
+        return rec.createdBy === user.id;
+      default:
+        return false; // payments, conversations, contactMessages, kbArticles
+    }
+  };
+}
+
+/** Strip privilege-relevant fields from a non-manager staff write. */
+function sanitizeForTech(user: { id: string; email: string }, role: string): (col: string, rec: Row) => Row | null {
+  return (col, rec) => {
+    switch (col) {
+      case 'users': {
+        if (rec.id !== user.id) return null;
+        const out: Row = { id: user.id };
+        for (const k of SELF_EDITABLE_USER_FIELDS) {
+          if (rec[k] !== undefined) out[k] = rec[k];
+        }
+        return out;
+      }
+      case 'chatMessages': {
+        const safe: Row = { id: rec.id };
+        for (const k of ['ticketId', 'conversationId', 'message', 'fileUrl', 'fileName', 'fileType', 'createdAt', 'senderName']) {
+          if (rec[k] !== undefined) safe[k] = rec[k];
+        }
+        // Bot replies are produced server-side and merely mirrored by the
+        // caller's session; keep their attribution. Anything else is forced to
+        // the caller so a staff member can never impersonate a manager/bot.
+        if (String(rec.senderRole ?? '') === 'bot' || String(rec.senderEmail ?? '').toLowerCase() === BOT_EMAIL) {
+          safe.senderEmail = BOT_EMAIL;
+          safe.senderRole = 'bot';
+          safe.isAdmin = false;
+          return safe;
+        }
+        safe.senderEmail = user.email;
+        safe.senderRole = role;
+        safe.isAdmin = true;
+        return safe;
+      }
+      case 'notifications':
+        return { ...rec, userEmail: user.email };
+      default:
+        return rec;
+    }
+  };
+}
+
 /** Merge the caller's records into the current row by id, honouring `allow` and `sanitize`. */
 function mergeCollections(
   current: Row,
@@ -216,6 +309,38 @@ function filterForStaff(data: Row, role: string, user: { id: string; email: stri
   };
 }
 
+/** Best-effort audit of manual payment writes so grants are attributable. */
+async function auditManagerPaymentWrites(
+  supabaseUrl: string,
+  serviceKey: string,
+  current: Row,
+  merged: Row,
+  user: { id: string }
+): Promise<void> {
+  const before = new Map<string, Row>();
+  for (const p of toArray(current.payments)) {
+    if (typeof p.id === 'string') before.set(p.id, p);
+  }
+  for (const p of toArray(merged.payments)) {
+    if (typeof p.id !== 'string') continue;
+    const prev = before.get(p.id);
+    if (prev && String(prev.status ?? '') === String(p.status ?? '')) continue;
+    await writeAudit(supabaseUrl, serviceKey, {
+      userId: user.id,
+      action: 'payment.manual',
+      entity: 'payments',
+      details: {
+        id: p.id,
+        userId: p.userId ?? null,
+        plan: p.plan ?? '',
+        amount: p.amount ?? 0,
+        status: p.status ?? '',
+        previousStatus: prev ? (prev.status ?? null) : null,
+      },
+    });
+  }
+}
+
 export default async function handler(req: Request): Promise<Response> {
   const rl = rateLimit(req, 240, 60_000);
   if (!rl.ok) return json({ error: 'rate_limited' }, 429);
@@ -261,20 +386,37 @@ export default async function handler(req: Request): Promise<Response> {
       }
     }
 
+    // Ticket ids the staff member works on (assigned or created) so a tech can
+    // post to their own tickets while never touching other tenants' records.
+    const myTicketIds = new Set<string>();
+    for (const list of [currentData, incoming]) {
+      for (const t of toArray(list.tickets)) {
+        if (typeof t.id === 'string' && (t.createdBy === user.id || t.assignedTo === user.id)) myTicketIds.add(t.id);
+      }
+    }
+
     let merged: Row;
     if (staffRole) {
-      // Only managers may create/update conversations; a staff member may only
-      // post a conversation message into a chat they participate in.
-      const staffAllow = (col: string, rec: Row): boolean => {
-        if (col === 'conversations') return isManagerRole(staffRole);
-        if (col === 'chatMessages') {
-          const cid = String(rec.conversationId ?? '');
-          if (!cid) return true;
-          return convIndex.get(cid)?.has(user.id) ?? false;
-        }
-        return true;
-      };
-      merged = mergeCollections(currentData, incoming, staffAllow);
+      if (isManagerRole(staffRole)) {
+        // Managers may write every collection. Payments get validated for
+        // financial integrity and new/status-changed records are audited so
+        // manual grants are attributable.
+        const managerSanitize = (col: string, rec: Row): Row | null =>
+          col === 'payments' && !validPayment(rec) ? null : rec;
+        merged = mergeCollections(currentData, incoming, () => true, managerSanitize);
+        await auditManagerPaymentWrites(supabaseUrl, serviceKey, currentData, merged, user);
+      } else {
+        // Technicians: least privilege. They may only write their own work and
+        // never payments, the user directory, contact messages, KB content, or
+        // conversations (manager-created). Fields that carry authority
+        // (sender identity, role) are forced server-side.
+        merged = mergeCollections(
+          currentData,
+          incoming,
+          technicianAllow(user, myTicketIds, convIndex),
+          sanitizeForTech(user, staffRole)
+        );
+      }
     } else {
       merged = mergeCollections(currentData, incoming, allowForUser(user), (col, rec) => sanitizeForUser(col, rec, user));
     }

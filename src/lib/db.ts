@@ -302,24 +302,70 @@ async function upsert(table: string, rows: DbRow[]): Promise<void> {
   }
 }
 
-/** Mirror the shared state into the business tables (best effort, RLS-scoped). */
+/** Resolve the caller's staff role so the mirror only writes rows RLS allows. */
+async function currentRole(): Promise<string | null> {
+  try {
+    const { data } = await getSupabase().auth.getUser();
+    if (!data.user) return null;
+    const { data: profile } = await getSupabase()
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .maybeSingle();
+    return (profile?.role as string | undefined) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mirror the shared state into the business tables (best effort, RLS-scoped).
+ *
+ * The mirror runs under the caller's anon-key session, so it must only send
+ * rows the caller may write (migration 0013 restricts staff writes to what a
+ * manager/owner/assigned technician may touch). Technicians read the full
+ * operational dataset but only sync their own tickets and messages; managers
+ * sync everything.
+ */
 export async function mirrorToDb(data: SharedState): Promise<void> {
   if (!isSupabaseConfigured()) return;
+  const role = await currentRole();
+  const isManager = role === 'super_admin' || role === 'support_manager';
+  const { data: authData } = await getSupabase().auth.getUser();
+  const uid = authData.user?.id ?? null;
+  const email = (authData.user?.email ?? '').toLowerCase();
   const emailToId = await emailToProfileId();
-  const tickets = (data.tickets as Ticket[]).map(ticketToDb);
+
+  const tickets = (data.tickets as Ticket[])
+    .filter(t => isManager || t.createdBy === uid || t.assignedTo === uid)
+    .map(ticketToDb);
+  const writableTickets = new Set(
+    (data.tickets as Ticket[])
+      .filter(t => isManager || t.createdBy === uid || t.assignedTo === uid)
+      .map(t => t.id)
+  );
   // Only ticket messages belong in the chat_messages business table; staff
   // conversation messages ride in the shared row instead.
   const chatMessages = (data.chatMessages as ChatMessage[])
     .filter(m => m.ticketId)
+    .filter(m => isManager || writableTickets.has(m.ticketId ?? '') || String(m.senderEmail ?? '').toLowerCase() === email)
     .map(chatToDb);
-  const bookings = (data.bookings as Booking[]).map(bookingToDb);
-  const payments = (data.payments as Payment[]).map(paymentToDb);
-  const notifications = (data.notifications as Notification[]).map(n => {
-    const email = (n.userEmail ?? '').toLowerCase();
-    const id = emailToId[email];
-    return notificationToDb(n, validUuid(id));
-  });
-  const kbArticles = (data.kbArticles as KBArticle[]).map(kbToDb);
+  const bookings = (data.bookings as Booking[])
+    .filter(b => isManager || b.createdBy === uid)
+    .map(bookingToDb);
+  const payments = (data.payments as Payment[])
+    .filter(() => isManager)
+    .map(paymentToDb);
+  const notifications = (data.notifications as Notification[])
+    .filter(n => isManager || String(n.userEmail ?? '').toLowerCase() === email)
+    .map(n => {
+      const mail = (n.userEmail ?? '').toLowerCase();
+      const id = emailToId[mail];
+      return notificationToDb(n, validUuid(id));
+    });
+  const kbArticles = (data.kbArticles as KBArticle[])
+    .filter(() => isManager)
+    .map(kbToDb);
 
   // Chat inserts are gated on the owning ticket existing (RLS), so tickets first.
   await upsert('tickets', tickets);

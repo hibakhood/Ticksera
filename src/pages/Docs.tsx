@@ -40,7 +40,7 @@ const sections = [
     items: [
       {
         q: 'Creating your account',
-        a: 'Open the Sign Up page and choose an account type: Personal (Basic or Professional) or Business / Organization (Business or Enterprise). Enter your full name, email, and a password of at least 6 characters, then confirm. New accounts start without a plan, so after signing up you\'re guided to the Billing page to pick one.',
+        a: 'Open the Sign Up page and choose an account type: Personal (Basic or Professional) or Business / Organization (Business or Enterprise). Enter your full name, email, and a password of at least 8 characters, then confirm. New accounts start without a plan, so after signing up you\'re guided to the Billing page to pick one.',
       },
       {
         q: 'Using a demo account',
@@ -248,7 +248,7 @@ const sections = [
       },
       {
         q: 'Adding members',
-        a: 'As the organisation owner, click Add Member, then enter a full name, a work email on your company\'s domain, and an initial password (minimum 6 characters). Members are created as customer accounts and can sign in immediately. You\'ll see their credentials with a Copy button to share securely.',
+        a: 'As the organisation owner, click Add Member, then enter a full name, a work email on your company\'s domain, and an initial password (minimum 8 characters). Members are created as customer accounts and can sign in immediately. You\'ll see their credentials with a Copy button to share securely.',
       },
       {
         q: 'Managing members',

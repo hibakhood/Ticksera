@@ -228,8 +228,8 @@ export default function CompanyUsers() {
       setError('A password is required.');
       return;
     }
-    if (form.password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (form.password.length < 8) {
+      setError('Password must be at least 8 characters.');
       return;
     }
     if (form.password !== form.confirm) {
@@ -428,7 +428,7 @@ export default function CompanyUsers() {
                   <Input
                     label="Initial Password"
                     type={showPwd ? 'text' : 'password'}
-                    placeholder="Min. 6 characters"
+                    placeholder="Min. 8 characters"
                     value={form.password}
                     onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setError(''); }}
                     required
