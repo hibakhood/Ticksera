@@ -6,7 +6,7 @@ interface LogoProps {
 export default function Logo({ size = 32, className = '' }: LogoProps) {
   return (
     <img
-      src="/ticksera-logo.png"
+      src="/ticksera-logo.svg"
       alt="TICKSERA"
       width={size}
       height={size}
