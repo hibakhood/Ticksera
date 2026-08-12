@@ -82,7 +82,7 @@ export default function KnowledgeBase() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setCategoryFilter('')}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+          className={`px-3.5 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors ${
             !categoryFilter
               ? 'bg-primary-600 text-white'
               : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-primary-100 hover:text-primary-600 dark:hover:bg-primary-900/30'
@@ -91,7 +91,7 @@ export default function KnowledgeBase() {
         </button>
         {categories.map(c => (
           <button key={c} onClick={() => setCategoryFilter(categoryFilter === c ? '' : c)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-3.5 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors ${
               categoryFilter === c
                 ? 'bg-primary-600 text-white'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-primary-100 hover:text-primary-600 dark:hover:bg-primary-900/30'
@@ -129,7 +129,7 @@ export default function KnowledgeBase() {
               </button>
               {expanded === a.id && (
                 <div className="px-6 pb-5 animate-fade-in">
-                  <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{a.content}</div>
+                  <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 whitespace-pre-wrap break-words">{a.content}</div>
                   <div className="mt-4 flex items-center gap-3">
                     <Button variant="ghost" size="sm" onClick={() => voteHelpful(a.id)}>
                       <ThumbsUp className="w-4 h-4" /> Helpful ({a.helpfulCount})

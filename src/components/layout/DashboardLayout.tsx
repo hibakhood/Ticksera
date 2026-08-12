@@ -196,14 +196,14 @@ export default function DashboardLayout() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className={`fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed lg:sticky top-0 left-0 z-50 h-dvh w-64 bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
           <span className="font-heading text-lg font-bold text-white tracking-tight">TICKSERA</span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-slate-500 hover:text-white p-1 rounded-lg transition-colors"
+            className="ml-auto lg:hidden text-slate-500 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors"
           >
             <X className="w-4.5 h-4.5" />
           </button>
@@ -269,7 +269,7 @@ export default function DashboardLayout() {
         <header className="sticky top-0 z-30 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center px-5 lg:px-7 gap-4">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -309,7 +309,7 @@ export default function DashboardLayout() {
 
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
           >
             {darkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
           </button>
@@ -318,7 +318,7 @@ export default function DashboardLayout() {
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen(!notifOpen)}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 relative transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 relative transition-colors"
             >
               <Bell className="w-4.5 h-4.5" />
               {unreadNotifs.length > 0 && (
@@ -327,7 +327,7 @@ export default function DashboardLayout() {
             </button>
 
             {notifOpen && (
-              <div className="absolute right-0 top-12 w-80 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl shadow-xl overflow-hidden z-50 animate-fade-in">
+              <div className="fixed right-4 top-[72px] w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl shadow-xl overflow-hidden z-50 animate-fade-in sm:absolute sm:right-0 sm:top-12">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-dark-border">
                   <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     Notifications

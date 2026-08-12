@@ -392,7 +392,7 @@ export default function Chat() {
       />
       <div className="mt-5">
       <Card className="card-premium overflow-hidden">
-        <div className="flex" style={{ height: 'calc(100vh - 240px)', minHeight: '480px' }}>
+        <div className="flex min-h-[420px] sm:min-h-[480px]" style={{ height: 'calc(100dvh - 220px)' }}>
 
           {/* Sidebar: hidden on mobile when a chat is selected */}
           <div className={`border-r border-slate-200 dark:border-dark-border flex-col flex-shrink-0 ${selected ? 'hidden sm:flex w-64 lg:w-72' : 'flex w-full sm:w-64 lg:w-72'}`}>
@@ -406,7 +406,7 @@ export default function Chat() {
               <div className="px-4 sm:px-5 py-3.5 border-b border-slate-200 dark:border-dark-border flex items-center gap-3 bg-white dark:bg-dark-card flex-shrink-0">
                 <button
                   onClick={() => setSelected(null)}
-                  className="sm:hidden text-emerald-500 hover:text-emerald-600 font-medium flex-shrink-0 flex items-center gap-1 text-sm"
+                  className="sm:hidden text-emerald-500 hover:text-emerald-600 font-medium flex-shrink-0 flex items-center gap-1 text-sm p-2.5 -ml-2.5 rounded-lg"
                 >
                   <ArrowLeft className="w-4 h-4" /> Back
                 </button>
@@ -504,9 +504,9 @@ export default function Chat() {
                     <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{pendingFile.name}</span>
                     <button
                       onClick={() => setPendingFile(null)}
-                      className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center"
+                      className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center"
                     >
-                      <X className="w-2.5 h-2.5" />
+                      <X className="w-3 h-3" />
                     </button>
                   </div>
                 </div>
@@ -530,7 +530,7 @@ export default function Chat() {
                           <button
                             key={opt}
                             onClick={() => submitTriageAnswer(selected.id, opt)}
-                            className="px-2.5 py-1 text-[11px] font-medium rounded-lg border border-violet-200 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 bg-white dark:bg-dark-card hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
+                            className="px-3.5 py-2 text-[11px] font-medium rounded-lg border border-violet-200 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 bg-white dark:bg-dark-card hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
                           >
                             {opt}
                           </button>
@@ -601,7 +601,7 @@ export default function Chat() {
           <div className="relative max-w-4xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setLightboxSrc(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
+              className="absolute -top-3 -right-3 w-11 h-11 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
             >
               <X className="w-4 h-4" />
             </button>
@@ -615,10 +615,10 @@ export default function Chat() {
           className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={() => setShowNewChat(false)}
         >
-          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-5" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-5 max-h-[90dvh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading font-semibold text-slate-900 dark:text-white">New Chat</h3>
-              <button onClick={() => setShowNewChat(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+              <button onClick={() => setShowNewChat(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-2 -m-2 rounded-lg">
                 <X className="w-4 h-4" />
               </button>
             </div>

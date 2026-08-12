@@ -99,7 +99,7 @@ export default function CalendarPage() {
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => setCurrent(new Date(year, month - 1, 1))}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -108,7 +108,7 @@ export default function CalendarPage() {
             </h2>
             <button
               onClick={() => setCurrent(new Date(year, month + 1, 1))}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -133,10 +133,10 @@ export default function CalendarPage() {
                   onClick={() => {
                     if (cell.current) setSelected(new Date(year, month, cell.day));
                   }}
-                  className={`min-h-[64px] p-1.5 rounded-xl transition-colors ${cell.current ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : 'opacity-40'}`}
+                  className={`min-h-[52px] sm:min-h-[64px] p-1 sm:p-1.5 rounded-xl transition-colors ${cell.current ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60' : 'opacity-40'}`}
                 >
                   {/* Day number */}
-                  <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium mx-auto mb-1 transition-colors ${
+                  <div className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-xs sm:text-sm font-medium mx-auto mb-1 transition-colors ${
                     isToday(cell.day) && cell.current
                       ? 'bg-emerald-500 text-white font-bold'
                       : isSelected(cell.day) && cell.current
@@ -174,7 +174,7 @@ export default function CalendarPage() {
               </h3>
               <button
                 onClick={() => navigate('/booking')}
-                className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold px-3.5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" /> Add
               </button>
@@ -185,7 +185,7 @@ export default function CalendarPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">No sessions on this day</p>
                 <button
                   onClick={() => navigate('/booking')}
-                  className="text-xs text-emerald-500 hover:text-emerald-600 font-semibold mt-1 transition-colors"
+                  className="text-xs text-emerald-500 hover:text-emerald-600 font-semibold mt-1 p-2 -m-2 rounded-lg transition-colors"
                 >
                   + Book a session
                 </button>

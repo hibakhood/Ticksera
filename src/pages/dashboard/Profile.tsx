@@ -340,7 +340,7 @@ export default function Profile() {
                     <Button size="sm" variant="outline" className="text-xs px-2 py-1" onClick={() => setRevokeConfirm(null)}>Cancel</Button>
                   </div>
                 ) : (
-                  <button onClick={() => setRevokeConfirm(session.id)} className="flex-shrink-0 text-xs text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10">
+                  <button onClick={() => setRevokeConfirm(session.id)} className="flex-shrink-0 text-xs text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1 p-2.5 -m-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10">
                     <LogOut className="w-3.5 h-3.5" /> Sign out
                   </button>
                 )

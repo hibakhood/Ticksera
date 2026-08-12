@@ -22,11 +22,11 @@ export default function PublicNavbar() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white dark:bg-dark-bg border-b border-slate-100 dark:border-dark-border shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-16">
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <Logo size={34} />
-            <span className="font-heading text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
+            <span className="font-heading text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
           </Link>
 
           <div className="hidden md:flex items-center justify-center gap-0.5 flex-1">
@@ -48,13 +48,13 @@ export default function PublicNavbar() {
           <div className="flex items-center gap-2 ml-auto">
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
               aria-label="Toggle dark mode"
             >
               {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {currentUser ? (
-              <Link to="/dashboard">
+              <Link to="/dashboard" className="hidden sm:inline-flex">
                 <Button size="sm">Dashboard</Button>
               </Link>
             ) : (
@@ -62,14 +62,14 @@ export default function PublicNavbar() {
                 <Link to="/login" className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   Sign In
                 </Link>
-                <Link to="/login">
+                <Link to="/login" className="hidden sm:inline-flex">
                   <Button size="sm">Get Started</Button>
                 </Link>
               </>
             )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+              className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -93,6 +93,34 @@ export default function PublicNavbar() {
               {l.label}
             </Link>
           ))}
+          <div className="border-t border-slate-100 dark:border-dark-border pt-2 mt-2 space-y-1.5">
+            {currentUser ? (
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileOpen(false)}
+                className="block w-full text-center px-4 py-3 rounded-lg bg-emerald-500 text-white text-sm font-semibold"
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block text-center px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block w-full text-center px-4 py-3 rounded-lg bg-emerald-500 text-white text-sm font-semibold"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       )}
     </nav>

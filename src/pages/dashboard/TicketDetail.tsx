@@ -307,7 +307,7 @@ export default function TicketDetail() {
     <div className="space-y-6 animate-fade-in">
       <button
         onClick={() => navigate('/tickets')}
-        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary-500 transition-colors font-medium"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-primary-500 transition-colors font-medium py-2.5 px-3 -mx-3 rounded-lg"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Tickets
       </button>
@@ -340,7 +340,7 @@ export default function TicketDetail() {
             )}
 
             <h1 className="font-heading text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-snug">{cleanTicketTitle(ticket.title)}</h1>
-            <p className="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap text-sm">{ticket.description}</p>
+            <p className="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap break-words text-sm">{ticket.description}</p>
 
             {ticket.screenshotUrls.length > 0 && (
               <div className="mt-4">
@@ -406,7 +406,7 @@ export default function TicketDetail() {
                                 <button
                                   key={opt}
                                   onClick={() => submitTriageAnswer(ticket.id, opt)}
-                                  className="px-3 py-1.5 text-xs font-medium rounded-lg border border-violet-200 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
+                                  className="px-3.5 py-2 text-xs font-medium rounded-lg border border-violet-200 dark:border-violet-700/50 text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/40 transition-colors"
                                 >
                                   {opt}
                                 </button>
@@ -494,7 +494,7 @@ export default function TicketDetail() {
           {/* Escalation request card */}
           {canEscalate && !escalateSubmitted && (
             <Card className="p-6 border-2 border-dashed border-orange-300 dark:border-orange-700/60 bg-orange-50/20 dark:bg-orange-900/5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="w-4 h-4 text-orange-500" />
@@ -539,7 +539,7 @@ export default function TicketDetail() {
                     value={escalateReason}
                     onChange={e => setEscalateReason(e.target.value)}
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button
                       onClick={handleEscalate}
                       disabled={!escalateReason.trim()}
@@ -606,7 +606,7 @@ export default function TicketDetail() {
               </p>
               <div className="flex items-center gap-1 mb-4">
                 {[1, 2, 3, 4, 5].map(s => (
-                  <button key={s} onClick={() => setRating(s)} className="p-0.5 rounded-lg hover:scale-110 transition-transform">
+                  <button key={s} onClick={() => setRating(s)} className="p-1.5 rounded-lg hover:scale-110 transition-transform">
                     <Star className={`w-8 h-8 transition-colors ${s <= rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300 hover:text-amber-300'}`} />
                   </button>
                 ))}
@@ -693,9 +693,9 @@ export default function TicketDetail() {
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{pendingFile.name}</span>
                   <button
                     onClick={() => setPendingFile(null)}
-                    className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center"
+                    className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full bg-red-500 text-white flex items-center justify-center"
                   >
-                    <X className="w-2.5 h-2.5" />
+                    <X className="w-3 h-3" />
                   </button>
                 </div>
               </div>
@@ -754,8 +754,8 @@ export default function TicketDetail() {
                         <div className="w-0.5 flex-1 bg-gray-200 dark:bg-gray-700 my-1" />
                       )}
                     </div>
-                    <div className="pb-3">
-                      <p className="text-sm text-gray-900 dark:text-white font-medium">{log.action}</p>
+                    <div className="pb-3 min-w-0">
+                      <p className="text-sm text-gray-900 dark:text-white font-medium break-words">{log.action}</p>
                       <p className="text-xs text-gray-500 mt-0.5">{log.user} · {new Date(log.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
@@ -903,7 +903,7 @@ export default function TicketDetail() {
           <div className="relative max-w-4xl max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setLightboxSrc(null)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
+              className="absolute -top-3 -right-3 w-11 h-11 rounded-full bg-white text-gray-900 flex items-center justify-center shadow-lg hover:bg-gray-100 transition-colors z-10"
             >
               <X className="w-4 h-4" />
             </button>

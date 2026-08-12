@@ -88,7 +88,7 @@ export default function Kanban() {
       />
 
       <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-[1200px]">
+        <div className="flex gap-4 min-w-[1552px]">
           {columns.map(col => {
             const colTickets = getColumnTickets(col.status);
             return (

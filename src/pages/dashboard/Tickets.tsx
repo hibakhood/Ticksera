@@ -129,7 +129,7 @@ export default function Tickets() {
       />
 
       {/* Mini stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Open', value: visibleTickets.filter(t => t.status === 'open').length, grad: 'from-sky-500 to-blue-600' },
           { label: 'In Progress', value: visibleTickets.filter(t => ['in_progress', 'assigned'].includes(t.status)).length, grad: 'from-violet-500 to-purple-600' },
@@ -161,11 +161,12 @@ export default function Tickets() {
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all placeholder-gray-400"
             />
           </div>
-          <div className="flex gap-2 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             <Filter className="w-4 h-4 text-gray-400 flex-shrink-0 hidden sm:block" />
             <Select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
+              className="sm:min-w-[150px]"
               options={[
                 { value: 'all', label: 'All Status' },
                 { value: 'open', label: 'Open' },
@@ -181,6 +182,7 @@ export default function Tickets() {
             <Select
               value={priorityFilter}
               onChange={e => setPriorityFilter(e.target.value)}
+              className="sm:min-w-[150px]"
               options={[
                 { value: 'all', label: 'All Priority' },
                 { value: 'low', label: 'Low' },

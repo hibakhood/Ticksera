@@ -328,7 +328,7 @@ export default function Booking() {
                         value={b.assignedTechnician || ''}
                         onChange={e => updateBooking(b.id, { assignedTechnician: e.target.value, status: 'confirmed' })}
                         style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' }}
-                        className="text-xs pl-2.5 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent cursor-pointer transition-all"
+                        className="text-xs pl-2.5 pr-7 py-2.5 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent cursor-pointer transition-all"
                       >
                         <option value="">Assign tech…</option>
                         {technicians.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}

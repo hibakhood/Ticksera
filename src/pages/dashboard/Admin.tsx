@@ -384,7 +384,7 @@ export default function Admin() {
         />
 
         {/* Tab bar */}
-        <div className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-sm">
+        <div className="flex gap-1.5 p-1.5 rounded-2xl bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-sm overflow-x-auto lg:flex-wrap lg:overflow-visible">
           {tabs.map(t => {
             const count = t.id === 'messages' ? unreadMessages
               : t.id === 'tickets' ? tickets.length
@@ -397,7 +397,7 @@ export default function Admin() {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
-                className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   activeTab === t.id
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-500/25'
                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
@@ -424,7 +424,7 @@ export default function Admin() {
         {/* ── Overview ── */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard label="Total Users" value={users.length} icon={Users} gradient="from-blue-500 to-indigo-600" sub={`${technicians.length} technicians on staff`} />
               <StatCard label="Total Tickets" value={tickets.length} icon={Ticket} gradient="from-purple-500 to-fuchsia-600" sub={`${openTickets} open · ${overdueCount} overdue`} />
               <StatCard label="Revenue" value={`₦${totalRevenue.toLocaleString()}`} icon={CreditCard} gradient="from-emerald-500 to-teal-600" sub={`${completedCount} completed transactions`} />
@@ -813,7 +813,7 @@ export default function Admin() {
                           <button
                             type="button"
                             onClick={() => setShowPassword(v => !v)}
-                            className="absolute right-3 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="absolute right-1 p-2 text-slate-400 hover:text-slate-600 transition-colors"
                             style={{ top: '2.6rem' }}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -923,7 +923,7 @@ export default function Admin() {
                         </td>
                         <td className="py-3.5 px-4">
                           {u.id !== currentUser?.id ? (
-                            <Button variant="danger" size="xs" onClick={() => { if (confirm(`Delete ${u.name}?`)) deleteUser(u.id); }}>
+                            <Button variant="danger" size="sm" onClick={() => { if (confirm(`Delete ${u.name}?`)) deleteUser(u.id); }}>
                               Delete
                             </Button>
                           ) : (
@@ -972,7 +972,7 @@ export default function Admin() {
                               <Crown className="w-3 h-3" /> {org.plan}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-xs text-slate-400 mt-0.5 break-words">
                             Owner: <span className="text-slate-600 dark:text-slate-300">{org.owner.name}</span> · {org.owner.email}
                           </p>
                         </div>
@@ -1186,21 +1186,21 @@ export default function Admin() {
               <div className="space-y-3">
                 {contactMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(m => (
                   <div key={m.id} className={`p-4 rounded-2xl border transition-colors ${m.isRead ? 'border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card' : 'border-emerald-200 dark:border-emerald-800/60 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 dark:from-emerald-900/10 dark:to-teal-900/5'}`}>
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <div className="flex items-center gap-2.5">
+                    <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         <div className="p-[2px] rounded-full bg-gradient-to-br from-rose-400 to-pink-500 flex-shrink-0">
                           <div className="w-8 h-8 rounded-full bg-slate-700 dark:bg-dark-card flex items-center justify-center text-white text-xs font-bold">
                             {m.name.charAt(0).toUpperCase()}
                           </div>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <span className="font-semibold text-slate-900 dark:text-white text-sm">{m.name}</span>
-                          <span className="text-xs text-slate-500 ml-2">{m.email}</span>
+                          <span className="text-xs text-slate-500 ml-2 break-all">{m.email}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {!m.isRead && (
-                          <Button variant="outline" size="xs" onClick={() => markContactRead(m.id)}>
+                          <Button variant="outline" size="sm" onClick={() => markContactRead(m.id)}>
                             Mark Read
                           </Button>
                         )}
@@ -1456,7 +1456,7 @@ export default function Admin() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-1">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
               <Button variant="outline" className="flex-1" onClick={() => setPlanTarget(null)} disabled={applying}>
                 Cancel
               </Button>

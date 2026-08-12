@@ -106,7 +106,7 @@ export default function Assistant() {
 
       <div className="card-premium bg-white dark:bg-dark-card border border-slate-200/80 dark:border-dark-border rounded-2xl overflow-hidden">
         {/* Chat body */}
-        <div ref={scrollRef} className="h-[520px] overflow-y-auto p-5 lg:p-7 space-y-5 bg-slate-50/50 dark:bg-dark-bg/40">
+        <div ref={scrollRef} className="h-[52dvh] min-h-[300px] sm:h-[520px] overflow-y-auto p-5 lg:p-7 space-y-5 bg-slate-50/50 dark:bg-dark-bg/40">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <div className="chip-icon w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-500/25 mb-4">
@@ -132,7 +132,7 @@ export default function Assistant() {
             <>
               {messages.map(m => (
                 <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-start gap-3 max-w-[78%] ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-start gap-3 max-w-[78%] min-w-0 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     {m.role === 'ai' ? (
                       <div className="chip-icon w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-500/25 flex-shrink-0">
                         <Sparkles className="w-4 h-4" />
@@ -142,8 +142,8 @@ export default function Assistant() {
                         {currentUser?.name?.charAt(0) || 'U'}
                       </div>
                     )}
-                    <div className="space-y-3">
-                      <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line ${
+                    <div className="space-y-3 min-w-0">
+                      <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line break-words ${
                         m.role === 'user'
                           ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20 rounded-tr-sm'
                           : 'bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 rounded-tl-sm shadow-sm'

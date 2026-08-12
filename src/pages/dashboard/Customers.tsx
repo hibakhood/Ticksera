@@ -85,7 +85,7 @@ export default function Customers() {
         )}
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Customers" value={totalCustomers} icon={Users} gradient="from-blue-500 to-indigo-600" sub="Registered accounts" />
         <StatCard label="Active Plans" value={activePlanUsers} icon={CreditCard} gradient="from-emerald-500 to-teal-600" sub="Paid subscriptions" />
         <StatCard label="Business Accounts" value={businesses} icon={Building2} gradient="from-violet-500 to-purple-600" sub="Organizations & teams" />

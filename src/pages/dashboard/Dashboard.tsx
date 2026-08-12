@@ -140,7 +140,7 @@ export default function Dashboard() {
       />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s, i) => (
           <StatCard
             key={i}
@@ -249,7 +249,7 @@ export default function Dashboard() {
       <div className="card-premium bg-white dark:bg-dark-card border border-slate-200/80 dark:border-dark-border rounded-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-transparent dark:from-slate-800/30">
           <h3 className="font-heading font-bold text-slate-900 dark:text-white">Recent Tickets</h3>
-          <Link to="/tickets" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600 transition-colors flex items-center gap-1">
+          <Link to="/tickets" className="text-xs font-semibold text-emerald-500 hover:text-emerald-600 transition-colors flex items-center gap-1 p-2 -m-2 rounded-lg">
             View all <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>

@@ -116,7 +116,7 @@ export default function CompanyUsers() {
               Only users with your organisation's email domain are accepted; keeping access secure.
             </p>
 
-            <div className="grid grid-cols-3 gap-3 mb-8 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 text-left">
               {[
                 { icon: Users,    label: '15 seats',   note: 'Business plan' },
                 { icon: Building2, label: '100 seats', note: 'Enterprise plan' },
@@ -436,7 +436,7 @@ export default function CompanyUsers() {
                   <button
                     type="button"
                     onClick={() => setShowPwd(v => !v)}
-                    className="absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    className="absolute right-1 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                     style={{ top: '2.6rem' }}
                   >
                     {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -519,7 +519,7 @@ export default function CompanyUsers() {
                     <button
                       onClick={() => handleRemove(m.id)}
                       disabled={removing === m.id}
-                      className="w-9 h-9 flex items-center justify-center rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-all flex-shrink-0"
+                      className="w-11 h-11 flex items-center justify-center rounded-xl border border-transparent hover:border-rose-200 dark:hover:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-all flex-shrink-0"
                       title={`Remove ${m.name}`}
                     >
                       {removing === m.id ? (

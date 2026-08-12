@@ -250,7 +250,7 @@ export default function TicketWizard({ open, onClose }: Props) {
                         ${done ? 'bg-emerald-500 text-white' : active ? 'bg-white dark:bg-dark-card border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-400/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
                         {done ? <Check className="w-3.5 h-3.5" /> : idx}
                       </div>
-                      <span className={`text-[10px] font-semibold whitespace-nowrap transition-colors ${active ? 'text-emerald-600 dark:text-emerald-400' : done ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}`}>
+                      <span className={`text-[10px] font-semibold whitespace-nowrap hidden sm:block transition-colors ${active ? 'text-emerald-600 dark:text-emerald-400' : done ? 'text-emerald-500' : 'text-slate-400 dark:text-slate-500'}`}>
                         {label}
                       </span>
                     </div>
@@ -438,7 +438,7 @@ export default function TicketWizard({ open, onClose }: Props) {
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-slate-900/30 flex-shrink-0">
+          <div className="flex items-center justify-between gap-3 flex-wrap px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-slate-900/30 flex-shrink-0">
             <button onClick={back}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-dark-card hover:text-slate-900 dark:hover:text-white transition-colors">
               <ChevronLeft className="w-4 h-4" />
