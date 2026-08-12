@@ -3,6 +3,7 @@ import { useEffect, lazy, Suspense } from 'react';
 import { useStore } from './store';
 import { useShallow } from 'zustand/react/shallow';
 import { hasActivePlan, hasActivePlanFor } from './utils/plans';
+import { Analytics } from '@vercel/analytics/react';
 
 // Layouts
 import PublicNavbar from './components/layout/PublicNavbar';
@@ -169,6 +170,7 @@ export default function App() {
           </Routes>
         </Suspense>
       </Router>
+      <Analytics />
     </ThemeWrapper>
   );
 }
