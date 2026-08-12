@@ -30,7 +30,7 @@ export default function Contact() {
     e.preventDefault();
     if (!form.name || !form.email || !form.subject || !form.message) return;
     const { website, ...msg } = form;
-    addContactMessage(msg);
+    addContactMessage({ ...msg, website });
     setSent(true);
     setForm({ name: '', email: '', subject: '', message: '', website: '' });
     setTimeout(() => setSent(false), 4000);

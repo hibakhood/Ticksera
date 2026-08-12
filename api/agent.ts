@@ -82,7 +82,7 @@ function cleanDashes(text: string): string {
 // never echoed back or persisted in provider-side conversation logs.
 function maskPii(text: string): string {
   return (text ?? '')
-    .replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '<EMAIL>')
+    .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '<EMAIL>')
     .replace(/\b(?:\+?\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?)?\d{3}[\s.-]?\d{3}[\s.-]?\d{3,4}\b/g, '<PHONE>');
 }
 export { maskPii };

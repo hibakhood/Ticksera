@@ -34,18 +34,18 @@ CSP/`frame-ancestors` headers are present.
 2. **C2: Read-modify-write data loss: ✅ FIXED** (`0008` + `api/state.ts` + `src/lib/sync.ts`). The shared row now carries a `version`; `POST /api/state` uses the atomic `update_shared_state_if_version` RPC and returns 409 on a stale write, which the client merges and retries. Payments are appended through the same RPC and deduped by reference.
 3. **C3: Single-row shared state: ⚠️ PARTIALLY FIXED.** **C3a (attachments)** is fixed; files now upload to Supabase Storage (2 MB cap, public bucket, policies in `0012`) instead of inline base64. **C3b (the shared-document backbone itself) is OUTSTANDING**; the `user_data` row is still the realtime backbone with full-document polling. This is the single item that caps the score against the 10k target; see roadmap #10.
 
-Also High: role changes are now persisted to `profiles` via a service-role RPC (H1 ✅), the rate limiter prunes expired buckets (H2 ⚠️ partial; first-octet bucketing and cross-instance limiting remain), the AI gateway has a per-user daily budget (H3 ✅), MFA is available (H4 ✅), audit logging writes to `audit_logs` + structured logs (H5 ✅), tests run in CI (H6 ✅), and localStorage no longer mirrors the tenant dataset (H7 ✅).
+Also High: role changes are now persisted to `profiles` via a service-role RPC (H1 ✅), rate limiting is now database-backed and cross-instance with a per-user `/api/state` cap and no memory leak (H2 ✅), the AI gateway has a cross-instance per-user daily budget plus PII masking and a toxicity refusal (H3 ✅), MFA + fail-closed demo auth are in place (H4 ✅), audit logging writes to `audit_logs` + structured logs (H5 ✅), tests run in CI (H6 ✅), the auto-route roster is resolved from `profiles` instead of the request (M8 ✅), and localStorage no longer mirrors the tenant dataset (H7 ✅).
 
 ### Score breakdown (weighted)
 
 | Category | Weight | Score | Notes |
 |---|---|---|---|
-| Security / authz | 30% | 85 | C1, H1, M1, M3, M12, L1 fixed; H2 partial (per-instance, first-octet); M8 roster spoofing open |
+| Security / authz | 30% | 92 | C1, H1, M1, M3, M12, L1 fixed; H2 cross-instance DB limiter; M8 roster now DB-resolved |
 | Architecture & scale | 25% | 50 | C2 + C3a fixed; C3b (shared-doc backbone + polling) still blocks 10k target |
 | Data integrity & durability | 15% | 75 | TOCTOU closed, webhook + dedupe, audit trail; PITR/backup unverified, L2 text ids |
-| Auth & session mgmt | 10% | 75 | MFA added, role persistence, auth-event handling; 6-char policy + silent demo fallback remain |
-| Observability & ops | 10% | 55 | Audit + structured logs; no Sentry, alerting, or metrics dashboards yet |
-| Dev/CI/quality | 10% | 65 | Vitest (16 tests) + CI test step; no lint, SAST/SCA, or migration-replay stage |
+| Auth & session mgmt | 10% | 90 | MFA + 8-char policy + fail-closed demo auth; super-admin email enumerability noted |
+| Observability & ops | 10% | 70 | Audit + structured logs + Sentry browser errors; no request-log metrics/alerting dashboards yet |
+| Dev/CI/quality | 10% | 80 | Vitest (25 tests) + ESLint + `npm audit` in CI; CodeQL/Snyk + migration-replay stage open |
 | **Weighted total** | | **~69** | |
 
 **Conclusion: GO for pilot.** The billing bypass (C1), the TOCTOU data-loss
@@ -114,16 +114,16 @@ path**; an XL architectural change, plus the ops items in roadmap #13-#15.
 ### H4: Weak enterprise auth posture + silent demo-mode fallback
 - **Files:** `src/store/index.ts:749-755, 764-770, 802-815, 816-823`, `src/pages/Login.tsx:130-133`, `src/lib/supabase.ts:6-8`, `src/store/index.ts:96-104` (seed users with `password: 'ticksera123'`).
 - No MFA/TOTP for staff or admins; app-side password policy is **6 characters** (`Login.tsx:130`); no lockout beyond Supabase defaults; super-admin emails are enumerable. If `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` are missing or placeholder in a deployed build, `isSupabaseConfigured()` returns false and the app **silently runs in demo mode**: plaintext passwords, seed accounts (`ticksera123`), and `demoLogin`/local-store auth become the only path; a misconfig turns prod into a demo with well-known credentials.
-- **Status: ✅ PARTIALLY FIXED in this change set**; **Supabase TOTP MFA is implemented**: enroll/verify/disable in `Profile.tsx` (QR + secret), a login challenge (`Login.tsx` `mfa` mode, 6-digit code), and session restore on verify. **Demo-mode fallback is now fail-closed**: local auth paths (`login` fallback, `demoLogin`, offline reset/signup) are gated behind `isDemoModeAllowed()` (`src/lib/supabase.ts`), which is true only when `VITE_ENABLE_DEMO_MODE` is explicitly set; `Login.tsx` also hides the demo-credentials hint and rejects sign-in/forgot flow without the flag. A misconfigured production build can no longer be signed into with `ticksera123`. **Still outstanding:** raising the minimum password length.
+- **Status: ✅ FIXED in this change set.** **Supabase TOTP MFA is implemented**: enroll/verify/disable in `Profile.tsx` (QR + secret), a login challenge (`Login.tsx` `mfa` mode, 6-digit code), and session restore on verify. **Demo-mode fallback is now fail-closed**: local auth paths (`login` fallback, `demoLogin`, offline reset/signup) are gated behind `isDemoModeAllowed()` (`src/lib/supabase.ts`), which is true only when `VITE_ENABLE_DEMO_MODE` is explicitly set; `Login.tsx` also hides the demo-credentials hint and rejects sign-in/forgot flow without the flag. A misconfigured production build can no longer be signed into with `ticksera123`. **Password policy:** the 8-character minimum is enforced in `Login.tsx` (reset), `Signup.tsx`, `CompanyUsers.tsx`, and `Admin.tsx`.
 
 ### H5: No logging, monitoring, alerting, or audit trail (despite "SOC 2" claims)
 - **Files:** `supabase/migrations/0001_init.sql:193-200, 288-291` (`audit_logs` table exists but the app never writes to it; `audit_insert_service` is `for insert with check (true)` so **anyone, including anonymous, can spam it**), plus the whole codebase has no structured logging or error tracking (no Sentry), no request logging in the Edge functions, and no alerting.
-- **Status: ✅ PARTIALLY FIXED in this change set**; `0011_audit_rpc.sql` adds `audit_log(uuid,text,text,jsonb)` (`SECURITY DEFINER`, service role only) and migration 0009 locks `audit_insert_service` to `auth.role() = 'service_role'`. The app writes audit entries on sensitive actions (`role.changed`, `payment.verified`, `payment.webhook`, `contact.submitted`) via `writeAudit`/`logEvent` (`api/_shared.ts`) and emits structured JSON logs in the Edge functions. **Still outstanding:** Sentry/browser error tracking, request logging, metrics, and alerting (roadmap #14).
+- **Status: ✅ PARTIALLY FIXED in this change set**; `0011_audit_rpc.sql` adds `audit_log(uuid,text,text,jsonb)` (`SECURITY DEFINER`, service role only) and migration 0009 locks `audit_insert_service` to `auth.role() = 'service_role'`. The app writes audit entries on sensitive actions (`role.changed`, `payment.verified`, `payment.webhook`, `contact.submitted`) via `writeAudit`/`logEvent` (`api/_shared.ts`) and emits structured JSON logs in the Edge functions. **Sentry browser error tracking added**: `@sentry/react` initialized only when `VITE_SENTRY_DSN` is set (`src/lib/sentry.ts`, PII-scrubbed `beforeSend`), with a top-level `ErrorBoundary` (`src/components/ui/ErrorBoundary.tsx`) reporting render errors. **Still outstanding:** server request-log metrics dashboards and alerting beyond Sentry's built-in alerts (roadmap #14).
 
 ### H6: No tests, no lint, CI is build-only
 - **Files:** `.github/workflows/ci.yml:23-30`, `package.json` (no `lint`/`test` scripts).
 - CI runs `npm ci && tsc && vite build` only. There are no unit/component/e2e tests, no linting, no SAST/SCA (e.g. `npm audit`, CodeQL, Snyk), and no Supabase migration test stage.
-- **Status: ✅ PARTIALLY FIXED in this change set**; Vitest is wired up (`npm run test`/`test:watch`) with **16 passing tests** (`src/utils/triage.test.ts`, `src/lib/agent.test.ts`, `src/utils/plans.test.ts`, v8 coverage), and the CI workflow now runs `npm run test`. **Still outstanding:** ESLint/`npm run lint`, SAST/SCA (CodeQL/Snyk/`npm audit`), and a migration-replay stage against a disposable Supabase.
+- **Status: ✅ PARTIALLY FIXED in this change set**; Vitest is wired up (`npm run test`/`test:watch`) with **25 passing tests** (`src/utils/triage.test.ts`, `src/lib/agent.test.ts`, `src/lib/agent-internal.test.ts`, `src/utils/plans.test.ts`, v8 coverage). ESLint (`npm run lint`, flat config in `eslint.config.js`) is clean and runs in CI, and CI runs `npm audit --audit-level=high` (0 vulnerabilities after `npm audit fix`). **Still outstanding:** SAST (CodeQL/Snyk) and a migration-replay stage against a disposable Supabase.
 
 ### H7: Entire multi-tenant dataset mirrored into every client's localStorage
 - **Files:** `src/store/index.ts:1246-1251` (`persist` partialize persists everything except `recoveryMode`), including all shared-state tickets/messages/payments/users for staff, and base64 attachments.
@@ -182,17 +182,17 @@ path**; an XL architectural change, plus the ops items in roadmap #13-#15.
 | 2 | H1 : Role changes via a service-role RPC that updates `profiles` | High | M | ✅ done (0010 + api/role) |
 | 3 | C2 : Optimistic concurrency (`version`) on the shared row | Critical | M | ✅ done (0008) |
 | 4 | C3a : Move attachments to Supabase Storage + signed URLs, drop inline base64 | Critical | M | ✅ done (uploads.ts + 0012) |
-| 5 | H4 : Require MFA for staff, stronger password policy, fail-closed demo mode | High | M | ⚠️ MFA done; password policy + fail-closed remain |
+| 5 | H4 : Require MFA for staff, stronger password policy, fail-closed demo mode | High | M | ✅ done (MFA + 8-char policy + fail-closed demo) |
 | 6 | H5 : Audit writes (locked policy) + Sentry/logging + alerting | High | M | ⚠️ audit done; Sentry/alerting open |
-| 7 | H2 : Prune/redis-back the rate limiter, per-user budgets | High | S-M | ⚠️ eviction done; cross-instance + per-user open |
+| 7 | H2 : Prune/redis-back the rate limiter, per-user budgets | High | S-M | ✅ done (0013 cross-instance DB limiter + per-user `/api/state` cap) |
 | 8 | H7 : Slim the persisted store; keep business data in memory/DB | High | S-M | ✅ done |
 | 9 | H6 : Lint + tests + SAST + migration replay in CI | High | M | ⚠️ tests + CI done; lint/SAST/replay open |
 | 10 | C3b : Replace the shared document with normalized tables + Realtime; retire `/api/state` hot path | Critical | XL (architectural) | ⛔ open; **the blocker to the 10k target** |
 | 11 | M2 : Paystack webhook (signature-verified), bind payment to payer email | Medium | M | ✅ done |
 | 12 | M3-M5, M10, M12, H3, M9, M7, M6: role-scoped GET, contact rate-limit, headers, chunks, orgs RLS, per-user AI budgets, auth events, sync health, auth cache | Medium | S-M | ✅ done |
-| 13 | M8 : Resolve auto-route roster from DB instead of client | Medium | S | ⛔ open |
-| 14 | Sentry / error tracking + request logging + metrics + alerting | Medium | M | ⛔ open |
-| 15 | ESLint, CodeQL/Snyk, migration-replay test stage in CI | Medium | S-M | ⛔ open |
+| 13 | M8 : Resolve auto-route roster from DB instead of client | Medium | S | ✅ done (agent.ts resolves from `profiles`; client only enriches verified ids) |
+| 14 | Sentry / error tracking + request logging + metrics + alerting | Medium | M | ⚠️ Sentry browser tracking + error boundary done; request-log metrics/alerting dashboards open |
+| 15 | ESLint, CodeQL/Snyk, migration-replay test stage in CI | Medium | S-M | ⚠️ ESLint + `npm audit` in CI done; CodeQL/Snyk + migration-replay open |
 
 **Go/no-go:** **GO for pilot.** C1, C2, and C3a are closed (apply migrations 0007-0012 per `RUNBOOK.md`). The billing bypass, the data-loss race, and the attachment ceiling no longer exist. **At the stated 10,000-concurrent-user target the shared-document backbone (roadmap #10) is the remaining architectural blocker**; treat it as the top priority before a wide public launch; the ops items (#13-#15) are backlog for full enterprise hardening.
 
@@ -214,6 +214,6 @@ path**; an XL architectural change, plus the ops items in roadmap #13-#15.
 | `src/pages/Login.tsx`, `Profile.tsx`, `Contact.tsx` | MFA challenge/enroll, contact honeypot : H4/M4 |
 | `src/pages/dashboard/Chat.tsx`, `TicketDetail.tsx` | Storage-backed uploads : C3a |
 | `src/pages/dashboard/DashboardLayout.tsx` | Sync-health indicator : M7 |
-| `supabase/migrations/0001-0012` | Schema + RLS + locking + storage : all findings |
+| `supabase/migrations/0001-0013` | Schema + RLS + locking + storage + cross-instance rate limits : all findings |
 | `vercel.json`, `vite.config.ts`, `.github/workflows/ci.yml` | Deploy/headers/CI : H6/M5/M10/M11 |
 | `RUNBOOK.md` | Manual deployment steps (migrations, env vars, MFA, Storage) |

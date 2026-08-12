@@ -57,6 +57,7 @@ Set these in the Vercel project (Settings → Environment Variables):
 | `AI_API_KEY` | Enables the AI agent (OpenRouter). Leave empty to keep the deterministic bot. |
 | `AI_DAILY_LIMIT_PER_USER` | Optional per-user AI budget/day (default 60). |
 | `VITE_ENABLE_DEMO_MODE` | **New**: set `true` to opt into local/demo auth (seed accounts `ticksera123`, offline reset/signup). **Do not set in production**; without it the app fails closed when Supabase isn't configured. |
+| `VITE_SENTRY_DSN` | Optional Sentry DSN for browser error tracking. Leave empty to disable. |
 
 ## 4. Paystack webhook
 
@@ -88,7 +89,7 @@ Set these in the Vercel project (Settings → Environment Variables):
 - **H5: audit logging**: sensitive actions (`role.changed`, `payment.verified`,
   `payment.webhook`, `contact.submitted`) are written to `audit_logs` via the
   service-role RPC + emitted as structured JSON logs in Vercel.
-- **H6: tests**: `npm run test` (Vitest) runs in CI alongside typecheck + build.
+- **H6: tests**: `npm run test` (Vitest) runs in CI alongside typecheck, **lint** (ESLint), **SCA** (`npm audit`), and build.
 - **H7: storage**: in live mode localStorage keeps only `currentUser`, never
   tenant collections.
 - **H3: AI cost caps**: per-user daily budget + per-IP rate limit; over budget

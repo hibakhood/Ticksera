@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
 
-export const SLA_HOURS: Record<string, number> = {
+const SLA_HOURS: Record<string, number> = {
   low:      5,
   medium:   3,
   high:     1,

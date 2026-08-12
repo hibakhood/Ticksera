@@ -222,7 +222,7 @@ interface AppState {
 
   // Contact
   contactMessages: ContactMessage[];
-  addContactMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>) => void;
+  addContactMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'> & { website?: string }) => void;
   markContactRead: (id: string) => void;
 
   // Payments
@@ -1412,15 +1412,18 @@ export const useStore = create<AppState>()(
 
       contactMessages: seedContacts,
       addContactMessage: (msg) => {
+        const { website, ...clean } = msg;
         const id = `c${Date.now()}`;
         const createdAt = new Date().toISOString();
-        set(s => ({ contactMessages: [...s.contactMessages, { ...msg, id, createdAt, isRead: false }] }));
+        set(s => ({ contactMessages: [...s.contactMessages, { ...clean, id, createdAt, isRead: false }] }));
         void (async () => {
           try {
+            // Send the honeypot field to the server too; the Edge function
+            // rejects submissions where it is filled (bot filter).
             await fetch('/api/contact', {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(msg),
+              body: JSON.stringify(website !== undefined ? { ...clean, website } : clean),
             });
           } catch { /* offline / demo mode; message stays local */ }
         })();
