@@ -26,7 +26,7 @@
 
 export const config = { runtime: 'edge', maxDuration: 30 };
 
-import { GLOBAL_STATE_ID, json, rateLimit, getAuthedUser, getStaffRole, isManagerRole, writeAudit } from './_shared';
+import { GLOBAL_STATE_ID, json, rateLimit, rateLimitDb, getAuthedUser, getStaffRole, isManagerRole, writeAudit } from './_shared';
 
 const COLLECTIONS = ['tickets', 'chatMessages', 'conversations', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'] as const;
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -351,6 +351,13 @@ export default async function handler(req: Request): Promise<Response> {
 
   const user = await getAuthedUser(req, supabaseUrl);
   if (!user) return json({ error: 'unauthorized' }, 401);
+
+  // Authoritative, cross-instance per-user budget (migration 0013). The
+  // in-memory per-IP limit above is only a cheap pre-filter; this enforces the
+  // real budget consistently across every Vercel isolate.
+  const perUser = await rateLimitDb(supabaseUrl, serviceKey, `state:user:${user.id}`, 600, 60_000);
+  if (!perUser.ok) return json({ error: 'rate_limited', retry_after: perUser.retryAfter }, 429);
+
   const staffRole = await getStaffRole(supabaseUrl, serviceKey, user);
 
   if (req.method === 'GET') {

@@ -4,7 +4,7 @@ import type { User, Ticket, Booking, ChatMessage, Conversation, ContactMessage, 
 import { v4 as uuid } from 'uuid';
 import { buildTriageGreeting, buildHandoffGreeting, getTriageFlow, getDiagnosticResponse } from '../utils/triage';
 import { importedKBArticles } from '../data/kbContent';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { isSupabaseConfigured, isDemoModeAllowed, getSupabase } from '../lib/supabase';
 import { loadSharedState, saveSharedState, type SharedState } from '../lib/sync';
 import { loadDbCollections } from '../lib/db';
 import { requestAgentReply, buildAgentPayload, runAutoRoute, getTechnicianLoad, type AgentStatus } from '../lib/agent';
@@ -921,6 +921,9 @@ export const useStore = create<AppState>()(
               return { ok: true };
             } catch { return { ok: false }; }
           }
+          // Local fallback (demo/local builds only). Fail-closed: only reachable
+          // when the deployment opted into demo mode with VITE_ENABLE_DEMO_MODE.
+          if (!isDemoModeAllowed()) return { ok: false };
         const user = get().users.find(u => u.email === normalised);
         if (user && user.password === password) {
           set({ currentUser: user });
@@ -954,6 +957,7 @@ export const useStore = create<AppState>()(
         }
       },
       demoLogin: (email: string) => {
+        if (!isDemoModeAllowed()) return false;
         const user = get().users.find(u => u.email === email);
         if (user) {
           set({ currentUser: user });
@@ -962,6 +966,7 @@ export const useStore = create<AppState>()(
         return false;
       },
       resetPassword: (email: string, newPassword: string) => {
+        if (!isDemoModeAllowed()) return false;
         const normalised = email.trim().toLowerCase();
         const user = get().users.find(u => u.email === normalised);
         if (!user) return false;
@@ -999,6 +1004,7 @@ export const useStore = create<AppState>()(
             return { ok: false, error: 'Unable to reach the sign-up service. Please try again.' };
           }
         }
+        if (!isDemoModeAllowed()) return { ok: false, error: 'Registration is disabled on this deployment.' };
         const exists = get().users.find(u => u.email === normalised);
         if (exists) return { ok: false, error: 'An account with this email already exists.' };
         const newUser: User = {

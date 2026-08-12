@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useStore } from '../store';
-import { isSupabaseConfigured, getSupabase } from '../lib/supabase';
+import { isSupabaseConfigured, isDemoModeAllowed, getSupabase } from '../lib/supabase';
 import { Lock, ArrowRight, Shield, Zap, Users, Eye, EyeOff, Check, Mail, KeyRound, ArrowLeft, ShieldCheck } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -32,6 +32,7 @@ export default function Login() {
   const { login, verifyMfa, resetPassword, completePasswordReset, recoveryMode } = useStore();
   const navigate = useNavigate();
   const supabaseLive = isSupabaseConfigured();
+  const demoEnabled = isDemoModeAllowed();
 
   useEffect(() => {
     if (recoveryMode) {
@@ -81,6 +82,11 @@ export default function Login() {
 
     const { users } = useStore.getState();
     const normalized = email.trim().toLowerCase();
+    if (!demoEnabled) {
+      setError('Authentication is disabled on this deployment. Please contact the administrator.');
+      setLoading(false);
+      return;
+    }
     const user = users.find(u => u.email === normalized);
     const ok = await login(normalized, password);
     if (ok.ok && user) {
@@ -119,6 +125,10 @@ export default function Login() {
     }
 
     const { users } = useStore.getState();
+    if (!demoEnabled) {
+      setError('Password reset is disabled on this deployment. Please contact the administrator.');
+      return;
+    }
     if (!users.some(u => u.email === normalized)) {
       setError('No account found with that email address.');
       return;
@@ -509,7 +519,7 @@ export default function Login() {
             </div>
           )}
 
-          {!isResetMode && !supabaseLive && (
+          {!isResetMode && !supabaseLive && demoEnabled && (
             <p className="text-center text-xs text-slate-400 mb-5">
               Demo build: all demo accounts use password{' '}
               <code className="font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">ticksera123</code>

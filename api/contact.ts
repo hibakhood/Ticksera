@@ -15,7 +15,7 @@
 
 export const config = { runtime: 'edge', maxDuration: 10 };
 
-import { json, rateLimit, writeAudit, logEvent } from './_shared';
+import { json, rateLimit, rateLimitDb, clientIp, writeAudit, logEvent } from './_shared';
 
 const MAX_NAME = 100;
 const MAX_EMAIL = 200;
@@ -31,6 +31,16 @@ export default async function handler(req: Request): Promise<Response> {
 
   const rl = rateLimit(req, 5, 60_000);
   if (!rl.ok) return json({ ok: false, error: 'rate_limited' }, 429);
+
+  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
+  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+
+  // Authoritative, cross-instance per-IP limit (migration 0013). The in-memory
+  // check above is only a per-isolate pre-filter.
+  if (supabaseUrl && serviceKey) {
+    const rlDb = await rateLimitDb(supabaseUrl, serviceKey, `contact:ip:${clientIp(req)}`, 5, 60_000);
+    if (!rlDb.ok) return json({ ok: false, error: 'rate_limited', retry_after: rlDb.retryAfter }, 429);
+  }
 
   let body: {
     name?: unknown;
@@ -61,9 +71,6 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ ok: false, error: 'missing_fields' }, 400);
   }
   if (!validEmail(email)) return json({ ok: false, error: 'invalid_email' }, 400);
-
-  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
-  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
 
   if (supabaseUrl && serviceKey) {
     try {

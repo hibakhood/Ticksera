@@ -10,10 +10,11 @@ export function json(data: unknown, status = 200): Response {
   });
 }
 
-// Simple in-memory fixed-window rate limiter keyed by client IP. Vercel Edge
+// In-memory fixed-window rate limiter keyed by an arbitrary string. Vercel Edge
 // isolates are ephemeral and per-instance, so this is approximate; it still
-// meaningfully raises the cost of automated abuse. Expired buckets are evicted
-// so the map does not grow without bound.
+// meaningfully raises the cost of automated abuse and acts as a cheap pre-filter
+// in front of the authoritative database-backed limiter. Expired buckets are
+// evicted so the map does not grow without bound.
 const rateBuckets = new Map<string, { count: number; resetAt: number }>();
 const MAX_BUCKETS = 10_000;
 
@@ -24,13 +25,12 @@ function pruneBuckets(now: number): void {
   }
 }
 
-export function rateLimit(req: Request, limit = 60, windowMs = 60_000): { ok: boolean; retryAfter?: number } {
-  const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim();
+export function rateLimitByKey(key: string, limit = 60, windowMs = 60_000): { ok: boolean; retryAfter?: number } {
   const now = Date.now();
   pruneBuckets(now);
-  const bucket = rateBuckets.get(ip);
+  const bucket = rateBuckets.get(key);
   if (!bucket || bucket.resetAt < now) {
-    rateBuckets.set(ip, { count: 1, resetAt: now + windowMs });
+    rateBuckets.set(key, { count: 1, resetAt: now + windowMs });
     return { ok: true };
   }
   if (bucket.count >= limit) {
@@ -38,6 +38,51 @@ export function rateLimit(req: Request, limit = 60, windowMs = 60_000): { ok: bo
   }
   bucket.count += 1;
   return { ok: true };
+}
+
+export function clientIp(req: Request): string {
+  return (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim();
+}
+
+/** In-memory per-IP limiter (fast pre-filter; not cross-instance). */
+export function rateLimit(req: Request, limit = 60, windowMs = 60_000): { ok: boolean; retryAfter?: number } {
+  return rateLimitByKey(`ip:${clientIp(req)}`, limit, windowMs);
+}
+
+/**
+ * Authoritative, cross-instance fixed-window limiter backed by the
+ * `consume_rate_limit` RPC (migration 0013). Falls back to the in-memory
+ * limiter when the database is unreachable so availability never depends on it.
+ */
+export async function rateLimitDb(
+  supabaseUrl: string,
+  serviceKey: string,
+  key: string,
+  limit = 60,
+  windowMs = 60_000
+): Promise<{ ok: boolean; retryAfter?: number }> {
+  if (!supabaseUrl || !serviceKey) return rateLimitByKey(key, limit, windowMs);
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/rpc/consume_rate_limit`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        p_key: key,
+        p_limit: limit,
+        p_window_seconds: Math.max(1, Math.min(Math.floor(windowMs / 1000), 86_400)),
+      }),
+    });
+    if (!res.ok) return rateLimitByKey(key, limit, windowMs);
+    const out = (await res.json()) as { ok?: boolean; retry_after?: number };
+    if (out.ok === false) return { ok: false, retryAfter: out.retry_after ?? 1 };
+    return { ok: true };
+  } catch {
+    return rateLimitByKey(key, limit, windowMs);
+  }
 }
 
 /** Resolve the authenticated Supabase user from the caller's Bearer token. */

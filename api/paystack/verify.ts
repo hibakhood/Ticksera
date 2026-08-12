@@ -18,7 +18,7 @@ export const config = {
   maxDuration: 30,
 };
 
-import { json, rateLimit, getAuthedUser, persistSharedPayment, writeAudit, logEvent } from '../_shared';
+import { json, rateLimit, rateLimitDb, clientIp, getAuthedUser, persistSharedPayment, writeAudit, logEvent } from '../_shared';
 
 const PLAN_PRICES: Record<string, number> = {
   Basic: 5000,
@@ -82,6 +82,14 @@ export default async function handler(req: Request): Promise<Response> {
   // persisted under anyone's account.
   const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
   const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+
+  // Authoritative, cross-instance per-IP limit (migration 0013). The in-memory
+  // check above is only a per-isolate pre-filter.
+  if (supabaseUrl && serviceKey) {
+    const rlDb = await rateLimitDb(supabaseUrl, serviceKey, `verify:ip:${clientIp(req)}`, 30, 60_000);
+    if (!rlDb.ok) return json({ ok: false, error: 'rate_limited', retry_after: rlDb.retryAfter }, 429);
+  }
+
   const authed = supabaseUrl ? await getAuthedUser(req, supabaseUrl) : null;
 
   let txData: {

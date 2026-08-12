@@ -52,7 +52,7 @@ interface AgentBody {
   }[];
 }
 
-import { json, rateLimit, getAuthedUser, logEvent } from './_shared';
+import { json, rateLimit, rateLimitDb, getAuthedUser, logEvent } from './_shared';
 
 // Customer-facing text rules for every reply. The model is told to pick the
 // best-fitting punctuation in place of em-dashes/en-dashes, and cleanDashes is
@@ -77,10 +77,39 @@ function cleanDashes(text: string): string {
     .replace(/\u2013/g, '-');
 }
 
-// Per-user AI budget (approximate, in-memory per edge isolate). Combined with
-// the per-IP rate limit this bounds cost even if the provider is called
-// aggressively. Over-budget requests degrade to the deterministic bot
-// (enabled:false) instead of spending more credits.
+// PII masking (audit finding H3): customer-supplied emails and phone numbers
+// are redacted to placeholders before anything reaches the model, so they are
+// never echoed back or persisted in provider-side conversation logs.
+function maskPii(text: string): string {
+  return (text ?? '')
+    .replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '<EMAIL>')
+    .replace(/\b(?:\+?\d{1,3}[\s.-]?)?(?:\(\d{2,4}\)[\s.-]?)?\d{3}[\s.-]?\d{3}[\s.-]?\d{3,4}\b/g, '<PHONE>');
+}
+export { maskPii };
+
+// Minimal toxicity/abuse guard (audit finding H3). Tripping it refuses the
+// message WITHOUT calling the paid model: cheaper, and the blocked text never
+// becomes a prompt-injection vector. Kept deliberately short to avoid false
+// positives in legitimate support chat.
+const BLOCKED_TERMS = ['fuck', 'shit', 'bitch', 'dick', 'cock', 'asshole', 'bastard', 'slut', 'whore', 'cunt'];
+const REFUSAL =
+  'I want to help, but I can only assist with respectful, on-topic requests. ' +
+  'Can you tell me a bit more about the IT issue you are having?';
+
+function containsBlockedContent(text: string): boolean {
+  const s = (text ?? '').toLowerCase();
+  return BLOCKED_TERMS.some(term => new RegExp(`\\b${term}\\b`).test(s));
+}
+export { containsBlockedContent };
+
+// Per-user AI budget fallback (approximate, in-memory per edge isolate). When
+// Supabase is configured the authoritative budget is enforced in the DATABASE
+// via the consume_rate_limit RPC (migration 0013), so the limit holds
+// consistently across every Vercel instance. This in-memory map is only used
+// when there is no database (local demo mode). Combined with the per-IP rate
+// limit this bounds cost even if the provider is called aggressively.
+// Over-budget requests degrade to the deterministic bot (enabled:false)
+// instead of spending more credits.
 const aiBudget = new Map<string, { day: string; count: number }>();
 const MAX_BUDGET_KEYS = 50_000;
 
@@ -107,6 +136,52 @@ function pruneAiBudget(): void {
     if (entry.day !== day) aiBudget.delete(key);
   }
 }
+
+// M8 (audit finding): the technician roster must come from the database, not
+// the request. Client-supplied entries only enrich a roster entry already
+// verified against the profiles table, so a caller cannot invent a technician
+// or inject a fake name/skills into the prompt. Falls back to the request
+// roster only when Supabase is unreachable, so routing keeps working during a
+// DB outage (assignment writes remain RLS-guarded regardless).
+async function resolveAutoRouteRoster(
+  supabaseUrl: string,
+  serviceKey: string,
+  client: AgentBody['technicians']
+): Promise<NonNullable<AgentBody['technicians']>> {
+  if (!supabaseUrl || !serviceKey) return client ?? [];
+  let rows: { id?: string; name?: string; role?: string; location?: string; bio?: string }[] = [];
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/profiles?select=id,name,role,location,bio&role=in.(technician,field_technician)&limit=200`,
+      { headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` } }
+    );
+    if (res.ok) rows = (await res.json()) as typeof rows;
+  } catch {
+    // degrade to the request roster below
+  }
+  if (rows.length === 0) {
+    logEvent('agent.roster_db_unavailable', { count: client?.length ?? 0 });
+    return client ?? [];
+  }
+  const verified = new Map<string, { id: string; name: string; role: string; location?: string; bio?: string }>();
+  for (const r of rows) {
+    if (r.id && r.name && (r.role === 'technician' || r.role === 'field_technician')) {
+      verified.set(r.id, { id: r.id, name: r.name, role: r.role, location: r.location ?? undefined, bio: r.bio ?? undefined });
+    }
+  }
+  const enrichment = new Map<string, { skills?: string[]; load: number }>();
+  for (const t of client ?? []) {
+    if (verified.has(t.id)) {
+      enrichment.set(t.id, { skills: t.skills, load: typeof t.load === 'number' ? t.load : 0 });
+    }
+  }
+  return [...verified.values()].map(t => ({
+    ...t,
+    skills: enrichment.get(t.id)?.skills,
+    load: enrichment.get(t.id)?.load ?? 0,
+  }));
+}
+export { resolveAutoRouteRoster };
 
 function buildSystemPrompt(body: AgentBody, kbContext: string): string {
   const t = body.ticket ?? {};
@@ -310,7 +385,8 @@ export default async function handler(req: Request): Promise<Response> {
   // When Supabase is configured this endpoint only answers authenticated users,
   // so strangers cannot burn AI API credits. Local/demo deployments without
   // Supabase remain open so the deterministic bot keeps working in the SPA.
-  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim();
+  const supabaseUrl = (process.env.SUPABASE_URL ?? '').trim().replace(/\/$/, '');
+  const serviceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
   let callerId: string | null = null;
   if (supabaseUrl) {
     const user = await getAuthedUser(req, supabaseUrl);
@@ -321,14 +397,30 @@ export default async function handler(req: Request): Promise<Response> {
   const apiKey = (process.env.AI_API_KEY ?? '').trim();
   if (!apiKey) return json({ enabled: false });
 
-  // Enforce the per-user daily budget before spending any credits.
+  // Enforce the per-user daily budget before spending any credits. When
+  // Supabase is configured the budget is authoritative and cross-instance in
+  // the database (migration 0013); the in-memory map only serves local/demo
+  // deployments. Over-budget requests degrade to the deterministic bot
+  // (enabled:false) instead of spending more credits.
   const dailyLimit = Number(process.env.AI_DAILY_LIMIT_PER_USER ?? 60) || 60;
   const ip = (req.headers.get('x-forwarded-for') ?? 'unknown').split(',')[0].trim();
   const budgetKeyId = callerId ?? ip;
   pruneAiBudget();
-  if (!consumeAiBudget(budgetKeyId, dailyLimit)) {
+  const withinBudget = supabaseUrl
+    ? await rateLimitDb(supabaseUrl, serviceKey, `ai:day:${budgetKeyId}`, dailyLimit, 24 * 60 * 60_000)
+    : consumeAiBudget(budgetKeyId, dailyLimit);
+  if (!withinBudget) {
     logEvent('agent.budget_exceeded', { userId: callerId ?? null, ip });
     return json({ enabled: false });
+  }
+
+  // Cross-instance per-IP guard in front of the AI call. The in-memory rl
+  // above is only a per-isolate pre-filter; this is the shared enforcement.
+  if (supabaseUrl) {
+    const ipRl = await rateLimitDb(supabaseUrl, serviceKey, `agent:ip:${ip}`, 30, 60_000);
+    if (!ipRl.ok) {
+      return json({ error: 'rate_limited', retry_after: ipRl.retryAfter }, 429);
+    }
   }
 
   let body: AgentBody;
@@ -338,6 +430,19 @@ export default async function handler(req: Request): Promise<Response> {
     return json({ error: 'Invalid JSON body' }, 400);
   }
   if (JSON.stringify(body).length > 60_000) return json({ error: 'payload_too_large' }, 413);
+
+  // M8: resolve the routing roster from the database so the model never trusts
+  // request-supplied technician identities.
+  if (body.mode === 'auto-route') {
+    body.technicians = await resolveAutoRouteRoster(supabaseUrl, serviceKey, body.technicians ?? []);
+  }
+
+  // H3: refuse abusive input without spending a model call.
+  const abuseInput = [body.answer ?? '', ...(body.transcript ?? []).map(m => m.message ?? '')].join('\n');
+  if (containsBlockedContent(abuseInput)) {
+    logEvent('agent.abuse_blocked', { mode: body.mode, userId: callerId ?? null });
+    return json({ enabled: true, reply: REFUSAL });
+  }
 
   const base = (process.env.AI_BASE_URL ?? DEFAULT_BASE_URL).replace(/\/$/, '');
   const model = (process.env.AI_MODEL ?? DEFAULT_MODEL).trim();
@@ -356,9 +461,9 @@ export default async function handler(req: Request): Promise<Response> {
     : [];
 
   const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
-    { role: 'system', content: buildSystemPrompt(body, kbContext) },
-    ...transcript,
-    { role: 'user', content: body.answer ?? '' },
+    { role: 'system', content: maskPii(buildSystemPrompt(body, kbContext)) },
+    ...transcript.map(m => ({ ...m, content: maskPii(m.content) })),
+    { role: 'user', content: maskPii(body.answer ?? '') },
   ];
 
   try {

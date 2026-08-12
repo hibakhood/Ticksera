@@ -56,6 +56,7 @@ Set these in the Vercel project (Settings → Environment Variables):
 | `RESEND_API_KEY` | Transactional email (optional). |
 | `AI_API_KEY` | Enables the AI agent (OpenRouter). Leave empty to keep the deterministic bot. |
 | `AI_DAILY_LIMIT_PER_USER` | Optional per-user AI budget/day (default 60). |
+| `VITE_ENABLE_DEMO_MODE` | **New**: set `true` to opt into local/demo auth (seed accounts `ticksera123`, offline reset/signup). **Do not set in production**; without it the app fails closed when Supabase isn't configured. |
 
 ## 4. Paystack webhook
 
@@ -91,7 +92,10 @@ Set these in the Vercel project (Settings → Environment Variables):
 - **H7: storage**: in live mode localStorage keeps only `currentUser`, never
   tenant collections.
 - **H3: AI cost caps**: per-user daily budget + per-IP rate limit; over budget
-  the deterministic bot takes over.
+  the deterministic bot takes over. Budgets are enforced **cross-instance** in
+  the database (migration 0013), PII is masked before the prompt, abusive
+  content is refused without a model call, and the auto-route roster is
+  resolved from `profiles`, never from the request.
 
 ## 6. Known remaining limitations (documented, not blocking)
 
@@ -100,9 +104,10 @@ Set these in the Vercel project (Settings → Environment Variables):
   RPCs over the relational tables. Itemized in `AUDIT.md`.
 - **L2: id generation** is timestamp-based (`t<ts>`, `c<ts>`, …) rather than
   UUID; collision risk is negligible at this scale.
-- Demo-mode fallback still exists **by design** when `VITE_SUPABASE_URL` /
-  `VITE_SUPABASE_ANON_KEY` are missing; a misconfig silently reverts to demo
-  auth (`ticksera123`). Ensure those vars are set in production.
+- **H4 (demo auth) is now fail-closed**: when Supabase isn't configured, local
+  auth (seed accounts `ticksera123`, offline reset/signup) only works if the
+  build explicitly sets `VITE_ENABLE_DEMO_MODE=true`. A production build
+  missing the Supabase vars can no longer be signed into via the seed accounts.
 
 ## 7. Verify after deploy
 
