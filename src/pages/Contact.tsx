@@ -40,18 +40,18 @@ export default function Contact() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
+      <section className="relative overflow-hidden bg-white dark:bg-slate-900">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-8">
             <MessageCircle className="w-3.5 h-3.5" />
             Get in Touch
           </div>
-          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
             Contact <span className="text-gradient">Us</span>
           </h1>
-          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
             We'd love to hear from you. Send us a message and we'll respond shortly.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
@@ -60,8 +60,8 @@ export default function Contact() {
               { icon: Clock,         label: 'Mon-Fri, 8am-6pm WAT' },
               { icon: BadgeCheck,    label: 'SOC 2 aligned' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 dark:bg-white/10 dark:border-white/15 dark:text-slate-200">
+                <t.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 {t.label}
               </span>
             ))}
@@ -204,21 +204,21 @@ export default function Contact() {
       {/* CTA */}
       <section className="s-section bg-white dark:bg-dark-bg">
         <div className="s-inner max-w-5xl mx-auto">
-          <div className="rounded-3xl bg-slate-900 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12">
+          <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12 border border-slate-200 dark:border-slate-800">
             <div className="absolute -top-24 -left-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
             <div className="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-teal-500/15 blur-3xl" aria-hidden />
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
                 Prefer to skip the form?
               </div>
-              <h3 className="font-heading text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Get help right now</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
+              <h3 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Get help right now</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
                 Open a ticket and our AI starts diagnosing your issue immediately.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link to="/login"><Button size="lg"><ArrowRight className="w-4 h-4" /> Open a Ticket</Button></Link>
                 <Link to="/services">
-                  <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-slate-800">Browse Services</Button>
+                  <Button variant="ghost" size="lg" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800">Browse Services</Button>
                 </Link>
               </div>
             </div>

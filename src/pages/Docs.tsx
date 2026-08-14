@@ -572,21 +572,21 @@ export default function Docs() {
             </div>
 
             {/* End CTA */}
-            <div className="rounded-3xl bg-slate-900 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12" style={{ marginTop: '4rem' }}>
+            <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12 border border-slate-200 dark:border-slate-800" style={{ marginTop: '4rem' }}>
               <div className="absolute -top-24 -left-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
               <div className="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-teal-500/15 blur-3xl" aria-hidden />
               <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
                   <HelpCircle className="w-3.5 h-3.5" />
                   Still stuck?
                 </div>
-                <h3 className="font-heading text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Didn't find what you need?</h3>
-                <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.5rem' }}>
+                <h3 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Didn't find what you need?</h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.5rem' }}>
                   Browse common questions or reach our team; we're happy to help.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                  <Link to="/faq" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">Browse the FAQ <ChevronRight className="w-4 h-4" /></Link>
-                  <Link to="/contact" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-300 hover:text-white transition-colors">Contact support <ChevronRight className="w-4 h-4" /></Link>
+                  <Link to="/faq" className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">Browse the FAQ <ChevronRight className="w-4 h-4" /></Link>
+                  <Link to="/contact" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">Contact support <ChevronRight className="w-4 h-4" /></Link>
                 </div>
               </div>
             </div>

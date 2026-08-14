@@ -56,17 +56,17 @@ export default function About() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
+      <section className="relative overflow-hidden bg-white dark:bg-slate-900">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-8">
             Our Story
           </div>
-          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
             Built to Fix IT, <span className="text-gradient">Fast</span>
           </h1>
-          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
+          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
             TICKSERA was founded with a single mission: make enterprise IT support fast, transparent, and stress-free. We combine smart technology with experienced technicians to deliver support that actually works.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
@@ -76,8 +76,8 @@ export default function About() {
               { icon: Clock,      label: 'SLA guarantees' },
               { icon: MapPin,     label: 'Remote & on-site' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 dark:bg-white/10 dark:border-white/15 dark:text-slate-200">
+                <t.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 {t.label}
               </span>
             ))}
@@ -111,13 +111,13 @@ export default function About() {
       </section>
 
       {/* Stats */}
-      <section className="s-section bg-slate-900 dark:bg-slate-950">
+      <section className="s-section bg-slate-50 dark:bg-slate-950">
         <div className="s-inner max-w-6xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4">
             {stats.map((s, i) => (
-              <div key={i} className={`text-center py-4 ${i > 0 ? 'lg:border-l lg:border-white/10' : ''}`}>
+              <div key={i} className={`text-center py-4 ${i > 0 ? 'lg:border-l lg:border-slate-200 dark:lg:border-white/10' : ''}`}>
                 <div className="font-heading text-gradient text-3xl sm:text-4xl font-bold mb-1.5">{s.value}</div>
-                <div className="text-[11px] uppercase tracking-widest text-slate-400">{s.label}</div>
+                <div className="text-[11px] uppercase tracking-widest text-slate-500 dark:text-slate-400">{s.label}</div>
               </div>
             ))}
           </div>
@@ -200,21 +200,21 @@ export default function About() {
       {/* CTA */}
       <section className="s-section bg-white dark:bg-dark-bg">
         <div className="s-inner max-w-5xl mx-auto">
-          <div className="rounded-3xl bg-slate-900 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12">
+          <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 relative overflow-hidden text-center border border-slate-200 dark:border-slate-800 px-6 py-12 sm:px-12">
             <div className="absolute -top-24 -left-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
             <div className="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-teal-500/15 blur-3xl" aria-hidden />
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
                 Let's work together
               </div>
-              <h3 className="font-heading text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Ready to fix IT for good?</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
+              <h3 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Ready to fix IT for good?</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
                 Join 500+ businesses that resolve IT issues in minutes, not days.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link to="/login"><Button size="lg">Get Started Free</Button></Link>
                 <Link to="/contact">
-                  <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-slate-800">Contact Us</Button>
+                  <Button variant="ghost" size="lg" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800">Contact Us</Button>
                 </Link>
               </div>
             </div>

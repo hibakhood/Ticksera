@@ -103,28 +103,28 @@ export default function FAQ() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="s-hero bg-slate-900 relative overflow-hidden">
+      <section className="s-hero bg-white dark:bg-slate-900 relative overflow-hidden">
         <ShaderBackground />
         <div className="absolute inset-0 bg-grid" aria-hidden />
         <div className="s-inner max-w-3xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1.5rem' }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1.5rem' }}>
             <LifeBuoy className="w-3.5 h-3.5" />
             Support Center
           </div>
-          <h1 className="font-heading text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Frequently Asked Questions</h1>
-          <p className="text-slate-300">Everything you need to know about getting IT help with TICKSERA.</p>
+          <h1 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Frequently Asked Questions</h1>
+          <p className="text-slate-600 dark:text-slate-300">Everything you need to know about getting IT help with TICKSERA.</p>
 
           {/* Search */}
           <div className="relative max-w-xl mx-auto" style={{ marginTop: '2rem' }}>
-            <Search className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               value={query}
               onChange={e => { setQuery(e.target.value); setOpen(null); }}
               placeholder="Search questions… e.g. SLA, payment, onsite"
-              className="w-full rounded-2xl bg-white/10 backdrop-blur border border-white/15 text-white placeholder:text-slate-400 pl-11 pr-10 py-3.5 text-sm outline-none focus:border-emerald-400/60 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20 transition-all"
+              className="w-full rounded-2xl bg-slate-100 border border-slate-200 text-slate-900 placeholder:text-slate-400 pl-11 pr-10 py-3.5 text-sm outline-none focus:border-emerald-500/60 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all dark:bg-white/10 dark:backdrop-blur dark:border-white/15 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-emerald-400/60 dark:focus:bg-white/15 dark:focus:ring-emerald-400/20"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors" aria-label="Clear search">
+              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="Clear search">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -132,7 +132,7 @@ export default function FAQ() {
           <div className="flex flex-wrap items-center justify-center gap-2" style={{ marginTop: '1rem' }}>
             <span className="text-[11px] text-slate-500">Popular:</span>
             {POPULAR.map(t => (
-              <button key={t} onClick={() => { setQuery(t); setOpen(null); }} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-300 hover:bg-white/20 hover:text-white transition-colors">
+              <button key={t} onClick={() => { setQuery(t); setOpen(null); }} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors dark:bg-white/10 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/20 dark:hover:text-white">
                 {t}
               </button>
             ))}
@@ -190,21 +190,21 @@ export default function FAQ() {
           )}
 
           {/* CTA */}
-          <div className="rounded-3xl bg-slate-900 dark:bg-slate-950 relative overflow-hidden text-center" style={{ marginTop: '3rem', padding: '3rem 1.5rem' }}>
+          <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 relative overflow-hidden text-center border border-slate-200 dark:border-slate-800" style={{ marginTop: '3rem', padding: '3rem 1.5rem' }}>
             <div className="absolute -top-24 -left-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
             <div className="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-teal-500/15 blur-3xl" aria-hidden />
             <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1rem' }}>
                 Need a hand?
               </div>
-              <h3 className="font-heading text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Still have questions?</h3>
-              <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
+              <h3 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Still have questions?</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
                 Can't find what you're looking for? Our team is happy to help with anything you need.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link to="/contact"><Button size="lg">Contact Us</Button></Link>
                 <Link to="/docs">
-                  <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-slate-800">Read the Docs</Button>
+                  <Button variant="ghost" size="lg" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800">Read the Docs</Button>
                 </Link>
               </div>
             </div>

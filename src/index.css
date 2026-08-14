@@ -146,6 +146,12 @@
   mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, black 40%, transparent 100%);
 }
 
+.dark .bg-grid {
+  background-image:
+    linear-gradient(to right, hsl(158 64% 46% / 0.10) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(158 64% 46% / 0.10) 1px, transparent 1px);
+}
+
 .chip-icon {
   display: inline-flex;
   align-items: center;
