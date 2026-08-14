@@ -41,15 +41,17 @@ const fsSource = `
   const float maxOffsetSpread = 2.0;
   const int linesPerGroup = 16;
 
-  /* Light palette: pale white → mist emerald background, emerald-600 lines */
-  const vec3 bgColor1Light = vec3(1.00, 1.00, 1.00);
-  const vec3 bgColor2Light = vec3(0.95, 0.98, 0.97);
-  const vec3 lineColorLight = vec3(0.04, 0.55, 0.39);
+  /* Light palette — matches the app's clean white/slate-50 surface (slate-50 #f8fafc,
+     whisper of emerald-50 on the right), with soft muted emerald-teal lines */
+  const vec3 bgColor1Light = vec3(0.980, 0.984, 0.988);
+  const vec3 bgColor2Light = vec3(0.965, 0.985, 0.978);
+  const vec3 lineColorLight = vec3(0.32, 0.64, 0.56);
 
-  /* Dark palette: navy → teal background, emerald lines (TICKSERA brand) */
-  const vec3 bgColor1Dark = vec3(0.04, 0.06, 0.09);
-  const vec3 bgColor2Dark = vec3(0.03, 0.08, 0.07);
-  const vec3 lineColorDark = vec3(0.06, 0.72, 0.50);
+  /* Dark palette — matches the app's slate-900 hero surface (#0f172a), easing to a
+     deep teal-navy on the right, with subdued emerald lines (TICKSERA brand) */
+  const vec3 bgColor1Dark = vec3(0.059, 0.090, 0.165);
+  const vec3 bgColor2Dark = vec3(0.043, 0.115, 0.118);
+  const vec3 lineColorDark = vec3(0.15, 0.55, 0.47);
 
   #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
   #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
@@ -115,7 +117,9 @@ const fsSource = `
     }
 
     fragColor  = vec4(mix(bgColor1, bgColor2, uv.x), 1.0);
-    fragColor.rgb *= verticalFade;
+    /* Soft vignette only in dark mode (edges melt into the navy); light mode stays
+       clean and even so the hero reads as a crisp light surface */
+    fragColor.rgb *= 1.0 - uDark * (1.0 - verticalFade);
     fragColor.a = 1.0;
     fragColor  += lines;
 
