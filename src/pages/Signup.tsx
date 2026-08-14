@@ -82,7 +82,7 @@ export default function Signup() {
 
       {/* ── Left panel ── */}
       <div className="hidden lg:flex lg:w-[42%] bg-slate-900 flex-col justify-between p-10 relative overflow-hidden flex-shrink-0">
-        <ShaderBackground forceDark />
+        <ShaderBackground />
 
         <Link to="/" className="flex items-center gap-3 relative z-10">
           <Logo size={36} />

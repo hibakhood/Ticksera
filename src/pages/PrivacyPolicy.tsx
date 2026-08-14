@@ -229,23 +229,23 @@ export default function PrivacyPolicy() {
     <div className="bg-white dark:bg-dark-bg min-h-screen">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-white dark:bg-slate-900">
+      <section className="relative overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-500" style={{ marginBottom: '1.5rem' }}>
-            <Link to="/" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Home</Link>
+          <div className="flex items-center gap-2 text-sm text-slate-500" style={{ marginBottom: '1.5rem' }}>
+            <Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 dark:text-slate-300">Privacy Policy</span>
+            <span className="text-slate-300">Privacy Policy</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
             <Shield className="w-3.5 h-3.5" />
             Privacy & Trust
           </div>
-          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
             Privacy <span className="text-gradient">Policy</span>
           </h1>
-          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
+          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
             TICKSERA Technologies Ltd ("TICKSERA", "we", "our", or "us") is committed to protecting your privacy. This policy explains what personal data we collect, how we use it, how we keep it safe, and your rights regarding your information when you use our platform and services.
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-8">
@@ -255,12 +255,12 @@ export default function PrivacyPolicy() {
               { icon: Ban,         label: 'No data sold' },
               { icon: Mail,        label: 'DPA available' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 dark:bg-white/10 dark:border-white/15 dark:text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
+                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
                 {t.label}
               </span>
             ))}
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-600 dark:bg-white/10 dark:border-white/15 dark:text-slate-300">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-300">
               Last updated June 9, 2026
             </span>
           </div>
@@ -364,18 +364,18 @@ export default function PrivacyPolicy() {
               </div>
 
               {/* End CTA */}
-              <div className="rounded-3xl bg-slate-50 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12 border border-slate-200 dark:border-slate-800" style={{ marginTop: '2.5rem' }}>
+              <div className="rounded-3xl bg-slate-900 dark:bg-slate-950 relative overflow-hidden text-center px-6 py-12 sm:px-12" style={{ marginTop: '2.5rem' }}>
                 <div className="absolute -top-24 -left-16 w-64 h-64 rounded-full bg-emerald-500/20 blur-3xl" aria-hidden />
                 <div className="absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-teal-500/15 blur-3xl" aria-hidden />
                 <div className="relative z-10">
-                  <h3 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Your data stays yours.</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
+                  <h3 className="font-heading text-white" style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Your data stays yours.</h3>
+                  <p className="text-sm text-slate-400 max-w-md mx-auto" style={{ marginBottom: '1.75rem' }}>
                     See how TICKSERA protects your information every day, or reach out with any question.
                   </p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                     <Link to="/docs"><Button size="lg">Read the Docs</Button></Link>
                     <Link to="/terms">
-                      <Button variant="ghost" size="lg" className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800">Terms of Service</Button>
+                      <Button variant="ghost" size="lg" className="text-slate-300 hover:text-white hover:bg-slate-800">Terms of Service</Button>
                     </Link>
                   </div>
                 </div>

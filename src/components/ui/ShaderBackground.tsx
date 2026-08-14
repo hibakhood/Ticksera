@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { useStore } from '../../store';
 
 interface ShaderBackgroundProps {
   className?: string;
-  forceDark?: boolean;
 }
 
 const vsSource = `
@@ -17,7 +15,6 @@ const fsSource = `
   precision highp float;
   uniform vec2 iResolution;
   uniform float iTime;
-  uniform float uDark; /* 1 = dark theme, 0 = light theme */
 
   const float overallSpeed = 0.2;
   const float gridSmoothWidth = 0.015;
@@ -41,15 +38,8 @@ const fsSource = `
   const float maxOffsetSpread = 2.0;
   const int linesPerGroup = 16;
 
-  /* Light palette: pale white → mist emerald background, emerald-600 lines */
-  const vec3 bgColor1Light = vec3(1.00, 1.00, 1.00);
-  const vec3 bgColor2Light = vec3(0.95, 0.98, 0.97);
-  const vec3 lineColorLight = vec3(0.04, 0.55, 0.39);
-
-  /* Dark palette: navy → teal background, emerald lines (TICKSERA brand) */
-  const vec3 bgColor1Dark = vec3(0.04, 0.06, 0.09);
-  const vec3 bgColor2Dark = vec3(0.03, 0.08, 0.07);
-  const vec3 lineColorDark = vec3(0.06, 0.72, 0.50);
+  /* TICKSERA brand: emerald-green lines on dark navy/slate background */
+  const vec4 lineColor = vec4(0.06, 0.72, 0.50, 1.0);
 
   #define drawCircle(pos, radius, coord) smoothstep(radius + gridSmoothWidth, radius, length(coord - (pos)))
   #define drawSmoothLine(pos, halfWidth, t) smoothstep(halfWidth, 0.0, abs(pos - (t)))
@@ -89,11 +79,10 @@ const fsSource = `
     space.y += random(space.x * warpFrequency + iTime * warpSpeed) * warpAmplitude * (0.5 + horizontalFade);
     space.x += random(space.y * warpFrequency + iTime * warpSpeed + 2.0) * warpAmplitude * horizontalFade;
 
-    vec3 bgColor1 = mix(bgColor1Light, bgColor1Dark, uDark);
-    vec3 bgColor2 = mix(bgColor2Light, bgColor2Dark, uDark);
-    vec3 lineColor = mix(lineColorLight, lineColorDark, uDark);
-
     vec4 lines = vec4(0.0);
+    /* Dark navy → dark teal gradient, matches TICKSERA's dark bg palette */
+    vec4 bgColor1 = vec4(0.04, 0.06, 0.09, 1.0);
+    vec4 bgColor2 = vec4(0.03, 0.08, 0.07, 1.0);
 
     for (int l = 0; l < linesPerGroup; l++) {
       float normalizedLineIndex = float(l) / float(linesPerGroup);
@@ -111,11 +100,11 @@ const fsSource = `
       float circle = drawCircle(circlePosition, 0.01, space) * 4.0;
 
       line = line + circle;
-      lines += line * vec4(lineColor, 1.0) * rand;
+      lines += line * lineColor * rand;
     }
 
-    fragColor  = vec4(mix(bgColor1, bgColor2, uv.x), 1.0);
-    fragColor.rgb *= verticalFade;
+    fragColor  = mix(bgColor1, bgColor2, uv.x);
+    fragColor *= verticalFade;
     fragColor.a = 1.0;
     fragColor  += lines;
 
@@ -148,15 +137,8 @@ function initShaderProgram(gl: WebGLRenderingContext): WebGLProgram | null {
   return prog;
 }
 
-export default function ShaderBackground({ className = 'absolute inset-0 w-full h-full', forceDark = false }: ShaderBackgroundProps) {
+export default function ShaderBackground({ className = 'absolute inset-0 w-full h-full' }: ShaderBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const storeDark = useStore(s => s.darkMode);
-  const dark = forceDark || storeDark;
-  const darkRef = useRef(dark);
-
-  useEffect(() => {
-    darkRef.current = dark;
-  }, [dark]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -179,7 +161,6 @@ export default function ShaderBackground({ className = 'absolute inset-0 w-full 
     const vertexLoc   = gl.getAttribLocation(program, 'aVertexPosition');
     const resolutionLoc = gl.getUniformLocation(program, 'iResolution');
     const timeLoc       = gl.getUniformLocation(program, 'iTime');
-    const darkLoc       = gl.getUniformLocation(program, 'uDark');
 
     const resizeCanvas = () => {
       canvas.width  = canvas.offsetWidth;
@@ -201,7 +182,6 @@ export default function ShaderBackground({ className = 'absolute inset-0 w-full 
       gl.useProgram(program);
       gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
       gl.uniform1f(timeLoc, t);
-      gl.uniform1f(darkLoc, darkRef.current ? 1.0 : 0.0);
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
       gl.vertexAttribPointer(vertexLoc, 2, gl.FLOAT, false, 0, 0);
       gl.enableVertexAttribArray(vertexLoc);

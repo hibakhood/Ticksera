@@ -135,7 +135,7 @@ export default function Landing() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-white dark:bg-slate-900">
+      <section className="relative overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
 
@@ -144,14 +144,14 @@ export default function Landing() {
 
             {/* Left: text content */}
             <div className="flex-shrink-0 lg:w-[46%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
                 <Zap className="w-3.5 h-3.5" /> Enterprise IT Support Platform
               </div>
-              <h1 className="font-heading text-slate-900 dark:text-white leading-[1.06] tracking-tight text-[clamp(2.125rem,5vw,3.75rem)] font-bold">
+              <h1 className="font-heading text-white leading-[1.06] tracking-tight text-[clamp(2.125rem,5vw,3.75rem)] font-bold">
                 Enterprise IT Support,<br />
                 <span className="text-gradient">Delivered in Minutes</span>
               </h1>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-xl mx-auto lg:mx-0">
+              <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-xl mx-auto lg:mx-0">
                 Streamline your IT operations with an enterprise-grade helpdesk, smart technician routing, and real-time SLA tracking, all in one platform.
               </p>
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mt-9">
@@ -166,7 +166,7 @@ export default function Landing() {
                   </Button>
                 </Link>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-500 mt-5 flex items-center justify-center lg:justify-start gap-1.5">
+              <p className="text-xs text-slate-500 mt-5 flex items-center justify-center lg:justify-start gap-1.5">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
                 No credit card required · Set up in 5 minutes
               </p>
@@ -205,13 +205,13 @@ export default function Landing() {
           </div>
 
           {/* Trusted-by strip */}
-          <div className="mt-10 lg:mt-14 pt-6 border-t border-slate-200 dark:border-slate-800">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-500 mb-6">
+          <div className="mt-10 lg:mt-14 pt-6 border-t border-slate-800">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-6">
               Trusted by 500+ support teams
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
               {trustedBy.map(name => (
-                <span key={name} className="font-heading text-lg font-bold text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 transition-colors">
+                <span key={name} className="font-heading text-lg font-bold text-slate-600 hover:text-slate-400 transition-colors">
                   {name}
                 </span>
               ))}
@@ -221,13 +221,13 @@ export default function Landing() {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800/60">
+      <section className="bg-slate-900 dark:bg-slate-950 border-t border-slate-800/60">
         <div className="s-sm s-inner max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10">
             {stats.map((s, i) => (
-              <div key={i} className={`text-center lg:py-2 ${i > 0 ? 'lg:border-l lg:border-slate-200 dark:lg:border-slate-800' : ''}`}>
+              <div key={i} className={`text-center lg:py-2 ${i > 0 ? 'lg:border-l lg:border-slate-800' : ''}`}>
                 <div className="font-heading font-bold leading-none text-[clamp(1.875rem,4vw,2.5rem)] text-gradient">{s.value}</div>
-                <div className="font-semibold text-slate-900 dark:text-white mt-2.5 text-sm">{s.label}</div>
+                <div className="font-semibold text-white mt-2.5 text-sm">{s.label}</div>
                 <div className="text-slate-500 mt-1 text-xs">{s.desc}</div>
               </div>
             ))}
@@ -345,7 +345,7 @@ export default function Landing() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="s-section bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
+      <section className="s-section bg-slate-900 dark:bg-slate-950 relative overflow-hidden">
         {/* Background glow blobs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -354,28 +354,28 @@ export default function Landing() {
 
         <div className="s-inner max-w-7xl mx-auto relative">
           <div className="s-header text-center">
-            <span className="inline-block text-xs font-semibold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-3">
+            <span className="inline-block text-xs font-semibold tracking-widest text-emerald-400 uppercase mb-3">
               The Process
             </span>
-            <h2 className="font-heading text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold">
+            <h2 className="font-heading text-white text-3xl sm:text-4xl font-bold">
               How TICKSERA Works
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
+            <p className="text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
               From your first click to a verified resolution: every step maps to a real TICKSERA feature, from AI self-service triage to live technician support.
             </p>
           </div>
 
           {/* Step grid: 3 cols × 2 rows */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-200 dark:bg-slate-800 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-800 rounded-2xl overflow-hidden border border-slate-800">
             {steps.map((s, i) => {
               const Icon = s.icon;
               const isLastInRow = (i + 1) % 3 === 0;
               return (
                 <div
                   key={i}
-                  className="relative bg-white dark:bg-slate-950 group hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors duration-300 p-8"
+                  className="relative bg-slate-900 dark:bg-slate-950 group hover:bg-slate-800/70 transition-colors duration-300 p-8"
                 >
-                  <div className="absolute top-4 right-5 font-heading font-black text-slate-100 dark:text-slate-700 select-none leading-none text-[3.5rem]">
+                  <div className="absolute top-4 right-5 font-heading font-black text-slate-800 dark:text-slate-700 select-none leading-none text-[3.5rem]">
                     {s.n}
                   </div>
 
@@ -389,16 +389,16 @@ export default function Landing() {
                     </span>
                   </div>
 
-                  <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2">
+                  <h3 className="font-heading font-bold text-white text-base mb-2">
                     {s.title}
                   </h3>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[0.8125rem]">
+                  <p className="text-slate-400 leading-relaxed text-[0.8125rem]">
                     {s.desc}
                   </p>
 
                   {!isLastInRow && (
-                    <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-slate-200 dark:bg-slate-700 dark:border-slate-600 items-center justify-center">
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-slate-700 border border-slate-600 items-center justify-center">
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
                     </div>
                   )}
                 </div>
@@ -412,7 +412,7 @@ export default function Landing() {
                 Start With the Wizard <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
-            <p className="text-slate-600 dark:text-slate-500 text-xs mt-3.5">
+            <p className="text-slate-500 text-xs mt-3.5">
               Starts at ₦5,000/month · No credit card · Set up in 5 minutes
             </p>
           </div>
@@ -505,19 +505,19 @@ export default function Landing() {
 
       {/* ── CTA ── */}
       <section className="s-sm s-inner max-w-4xl mx-auto">
-        <div className="relative bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden text-center border border-slate-200 dark:border-slate-800 px-6 sm:px-10 py-12 sm:py-16">
+        <div className="relative bg-slate-900 dark:bg-slate-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
           </div>
           <div className="relative">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold tracking-wide mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-6">
               <Zap className="w-3.5 h-3.5" /> Start in minutes
             </div>
-            <h2 className="font-heading text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold mb-4">
+            <h2 className="font-heading text-white text-3xl sm:text-4xl font-bold mb-4">
               Ready to Fix Your IT?
             </h2>
-            <p className="text-slate-600 dark:text-slate-400 text-[1.0625rem] max-w-xl mx-auto mb-10">
+            <p className="text-slate-400 text-[1.0625rem] max-w-xl mx-auto mb-10">
               Join thousands of businesses that trust TICKSERA to keep their technology running smoothly, with guaranteed SLA response times and smart technician routing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -527,7 +527,7 @@ export default function Landing() {
                 </Button>
               </Link>
               <Link to="/contact" className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800">
+                <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-400 hover:text-white hover:bg-slate-800">
                   Talk to Sales
                 </Button>
               </Link>
