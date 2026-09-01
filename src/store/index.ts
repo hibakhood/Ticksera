@@ -258,8 +258,11 @@ interface AppState {
 
   // Sidebar
   sidebarOpen: boolean;
+  sidebarMinimized: boolean;
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
+  toggleSidebarMinimize: () => void;
+  setSidebarMinimized: (minimized: boolean) => void;
 
   // Active sessions
   activeSessions: { id: string; device: string; browser: string; location: string; ip: string; lastActive: string; current: boolean }[];
@@ -1508,8 +1511,11 @@ export const useStore = create<AppState>()(
       })),
 
       sidebarOpen: false,
+      sidebarMinimized: false,
       toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      toggleSidebarMinimize: () => set(s => ({ sidebarMinimized: !s.sidebarMinimized })),
+      setSidebarMinimized: (minimized) => set({ sidebarMinimized: minimized }),
 
       activeSessions: [
         { id: 's1', device: 'MacBook Pro', browser: 'Chrome 124', location: 'Lagos, Nigeria', ip: '197.211.58.12', lastActive: new Date().toISOString(), current: true },

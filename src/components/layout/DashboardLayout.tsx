@@ -7,7 +7,7 @@ import {
   User, Menu, X, Sun, Moon, Bell,
   LogOut, ChevronDown, ChevronRight, CalendarCheck, CalendarDays, LayoutGrid,
   Building2, Layers, Users, Wrench, Sparkles, ScrollText, BarChart3, Inbox,
-  RefreshCw, AlertTriangle, Check
+  RefreshCw, AlertTriangle, Check, Minus
 } from 'lucide-react';
 import Logo from '../ui/Logo';
 import { hasActivePlanFor } from '../../utils/plans';
@@ -78,7 +78,7 @@ export default function DashboardLayout() {
   const {
     currentUser, darkMode, toggleDarkMode, logout,
     notifications, markNotifRead, markAllNotifsRead,
-    sidebarOpen, setSidebarOpen,
+    sidebarOpen, sidebarMinimized, setSidebarOpen, toggleSidebarMinimize,
     chatMessages, tickets, chatLastVisit, conversations,
     payments, users, syncStatus, lastSyncedAt,
   } = useStore(
@@ -86,7 +86,9 @@ export default function DashboardLayout() {
       currentUser: s.currentUser, darkMode: s.darkMode, toggleDarkMode: s.toggleDarkMode,
       logout: s.logout, notifications: s.notifications, markNotifRead: s.markNotifRead,
       markAllNotifsRead: s.markAllNotifsRead, sidebarOpen: s.sidebarOpen,
-      setSidebarOpen: s.setSidebarOpen, chatMessages: s.chatMessages,
+      sidebarMinimized: s.sidebarMinimized, setSidebarOpen: s.setSidebarOpen,
+      toggleSidebarMinimize: s.toggleSidebarMinimize, setSidebarMinimized: s.setSidebarMinimized,
+      chatMessages: s.chatMessages,
       tickets: s.tickets, chatLastVisit: s.chatLastVisit, conversations: s.conversations,
       payments: s.payments, users: s.users,
       syncStatus: s.syncStatus, lastSyncedAt: s.lastSyncedAt,
@@ -196,7 +198,7 @@ export default function DashboardLayout() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className={`fixed lg:sticky top-0 left-0 z-50 h-dvh w-64 bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
@@ -230,8 +232,8 @@ export default function DashboardLayout() {
                         : 'text-slate-400 hover:text-white hover:bg-slate-800'
                     }`}
                   >
-                    <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
-                    <span className="flex-1">{item.label}</span>
+<item.icon className="w-4.5 h-4.5 flex-shrink-0" />
+{!sidebarMinimized && <span className="flex-1">{item.label}</span>}
                     {item.to === '/chat' && unreadChatCount > 0 && !active && (
                       <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                         {unreadChatCount > 99 ? '99+' : unreadChatCount}
@@ -266,14 +268,20 @@ export default function DashboardLayout() {
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
         {/* Top header */}
-        <header className="sticky top-0 z-30 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center px-5 lg:px-7 gap-4">
+<header className="sticky top-0 z-30 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center px-5 lg:px-7 gap-4">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
           >
             <Menu className="w-5 h-5" />
           </button>
-
+          <button
+            onClick={() => toggleSidebarMinimize()}
+            className="lg:block min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+            aria-label="Minimize sidebar"
+          >
+            {sidebarMinimized ? <ChevronRight className="w-4.5 h-4.5" /> : <Minus className="w-4.5 h-4.5" />}
+          </button>
           <div className="hidden lg:flex items-center gap-1.5">
             <span className="text-xs text-slate-400">TICKSERA</span>
             <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
