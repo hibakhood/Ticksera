@@ -234,6 +234,7 @@ interface AppState {
   // Sync health
   syncStatus: 'idle' | 'syncing' | 'error';
   lastSyncedAt: string | null;
+  lastSyncError: string | null;
 
   // Knowledge Base
   kbArticles: KBArticle[];
@@ -817,6 +818,7 @@ export const useStore = create<AppState>()(
       recoveryMode: false,
       syncStatus: 'idle' as const,
       lastSyncedAt: null,
+      lastSyncError: null,
       loadSharedData: async () => {
         if (!isSupabaseConfigured()) return;
         set({ syncStatus: 'syncing' });
@@ -863,7 +865,7 @@ export const useStore = create<AppState>()(
           } finally {
             syncing = false;
           }
-          set({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+          set({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString(), lastSyncError: null });
         } catch {
           set({ syncStatus: 'error' });
         }
@@ -1640,14 +1642,23 @@ async function persistShared(): Promise<void> {
     const second = await saveSharedState(buildSharedState(useStore.getState()), lastSharedVersion);
     if (second.ok && typeof second.version === 'number') {
       lastSharedVersion = second.version;
-      useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+      useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString(), lastSyncError: null });
     }
     return;
   }
   if (first.ok && typeof first.version === 'number') {
     lastSharedVersion = first.version;
-    useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString() });
+    useStore.setState({ syncStatus: 'idle', lastSyncedAt: new Date().toISOString(), lastSyncError: null });
+    return;
   }
+  if (first.code === 'not_configured') {
+    useStore.setState({
+      syncStatus: 'error',
+      lastSyncError: 'Backend sync is not configured. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to the server environment.',
+    });
+    return;
+  }
+  useStore.setState({ syncStatus: 'error', lastSyncError: 'Sync to the shared store failed. Changes may not reach other users.' });
 }
 
 useStore.subscribe((s, prev) => {

@@ -43,6 +43,7 @@ export interface SharedStateSaveResult {
   ok: boolean;
   conflict: boolean;
   version?: number | null;
+  code?: string;
 }
 
 async function sessionToken(): Promise<string | null> {
@@ -90,7 +91,8 @@ export async function saveSharedState(data: SharedState, baseVersion?: number | 
     if (res.status === 409) return { ok: false, conflict: true, version: null };
     if (!res.ok) {
       console.warn('shared state save failed:', res.status);
-      return { ok: false, conflict: false };
+      const serverError = (await res.json().catch(() => null)) as { error?: string } | null;
+      return { ok: false, conflict: false, code: serverError?.error ?? 'unknown' };
     }
     const out = (await res.json()) as { ok?: boolean; version?: number | null };
     return { ok: out.ok === true, conflict: false, version: out.version ?? null };

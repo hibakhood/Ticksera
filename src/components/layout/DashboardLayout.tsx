@@ -80,7 +80,7 @@ export default function DashboardLayout() {
     notifications, markNotifRead, markAllNotifsRead,
     sidebarOpen, sidebarMinimized, setSidebarOpen, toggleSidebarMinimize,
     chatMessages, tickets, chatLastVisit, conversations,
-    payments, users, syncStatus, lastSyncedAt,
+    payments, users, syncStatus, lastSyncedAt, lastSyncError,
   } = useStore(
     useShallow(s => ({
       currentUser: s.currentUser, darkMode: s.darkMode, toggleDarkMode: s.toggleDarkMode,
@@ -91,7 +91,7 @@ export default function DashboardLayout() {
       chatMessages: s.chatMessages,
       tickets: s.tickets, chatLastVisit: s.chatLastVisit, conversations: s.conversations,
       payments: s.payments, users: s.users,
-      syncStatus: s.syncStatus, lastSyncedAt: s.lastSyncedAt,
+      syncStatus: s.syncStatus, lastSyncedAt: s.lastSyncedAt, lastSyncError: s.lastSyncError,
     }))
   );
   const location = useLocation();
@@ -303,7 +303,10 @@ export default function DashboardLayout() {
                 </span>
               )}
               {syncStatus === 'error' && (
-                <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10">
+                <span
+                  className="flex items-center gap-1.5 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10"
+                  title={lastSyncError ?? 'Sync error'}
+                >
                   <AlertTriangle className="w-3 h-3" /> Sync error
                 </span>
               )}
