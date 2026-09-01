@@ -478,15 +478,32 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     if (mode === 'triage') completed = step + 1 >= getTriageFlow(ticket.category).questions.length;
   }
 
+  // The status the BOT may move the ticket to. In recovery mode it's decided in
+  // the branch below; in chat mode the AI (or deterministic signals) decide.
+  let suggestedStatus: AgentStatus | undefined;
+
   // Recovery mode: the knowledge-base fix already failed. The AI gets one solid
   // attempt to reason through the best alternative solution; if it can't help
   // (or the live AI is unavailable), hand off to a technician instead of
   // looping the customer back through more self-service.
   if (mode === 'recovery') {
     setBotTyping(ticketId, false);
-    if (!aiReplyAvailable || aiEscalate) {
-      useStore.getState().requestTechnician(ticketId, `${BOT_NAME} exhausted self-service options: "${answer.trim()}"`);
-      return;
+    if (aiReplyAvailable && aiStatus && (aiStatus === 'resolved' || aiStatus === 'closed') && AI_STATUSES.has(aiStatus)) {
+      suggestedStatus = aiStatus;
+    } else if (!aiReplyAvailable || aiEscalate) {
+      // Degraded mode: before blindly handing off, honor an explicit resolved or
+      // close signal so the BOT can still close the loop itself. Only route to a
+      // technician on real dissatisfaction instead of an unconditional hand-off.
+      const deterministic = inferSuggestedStatus(answer);
+      if (deterministic === 'resolved' || deterministic === 'closed') {
+        suggestedStatus = deterministic;
+        reply = deterministic === 'resolved'
+          ? "That's great to hear. Your issue is now resolved and your ticket has been marked accordingly. If you ever need help again, just create a new ticket. Take care!"
+          : "Got it, I've closed your ticket. If you need help again, just create a new ticket. Take care!";
+      } else {
+        useStore.getState().requestTechnician(ticketId, `${BOT_NAME} exhausted self-service options: "${answer.trim()}"`);
+        return;
+      }
     }
   }
 
@@ -494,8 +511,6 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
     reply = `${reply}\n\n**Did these steps resolve your issue?**\nIf not, tap **"Not Resolved: Request Technician"** below and a specialist will take over immediately. If it's fixed, tap **"Issue Fixed: No Need"** and we'll close the ticket.`;
   }
 
-  // The AI determines which status the ticket should move to.
-  let suggestedStatus: AgentStatus | undefined;
   if (mode === 'chat') {
     suggestedStatus = aiStatus && AI_STATUSES.has(aiStatus) ? aiStatus : inferSuggestedStatus(answer);
   }
@@ -510,7 +525,7 @@ async function runAgentTurn(ticketId: string, step: number, answer: string, mode
             triageStatus: completed ? ('needs_technician' as const) : t.triageStatus,
             updatedAt: now,
           }
-        : t.id === ticketId && mode === 'chat' && suggestedStatus && suggestedStatus !== t.status
+        : t.id === ticketId && (mode === 'chat' || mode === 'recovery') && suggestedStatus && suggestedStatus !== t.status
           ? {
               ...t,
               status: suggestedStatus,
