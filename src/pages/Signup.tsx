@@ -70,7 +70,7 @@ export default function Signup() {
       setRegistered(true);
       setLoading(false);
     } else if (result.ok) {
-      navigate('/billing');
+      navigate('/dashboard');
     } else {
       setError(result.error ?? 'Sign-up failed. Please try again.');
       setLoading(false);

@@ -1,8 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { useStore } from './store';
-import { useShallow } from 'zustand/react/shallow';
-import { hasActivePlan, hasActivePlanFor } from './utils/plans';
 
 // Layouts
 import PublicNavbar from './components/layout/PublicNavbar';
@@ -22,7 +20,6 @@ const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService= lazy(() => import('./pages/TermsOfService'));
 const Login         = lazy(() => import('./pages/Login'));
 const Signup        = lazy(() => import('./pages/Signup'));
-const Billing       = lazy(() => import('./pages/Billing'));
 
 // ─── Lazy-loaded Dashboard Pages ─────────────────────────────────────────────
 const Dashboard     = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -41,8 +38,6 @@ const PlanSettings  = lazy(() => import('./pages/dashboard/PlanSettings'));
 const Customers     = lazy(() => import('./pages/dashboard/Customers'));
 const Assistant     = lazy(() => import('./pages/dashboard/Assistant'));
 
-const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
-
 function PublicLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-dark-bg">
@@ -56,47 +51,17 @@ function PublicLayout() {
 }
 
 function ProtectedRoute() {
-  const { currentUser, payments, users } = useStore(
-    useShallow(s => ({ currentUser: s.currentUser, payments: s.payments, users: s.users }))
-  );
+  const currentUser = useStore(s => s.currentUser);
 
   if (!currentUser) return <Navigate to="/login" replace />;
-
-  const isStaff = STAFF_ROLES.includes(currentUser.role);
-  if (!isStaff) {
-    if (currentUser.orgOwnerEmail) {
-      const owner = users.find(u => u.email === currentUser.orgOwnerEmail);
-      const ownerHasEnterprise = owner
-        ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
-        : false;
-      if (!ownerHasEnterprise) return <Navigate to="/billing" replace />;
-    } else {
-      if (!hasActivePlan(payments, currentUser.id)) return <Navigate to="/billing" replace />;
-    }
-  }
 
   return <DashboardLayout />;
 }
 
 function BillingRoute() {
-  const { currentUser, payments, users } = useStore(
-    useShallow(s => ({ currentUser: s.currentUser, payments: s.payments, users: s.users }))
-  );
+  const currentUser = useStore(s => s.currentUser);
   if (!currentUser) return <Navigate to="/login" replace />;
-  if (STAFF_ROLES.includes(currentUser.role)) return <Navigate to="/dashboard" replace />;
-  if (currentUser.orgOwnerEmail) {
-    const owner = users.find(u => u.email === currentUser.orgOwnerEmail);
-    const ownerHasEnterprise = owner
-      ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
-      : false;
-    if (ownerHasEnterprise) return <Navigate to="/dashboard" replace />;
-  }
-  if (hasActivePlan(payments, currentUser.id)) return <Navigate to="/dashboard" replace />;
-  return (
-    <Suspense fallback={<PageLoader />}>
-      <Billing />
-    </Suspense>
-  );
+  return <Navigate to="/dashboard" replace />;
 }
 
 function ThemeWrapper({ children }: { children: React.ReactNode }) {

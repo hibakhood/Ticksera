@@ -7,9 +7,6 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Logo from '../components/ui/Logo';
 import ShaderBackground from '../components/ui/ShaderBackground';
-import { hasActivePlan, hasActivePlanFor } from '../utils/plans';
-
-const STAFF_ROLES = ['super_admin', 'support_manager', 'technician', 'field_technician'];
 
 type AuthMode = 'signin' | 'forgot' | 'reset' | 'done' | 'mfa';
 
@@ -41,21 +38,7 @@ export default function Login() {
     }
   }, [recoveryMode]);
 
-  const getDestination = (userId: string, role: string) => {
-    if (STAFF_ROLES.includes(role)) return '/dashboard';
-    const { payments, users } = useStore.getState();
-    const user = users.find(u => u.id === userId);
-    // Company member: check if org owner has active Enterprise plan
-    if (user?.orgOwnerEmail) {
-      const owner = users.find(u => u.email === user.orgOwnerEmail);
-      const ownerHasEnterprise = owner
-        ? hasActivePlanFor(payments, owner.id, ['Enterprise'])
-        : false;
-      return ownerHasEnterprise ? '/dashboard' : '/billing';
-    }
-    // Regular customer: needs their own active plan
-    return hasActivePlan(payments, userId) ? '/dashboard' : '/billing';
-  };
+  const getDestination = () => '/dashboard';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +51,7 @@ export default function Login() {
         const { currentUser } = useStore.getState();
         if (remember) localStorage.setItem('ticksera_remember_email', email.trim().toLowerCase());
         else localStorage.removeItem('ticksera_remember_email');
-        navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
+        navigate(currentUser ? getDestination() : '/dashboard');
       } else if (res.mfaRequired) {
         setMode('mfa');
         setError('');
@@ -92,7 +75,7 @@ export default function Login() {
     if (ok.ok && user) {
       if (remember) localStorage.setItem('ticksera_remember_email', normalized);
       else localStorage.removeItem('ticksera_remember_email');
-      navigate(getDestination(user.id, user.role));
+      navigate(getDestination());
     } else if (!user) {
       setError('No account found with that email address.');
       setLoading(false);
@@ -182,7 +165,7 @@ export default function Login() {
     setLoading(false);
     if (ok) {
       const { currentUser } = useStore.getState();
-      navigate(currentUser ? getDestination(currentUser.id, currentUser.role) : '/dashboard');
+      navigate(currentUser ? getDestination() : '/dashboard');
     } else {
       setError('That code did not verify. Try again.');
     }
