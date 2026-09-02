@@ -1658,7 +1658,7 @@ async function persistShared(): Promise<void> {
     });
     return;
   }
-  useStore.setState({ syncStatus: 'error', lastSyncError: 'Sync to the shared store failed. Changes may not reach other users.' });
+  useStore.setState({ syncStatus: 'error', lastSyncError: `Sync to the shared store failed (${first.code ?? 'unknown'}). Changes may not reach other users.` });
 }
 
 useStore.subscribe((s, prev) => {

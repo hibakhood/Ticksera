@@ -98,6 +98,6 @@ export async function saveSharedState(data: SharedState, baseVersion?: number | 
     return { ok: out.ok === true, conflict: false, version: out.version ?? null };
   } catch (e) {
     console.warn('shared state save failed:', e);
-    return { ok: false, conflict: false };
+    return { ok: false, conflict: false, code: 'network' };
   }
 }
