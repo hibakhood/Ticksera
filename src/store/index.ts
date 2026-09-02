@@ -230,6 +230,8 @@ interface AppState {
   addPayment: (payment: Omit<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'> & Partial<Pick<Payment, 'id' | 'createdAt' | 'reference' | 'transactionId'>>) => void;
   updatePayment: (id: string, data: Partial<Payment>) => void;
   changePlan: (userId: string, plan: string, amount: number) => void;
+  /** Persist a manager's plan change through the dedicated server endpoint and mirror it locally. */
+  adminChangePlan: (userId: string, plan: string, amount: number) => Promise<void>;
 
   // Sync health
   syncStatus: 'idle' | 'syncing' | 'error';
@@ -1497,6 +1499,30 @@ export const useStore = create<AppState>()(
             createdAt: new Date().toISOString(),
           }] : s.notifications,
         }));
+      },
+
+      adminChangePlan: async (userId, plan, amount) => {
+        if (!isSupabaseConfigured()) {
+          get().changePlan(userId, plan, amount);
+          return;
+        }
+        let token: string | null = null;
+        try {
+          const { data } = await getSupabase().auth.getSession();
+          token = data.session?.access_token ?? null;
+        } catch { /* fall through */ }
+        if (!token) throw new Error('Your session has expired. Sign out and sign back in.');
+        const res = await fetch('/api/billing/change-plan', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+          body: JSON.stringify({ userId, plan, amount }),
+        });
+        const out = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+        if (!res.ok || !out?.ok) {
+          if (out?.error) throw new Error(out.error);
+          throw new Error(`change_plan_failed (${res.status})`);
+        }
+        get().changePlan(userId, plan, amount);
       },
 
       kbArticles: seedKB,

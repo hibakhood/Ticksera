@@ -160,6 +160,48 @@ export async function isStaff(
   return (await getStaffRole(supabaseUrl, serviceKey, user)) !== null;
 }
 
+export async function readSharedRow(
+  supabaseUrl: string,
+  serviceKey: string
+): Promise<{ data?: Record<string, unknown>; version?: number } | null> {
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}&select=data,version`, {
+      headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
+    });
+    if (!res.ok) return null;
+    const rows = (await res.json()) as { data?: Record<string, unknown>; version?: number }[];
+    return rows.length ? rows[0] : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The shared row must exist for the optimistic-lock RPC to lock/update it
+ * (migration 0008 returns ok=false when it cannot find the row). Restored or
+ * freshly-provisioned databases can lose the seed row (migration 0003), which
+ * makes every write silently fail while reads still return an empty object.
+ * Re-create it here so the server-side gateways stay self-healing.
+ */
+export async function ensureSharedRow(supabaseUrl: string, serviceKey: string): Promise<void> {
+  if (await readSharedRow(supabaseUrl, serviceKey)) return;
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/user_data`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
+        'content-type': 'application/json',
+        prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ user_id: GLOBAL_STATE_ID, data: {}, version: 0 }),
+    });
+    if (!res.ok) logEvent('shared_row_seed_failed', { status: res.status });
+  } catch (e) {
+    logEvent('shared_row_seed_error', { msg: String((e as Error).message ?? e) });
+  }
+}
+
 /**
  * Atomically append a payment to the shared state row using the
  * version-gated SECURITY DEFINER RPC (migration 0008). Dedupes by reference.

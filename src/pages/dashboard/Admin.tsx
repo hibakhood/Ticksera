@@ -144,7 +144,7 @@ export default function Admin() {
   const {
     currentUser, tickets, users, updateUser, deleteUser, addUser,
     payments, contactMessages, markContactRead, updateTicket, bookings, updateBooking,
-    changePlan,
+    adminChangePlan,
   } = useStore();
   const [activeTab, setActiveTab]     = useState('overview');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -286,16 +286,19 @@ export default function Admin() {
     })
     .sort((a, b) => new Date(b.user.createdAt).getTime() - new Date(a.user.createdAt).getTime());
 
-  const applyPlanChange = () => {
+  const applyPlanChange = async () => {
     if (!planTarget) return;
     setApplying(true);
-    setTimeout(() => {
-      changePlan(planTarget.user.id, newPlan, planPrices[newPlan] ?? 0);
+    try {
+      await adminChangePlan(planTarget.user.id, newPlan, planPrices[newPlan] ?? 0);
       setChangeMsg(`Subscription updated for ${planTarget.user.name.split(' ')[0]} → ${newPlan}`);
-      setApplying(false);
       setPlanTarget(null);
-      setTimeout(() => setChangeMsg(''), 4000);
-    }, 600);
+    } catch (err) {
+      setChangeMsg(`Failed to update plan: ${err instanceof Error ? err.message : 'unknown error'}`);
+    } finally {
+      setApplying(false);
+    }
+    setTimeout(() => setChangeMsg(''), 4000);
   };
 
   const filteredPayments = [...payments]

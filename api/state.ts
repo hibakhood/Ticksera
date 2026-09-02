@@ -26,7 +26,7 @@
 
 export const config = { runtime: 'edge', maxDuration: 30 };
 
-import { GLOBAL_STATE_ID, json, rateLimit, rateLimitDb, getAuthedUser, getStaffRole, isManagerRole, writeAudit, logEvent } from './_shared';
+import { json, rateLimit, rateLimitDb, getAuthedUser, getStaffRole, isManagerRole, writeAudit, ensureSharedRow, readSharedRow } from './_shared';
 
 const COLLECTIONS = ['tickets', 'chatMessages', 'conversations', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'] as const;
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -34,47 +34,9 @@ const BOT_EMAIL = 'bot@ticksera.com';
 
 type Row = Record<string, unknown>;
 
-interface SharedRow { data?: Row; version?: number }
-
-async function readSharedRow(supabaseUrl: string, serviceKey: string): Promise<SharedRow | null> {
-  try {
-    const res = await fetch(`${supabaseUrl}/rest/v1/user_data?user_id=eq.${GLOBAL_STATE_ID}&select=data,version`, {
-      headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}` },
-    });
-    if (!res.ok) return null;
-    const rows = (await res.json()) as SharedRow[];
-    return rows.length ? rows[0] : null;
-  } catch {
-    return null;
-  }
-}
-
 /**
- * The shared row must exist for the optimistic-lock RPC to lock/update it
- * (migration 0008 returns ok=false when it cannot find the row). Restored or
- * freshly-provisioned databases can lose the seed row (migration 0003), which
- * makes every write silently fail while reads still return an empty object.
- * Re-create it here so the gateway stays self-healing.
+ * The optimistic-lock RPC can't insert the row; make sure it exists first.
  */
-async function ensureSharedRow(supabaseUrl: string, serviceKey: string): Promise<void> {
-  if (await readSharedRow(supabaseUrl, serviceKey)) return;
-  try {
-    const res = await fetch(`${supabaseUrl}/rest/v1/user_data`, {
-      method: 'POST',
-      headers: {
-        apikey: serviceKey,
-        authorization: `Bearer ${serviceKey}`,
-        'content-type': 'application/json',
-        prefer: 'resolution=merge-duplicates,return=minimal',
-      },
-      body: JSON.stringify({ user_id: GLOBAL_STATE_ID, data: {}, version: 0 }),
-    });
-    // A concurrent writer may have inserted it first; that is fine.
-    if (!res.ok) logEvent('shared_row_seed_failed', { status: res.status });
-  } catch (e) {
-    logEvent('shared_row_seed_error', { msg: String((e as Error).message ?? e) });
-  }
-}
 
 /**
  * Atomically apply a merge to the shared row. `baseVersion` is the version the
