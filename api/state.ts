@@ -26,7 +26,7 @@
 
 export const config = { runtime: 'edge', maxDuration: 30 };
 
-import { GLOBAL_STATE_ID, json, rateLimit, rateLimitDb, getAuthedUser, getStaffRole, isManagerRole, writeAudit } from './_shared';
+import { GLOBAL_STATE_ID, json, rateLimit, rateLimitDb, getAuthedUser, getStaffRole, isManagerRole, writeAudit, logEvent } from './_shared';
 
 const COLLECTIONS = ['tickets', 'chatMessages', 'conversations', 'bookings', 'payments', 'users', 'contactMessages', 'notifications', 'kbArticles'] as const;
 const MAX_BODY_BYTES = 1024 * 1024;
@@ -46,6 +46,33 @@ async function readSharedRow(supabaseUrl: string, serviceKey: string): Promise<S
     return rows.length ? rows[0] : null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * The shared row must exist for the optimistic-lock RPC to lock/update it
+ * (migration 0008 returns ok=false when it cannot find the row). Restored or
+ * freshly-provisioned databases can lose the seed row (migration 0003), which
+ * makes every write silently fail while reads still return an empty object.
+ * Re-create it here so the gateway stays self-healing.
+ */
+async function ensureSharedRow(supabaseUrl: string, serviceKey: string): Promise<void> {
+  if (await readSharedRow(supabaseUrl, serviceKey)) return;
+  try {
+    const res = await fetch(`${supabaseUrl}/rest/v1/user_data`, {
+      method: 'POST',
+      headers: {
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
+        'content-type': 'application/json',
+        prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify({ user_id: GLOBAL_STATE_ID, data: {}, version: 0 }),
+    });
+    // A concurrent writer may have inserted it first; that is fine.
+    if (!res.ok) logEvent('shared_row_seed_failed', { status: res.status });
+  } catch (e) {
+    logEvent('shared_row_seed_error', { msg: String((e as Error).message ?? e) });
   }
 }
 
@@ -361,6 +388,7 @@ export default async function handler(req: Request): Promise<Response> {
   const staffRole = await getStaffRole(supabaseUrl, serviceKey, user);
 
   if (req.method === 'GET') {
+    await ensureSharedRow(supabaseUrl, serviceKey);
     const row = await readSharedRow(supabaseUrl, serviceKey);
     const data = row?.data ?? {};
     const view = staffRole ? filterForStaff(data, staffRole, user) : filterForCustomer(data, user);
@@ -427,8 +455,19 @@ export default async function handler(req: Request): Promise<Response> {
     } else {
       merged = mergeCollections(currentData, incoming, allowForUser(user), (col, rec) => sanitizeForUser(col, rec, user));
     }
+    // The optimistic-lock RPC can't insert the row; make sure it exists first.
+    await ensureSharedRow(supabaseUrl, serviceKey);
     const result = await applySharedRow(supabaseUrl, serviceKey, merged, baseVersion);
     if (result.conflict) {
+      if (result.version == null) {
+        // The row was missing (restore dropped the seed) and a prior seed is
+        // already committed; retry the write against the fresh row so the
+        // caller does not loop forever on a phantom conflict.
+        await ensureSharedRow(supabaseUrl, serviceKey);
+        const fresh = await readSharedRow(supabaseUrl, serviceKey);
+        const retry = await applySharedRow(supabaseUrl, serviceKey, merged, fresh?.version ?? null);
+        if (retry.ok) return json({ ok: true, version: retry.version });
+      }
       return json({ error: 'conflict', version: result.version, data: result.data }, 409);
     }
     return result.ok ? json({ ok: true, version: result.version }) : json({ ok: false, error: 'write_failed' }, 500);
