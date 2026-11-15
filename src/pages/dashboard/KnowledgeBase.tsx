@@ -97,7 +97,7 @@ export default function KnowledgeBase() {
       {/* Search */}
       <div className="relative">
         <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input type="text" placeholder="Search articles..." value={search} onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder="Search articles…" value={search} onChange={e => setSearch(e.target.value)}
           className="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-card text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>

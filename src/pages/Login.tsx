@@ -188,7 +188,7 @@ export default function Login() {
     <div className="min-h-screen flex bg-slate-50 dark:bg-dark-bg">
 
       {/* ── Left panel ── */}
-      <div className="hidden lg:flex lg:w-[42%] bg-slate-900 flex-col justify-between p-10 relative overflow-hidden flex-shrink-0">
+      <div className="hidden lg:flex lg:w-[42%] bg-gradient-to-b from-brand-950 to-brand-900 flex-col justify-between p-10 relative overflow-hidden flex-shrink-0">
         <ShaderBackground />
 
         <Link to="/" className="flex items-center gap-3 relative z-10">
@@ -228,7 +228,7 @@ export default function Login() {
           <div className="flex items-center gap-3 p-4 bg-slate-800/50 rounded-2xl border border-slate-700/50">
             <div className="flex -space-x-2">
               {['O', 'A', 'C', 'N'].map((l, i) => (
-                <div key={i} className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold ring-2 ring-slate-900">
+                <div key={i} className="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold ring-2 ring-brand-900">
                   {l}
                 </div>
               ))}

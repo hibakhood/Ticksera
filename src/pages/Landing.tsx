@@ -5,7 +5,7 @@ import {
   Monitor, Wifi, Printer, Camera, Server, Globe, Star, ChevronRight,
   Hotel, GraduationCap, HeartPulse, Truck, Factory, Home, Landmark, Store,
   Route,
-  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck,
+  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck, Plus,
   Bot, Timer, Wrench
 } from 'lucide-react';
 import { useStore } from '../store';
@@ -110,7 +110,7 @@ const plans = [
 
 function SectionLabel({ children }: { children: string }) {
   return (
-    <span className="inline-block text-xs font-semibold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-3">
+    <span className="inline-block text-xs font-semibold tracking-widest text-brand-600 dark:text-brand-400 uppercase mb-3">
       {children}
     </span>
   );
@@ -135,7 +135,7 @@ export default function Landing() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-slate-900">
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
 
@@ -144,7 +144,7 @@ export default function Landing() {
 
             {/* Left: text content */}
             <div className="flex-shrink-0 lg:w-[46%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-brand-200 text-xs font-semibold tracking-wide mb-8">
                 <Zap className="w-3.5 h-3.5" /> Enterprise IT Support Platform
               </div>
               <h1 className="font-heading text-white leading-[1.06] tracking-tight text-[clamp(2.125rem,5vw,3.75rem)] font-bold">
@@ -161,7 +161,7 @@ export default function Landing() {
                   </Button>
                 </Link>
                 <Link to="/services" className="w-full sm:w-auto">
-                  <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                  <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-300 hover:text-white">
                     View Services <ChevronRight className="w-4 h-4" />
                   </Button>
                 </Link>
@@ -182,12 +182,93 @@ export default function Landing() {
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                   <span className="text-xs text-slate-400 dark:text-slate-500 font-mono ml-2.5 truncate">app.ticksera.io/dashboard</span>
                 </div>
-                <img
-                  src="/dashboard-preview.png"
-                  alt="TICKSERA Dashboard Preview"
-                  className="w-full block"
-                  loading="eager"
-                />
+                {/* Live themed dashboard mockup (replaces stale FIXORA screenshot) */}
+                <div className="aspect-[16/9] bg-white dark:bg-dark-card flex overflow-hidden select-none pointer-events-none" aria-hidden="true">
+                  {/* Sidebar */}
+                  <div className="w-[25%] bg-gradient-to-b from-brand-900 to-brand-950 p-[3.5%] flex flex-col min-w-0">
+                    <div className="flex items-center gap-1.5 mb-[7%]">
+                      <div className="w-[14px] h-[14px] rounded-[4px] bg-brand-500 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="w-[9px] h-[9px] text-white" />
+                      </div>
+                      <span className="text-[9px] font-bold text-white tracking-tight truncate">TICKSERA</span>
+                    </div>
+                    <div className="space-y-[5px]">
+                      {['Dashboard', 'All Tickets', 'Live Chat', 'Knowledge Base', 'Calendar'].map((item, i) => (
+                        <div
+                          key={item}
+                          className={`flex items-center gap-1.5 rounded-md px-1.5 py-[4px] ${
+                            i === 0 ? 'bg-brand-500 text-white' : 'text-brand-100/50'
+                          }`}
+                        >
+                          <span className={`w-[5px] h-[5px] rounded-sm flex-shrink-0 ${i === 0 ? 'bg-white/80' : 'bg-brand-300/40'}`} />
+                          <span className="text-[8px] font-medium truncate">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-auto flex items-center gap-1.5">
+                      <div className="w-[12px] h-[12px] rounded-full bg-brand-500 flex items-center justify-center text-[7px] font-bold text-white flex-shrink-0">D</div>
+                      <div className="min-w-0">
+                        <div className="text-[7px] font-semibold text-white leading-none truncate">David</div>
+                        <div className="text-[6px] text-brand-200/50 leading-none mt-[2px]">Customer</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main panel */}
+                  <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-dark-bg">
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-[4%] h-[11%] bg-white dark:bg-dark-card border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-1 text-[7px] min-w-0">
+                        <span className="text-slate-400">TICKSERA</span>
+                        <ChevronRight className="w-[6px] h-[6px] text-slate-300" />
+                        <span className="font-semibold text-slate-900 dark:text-white">Dashboard</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-[10px] h-[10px] rounded-full bg-slate-100 dark:bg-slate-800" />
+                        <div className="w-[10px] h-[10px] rounded-full bg-slate-100 dark:bg-slate-800" />
+                        <div className="w-[14px] h-[14px] rounded-full bg-brand-500 flex items-center justify-center text-[7px] font-bold text-white">D</div>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 px-[4%] py-[3%] min-w-0">
+                      <div className="flex items-center justify-between mb-[3.5%]">
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight truncate">Good afternoon, David 👋</div>
+                          <div className="text-[7px] text-slate-400 mt-[2px]">Here's a summary of your support activity.</div>
+                        </div>
+                        <div className="flex items-center gap-1 rounded-md bg-brand-500 text-white text-[7px] font-semibold px-2 py-[4px] flex-shrink-0">
+                          <Plus className="w-[6px] h-[6px]" /> New Ticket
+                        </div>
+                      </div>
+
+                      {/* Stat cards */}
+                      <div className="grid grid-cols-4 gap-[2.5%] mb-[3.5%]">
+                        {[
+                          { label: 'My Tickets', value: '12', grad: 'from-blue-500 to-indigo-600' },
+                          { label: 'Open', value: '3', grad: 'from-amber-500 to-orange-600' },
+                          { label: 'Resolved', value: '8', grad: 'from-brand-500 to-teal-600' },
+                          { label: 'Bookings', value: '2', grad: 'from-violet-500 to-purple-600' },
+                        ].map(s => (
+                          <div key={s.label} className="bg-white dark:bg-dark-card rounded-lg border border-slate-100 dark:border-slate-800 p-[6px] min-w-0">
+                            <div className={`w-[10px] h-[10px] rounded bg-gradient-to-br ${s.grad} mb-[4px]`} />
+                            <div className="text-[9px] font-bold text-slate-900 dark:text-white leading-none">{s.value}</div>
+                            <div className="text-[6px] text-slate-400 mt-[2px] truncate">{s.label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Chart card */}
+                      <div className="bg-white dark:bg-dark-card rounded-lg border border-slate-100 dark:border-slate-800 p-[2.5%] h-[46%]">
+                        <div className="flex items-end justify-between gap-[3%] h-[78%] px-[2%]">
+                          {[42, 68, 35, 80, 55, 92, 60].map((h, i) => (
+                            <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-brand-300 to-brand-500" style={{ height: `${h}%`, opacity: i === 5 ? 1 : 0.35 }} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Floating SLA chip */}
@@ -221,7 +302,7 @@ export default function Landing() {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-slate-900 dark:bg-slate-950 border-t border-slate-800/60">
+      <section className="bg-gradient-to-b from-brand-950 to-brand-900 dark:from-brand-950 dark:to-brand-950 border-t border-brand-800/50">
         <div className="s-sm s-inner max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10">
             {stats.map((s, i) => (
@@ -345,7 +426,7 @@ export default function Landing() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="s-section bg-slate-900 dark:bg-slate-950 relative overflow-hidden">
+      <section className="s-section bg-gradient-to-b from-brand-950 to-brand-900 dark:from-brand-950 dark:to-brand-950 relative overflow-hidden">
         {/* Background glow blobs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -373,7 +454,7 @@ export default function Landing() {
               return (
                 <div
                   key={i}
-                  className="relative bg-slate-900 dark:bg-slate-950 group hover:bg-slate-800/70 transition-colors duration-300 p-8"
+                  className="relative bg-white/5 dark:bg-white/5 ring-1 ring-white/10 group hover:bg-white/10 transition-colors duration-300 p-8"
                 >
                   <div className="absolute top-4 right-5 font-heading font-black text-slate-800 dark:text-slate-700 select-none leading-none text-[3.5rem]">
                     {s.n}
@@ -505,7 +586,7 @@ export default function Landing() {
 
       {/* ── CTA ── */}
       <section className="s-sm s-inner max-w-4xl mx-auto">
-        <div className="relative bg-slate-900 dark:bg-slate-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
+        <div className="relative bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />

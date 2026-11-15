@@ -54,7 +54,6 @@ export default function Button({
     overflow: 'hidden',
     textDecoration: 'none',
     whiteSpace: 'nowrap',
-    outline: 'none',
     ...style,
   };
 
@@ -163,6 +162,7 @@ export default function Button({
         disabled={isDisabled}
         style={combinedStyle}
         className={className}
+        aria-busy={loading || undefined}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMouseDown={handleMouseDown}

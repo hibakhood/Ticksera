@@ -29,14 +29,14 @@ export default function PublicNavbar() {
             <span className="font-heading text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
           </Link>
 
-          <div className="hidden md:flex items-center justify-center gap-0.5 flex-1">
+          <div className="hidden lg:flex items-center justify-center gap-0.5 flex-1">
             {links.map(l => (
               <Link
                 key={l.to}
                 to={l.to}
                 className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive(l.to)
-                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'
+                    ? 'text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/25'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                 }`}
               >
@@ -45,7 +45,7 @@ export default function PublicNavbar() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             <button
               onClick={toggleDarkMode}
               className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors"
@@ -59,7 +59,7 @@ export default function PublicNavbar() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <Link to="/login" className="hidden lg:block whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   Sign In
                 </Link>
                 <Link to="/login" className="hidden sm:inline-flex">
@@ -69,7 +69,9 @@ export default function PublicNavbar() {
             )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+              className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileOpen}
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -78,7 +80,7 @@ export default function PublicNavbar() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg px-4 pb-4 pt-2 space-y-1">
+        <div className="lg:hidden border-t border-slate-100 dark:border-dark-border bg-white dark:bg-dark-bg px-4 pb-4 pt-2 space-y-1">
           {links.map(l => (
             <Link
               key={l.to}
@@ -86,7 +88,7 @@ export default function PublicNavbar() {
               onClick={() => setMobileOpen(false)}
               className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive(l.to)
-                  ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20'
+                  ? 'text-brand-600 bg-brand-50 dark:bg-brand-900/25'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
             >
@@ -98,7 +100,7 @@ export default function PublicNavbar() {
               <Link
                 to="/dashboard"
                 onClick={() => setMobileOpen(false)}
-                className="block w-full text-center px-4 py-3 rounded-lg bg-emerald-500 text-white text-sm font-semibold"
+                className="block w-full text-center px-4 py-3 rounded-lg bg-brand-500 text-white text-sm font-semibold"
               >
                 Go to Dashboard
               </Link>
@@ -114,7 +116,7 @@ export default function PublicNavbar() {
                 <Link
                   to="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="block w-full text-center px-4 py-3 rounded-lg bg-emerald-500 text-white text-sm font-semibold"
+                  className="block w-full text-center px-4 py-3 rounded-lg bg-brand-500 text-white text-sm font-semibold"
                 >
                   Get Started
                 </Link>
