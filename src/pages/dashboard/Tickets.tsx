@@ -107,7 +107,7 @@ export default function Tickets() {
     <div className="space-y-6 animate-fade-in premium-surface rounded-2xl p-1">
       <PageHeader
         eyebrow="Support Queue"
-        title="All Tickets"
+        title={role === 'customer' ? 'My Tickets' : 'All Tickets'}
         subtitle={`${filtered.length} of ${visibleTickets.length} ticket${visibleTickets.length !== 1 ? 's' : ''} shown · Track, filter and export your support requests.`}
         actions={(
           <div className="flex items-center gap-2 flex-wrap">
@@ -163,6 +163,37 @@ export default function Tickets() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
             <Filter className="w-4 h-4 text-gray-400 flex-shrink-0 hidden sm:block" />
+            {role === 'customer' ? (
+              /* Blueprint-style filter chips with counts */
+              <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 py-0.5" role="tablist" aria-label="Ticket status filter">
+                {([
+                  { key: 'all',      label: 'All' },
+                  { key: 'open',     label: 'Open' },
+                  { key: 'resolved', label: 'Resolved' },
+                ] as const).map(chip => {
+                  const count = chip.key === 'all'
+                    ? visibleTickets.length
+                    : visibleTickets.filter(t => t.status === chip.key).length;
+                  const active = statusFilter === chip.key;
+                  return (
+                    <button
+                      key={chip.key}
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setStatusFilter(chip.key)}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                        active
+                          ? 'bg-brand-600 text-white shadow-sm shadow-brand-600/30'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {chip.label} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
             <Select
               value={statusFilter}
               onChange={e => setStatusFilter(e.target.value)}
@@ -191,6 +222,8 @@ export default function Tickets() {
                 { value: 'critical', label: 'Critical' },
               ]}
             />
+              </>
+            )}
           </div>
         </div>
       </Card>

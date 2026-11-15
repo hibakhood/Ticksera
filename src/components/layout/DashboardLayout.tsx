@@ -198,14 +198,14 @@ export default function DashboardLayout() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-gradient-to-b from-brand-900 to-brand-950 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-brand-800/60 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
           <span className="font-heading text-lg font-bold text-white tracking-tight">TICKSERA</span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-slate-500 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors"
+            className="ml-auto lg:hidden text-brand-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors"
           >
             <X className="w-4.5 h-4.5" />
           </button>
@@ -217,7 +217,7 @@ export default function DashboardLayout() {
             <div key={si}>
               {section.title && (
                 <div className="px-3.5 pt-4 pb-1">
-                  <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">{section.title}</span>
+                  <span className="text-[10px] font-semibold text-brand-300/70 uppercase tracking-widest">{section.title}</span>
                 </div>
               )}
               {section.items.map(item => {
@@ -228,14 +228,14 @@ export default function DashboardLayout() {
                     to={item.search ? { pathname: item.to, search: `?${item.search}` } : item.to}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                       active
-                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/25'
+                        : 'text-brand-100/70 hover:text-white hover:bg-brand-800/50'
                     }`}
                   >
 <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
 {!sidebarMinimized && <span className="flex-1">{item.label}</span>}
                     {item.to === '/chat' && unreadChatCount > 0 && !active && (
-                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                      <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
                         {unreadChatCount > 99 ? '99+' : unreadChatCount}
                       </span>
                     )}
@@ -248,9 +248,9 @@ export default function DashboardLayout() {
         </nav>
 
         {/* User footer */}
-        <div className="p-3 border-t border-slate-800 flex-shrink-0">
-          <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-slate-800 transition-colors cursor-default">
-            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-emerald-500/20 overflow-hidden">
+        <div className="p-3 border-t border-brand-800/60 flex-shrink-0">
+          <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-brand-800/50 transition-colors cursor-default">
+            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-brand-500/25 overflow-hidden">
               {currentUser?.avatar ? (
                 <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
               ) : (
@@ -259,7 +259,7 @@ export default function DashboardLayout() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate leading-none mb-0.5">{currentUser?.name}</p>
-              <p className="text-[11px] text-slate-500 truncate capitalize">{currentUser?.role?.replace(/_/g, ' ')}</p>
+              <p className="text-[11px] text-brand-200/60 truncate capitalize">{currentUser?.role?.replace(/_/g, ' ')}</p>
             </div>
           </div>
         </div>
@@ -422,10 +422,75 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-5 lg:p-7">
+        <main className="flex-1 p-5 lg:p-7 pb-28 lg:pb-7">
           <Outlet />
         </main>
       </div>
+
+      {/* ── Mobile bottom tab bar (blueprint: Home · Tickets · AI · Resources · Profile) ── */}
+      <nav
+        className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 dark:bg-dark-card/95 backdrop-blur border-t border-slate-200 dark:border-dark-border"
+        aria-label="Primary"
+      >
+        <div className="grid grid-cols-5 items-end h-16 max-w-lg mx-auto px-2">
+          <TabLink to="/dashboard" icon={LayoutDashboard} label="Home" active={location.pathname === '/dashboard'} />
+          <TabLink
+            to="/tickets"
+            icon={Ticket}
+            label={isCustomer ? 'Tickets' : 'Queue'}
+            active={location.pathname.startsWith('/tickets')}
+            badge={myTicketIds.size > 0 && syncStatus === 'error' ? '!' : undefined}
+          />
+          {/* Raised AI assistant button */}
+          <div className="flex justify-center">
+            <Link
+              to="/assistant"
+              aria-label="AI Assistant"
+              className={`-mt-6 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-brand-500/40 transition-transform active:scale-95 bg-gradient-to-br from-brand-400 to-brand-600 text-white ring-4 ring-white dark:ring-dark-card ${
+                location.pathname === '/assistant' ? 'ring-brand-200 dark:ring-brand-800' : ''
+              }`}
+            >
+              <Sparkles className="w-6 h-6" />
+            </Link>
+          </div>
+          <TabLink
+            to="/knowledge-base"
+            icon={BookOpen}
+            label="Resources"
+            active={location.pathname.startsWith('/knowledge-base')}
+          />
+          <TabLink to="/profile" icon={User} label="Profile" active={location.pathname.startsWith('/profile')} />
+        </div>
+      </nav>
     </div>
+  );
+}
+
+function TabLink({ to, icon: Icon, label, active, badge }: {
+  to: string;
+  icon: typeof LayoutDashboard;
+  label: string;
+  active: boolean;
+  badge?: string;
+}) {
+  return (
+    <Link
+      to={to}
+      className={`relative flex flex-col items-center justify-center gap-1 h-full rounded-xl transition-colors ${
+        active ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+      }`}
+      aria-current={active ? 'page' : undefined}
+    >
+      <span className="relative">
+        <Icon className="w-5.5 h-5.5" />
+        {badge && (
+          <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-amber-accent text-white text-[9px] font-bold flex items-center justify-center">
+            {badge}
+          </span>
+        )}
+      </span>
+      <span className="text-[10px] font-semibold leading-none">{label}</span>
+      {active && <span className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-brand-500" />}
+    </Link>
   );
 }

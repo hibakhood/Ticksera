@@ -5,7 +5,8 @@ import Badge from '../../components/ui/Badge';
 import { Link } from 'react-router-dom';
 import {
   Ticket, Clock, CheckCircle, AlertTriangle, TrendingUp, Users,
-  DollarSign, ArrowUpRight, BarChart3, Activity, Plus, CalendarCheck
+  DollarSign, ArrowUpRight, BarChart3, Activity, Plus, CalendarCheck,
+  Bot, ArrowRight, Wifi, Monitor, AppWindow, Mail, Printer, LayoutGrid
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -33,6 +34,16 @@ const gradients: Record<string, string> = {
   purple: 'from-violet-500 to-purple-600',
   rose: 'from-rose-500 to-red-600',
 };
+
+/* Blueprint quick-action tiles: category → icon + accent color */
+const quickActions = [
+  { icon: Wifi,       label: 'Network Issues',    chip: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',    category: 'network' },
+  { icon: Monitor,    label: 'Computer Problems', chip: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',    category: 'computer' },
+  { icon: AppWindow,  label: 'Software Errors',   chip: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400', category: 'software' },
+  { icon: Mail,       label: 'Email Issues',      chip: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400',    category: 'email' },
+  { icon: Printer,    label: 'Printer Setup',     chip: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400', category: 'printer' },
+  { icon: LayoutGrid, label: 'More Tools',        chip: 'bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400', category: null },
+];
 
 export default function Dashboard() {
   const { currentUser, tickets, bookings, users, payments } = useStore(
@@ -138,6 +149,61 @@ export default function Dashboard() {
           </Button>
         ) : undefined}
       />
+
+      {/* ── Customer blueprint hero: Ask Ticksera AI ── */}
+      {role === 'customer' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Link
+            to="/assistant"
+            className="lg:col-span-2 group relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-5 sm:p-6 text-white shadow-lg shadow-brand-900/20 transition-transform hover:-translate-y-0.5"
+          >
+            <div className="absolute -right-10 -top-14 w-48 h-48 rounded-full bg-brand-400/15 blur-2xl" aria-hidden="true" />
+            <div className="relative flex items-center gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/10 ring-1 ring-white/20 flex items-center justify-center flex-shrink-0">
+                <Bot className="w-7 h-7 sm:w-8 sm:h-8 text-brand-200" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-heading font-bold text-lg sm:text-xl leading-tight">Ask Ticksera AI</h3>
+                <p className="text-sm text-brand-100/80 mt-1">Describe your IT problem in simple words.</p>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-white/10 group-hover:bg-white/20 ring-1 ring-white/20 flex items-center justify-center flex-shrink-0 transition-colors">
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </div>
+          </Link>
+
+          <div className="rounded-2xl bg-white dark:bg-dark-card border border-slate-200/80 dark:border-dark-border p-5 sm:p-6">
+            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3.5">Quick Actions</h4>
+            <div className="grid grid-cols-3 gap-2.5">
+              {quickActions.map(a => (
+                a.category ? (
+                  <button
+                    key={a.label}
+                    onClick={() => setWizardOpen(true)}
+                    className="flex flex-col items-center gap-1.5 rounded-xl p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
+                  >
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${a.chip}`}>
+                      <a.icon className="w-5 h-5" />
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center leading-tight">{a.label}</span>
+                  </button>
+                ) : (
+                  <Link
+                    key={a.label}
+                    to="/knowledge-base"
+                    className="flex flex-col items-center gap-1.5 rounded-xl p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors"
+                  >
+                    <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${a.chip}`}>
+                      <a.icon className="w-5 h-5" />
+                    </span>
+                    <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 text-center leading-tight">{a.label}</span>
+                  </Link>
+                )
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

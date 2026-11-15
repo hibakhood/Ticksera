@@ -4,8 +4,26 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-heading: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  /* ── Ticksera blueprint palette ──
+     Primary green ramp sampled from the mobile UI blueprint. */
+  --color-brand-50:  #ECFDF5;
+  --color-brand-100: #D3F5E1;
+  --color-brand-200: #A9E8C4;
+  --color-brand-300: #6FD79E;
+  --color-brand-400: #34C274;
+  --color-brand-500: #16A34A;
+  --color-brand-600: #15803D;
+  --color-brand-700: #166534;
+  --color-brand-800: #14532D;
+  --color-brand-900: #0F3D23;
+  --color-brand-950: #0B2E1B;
+
+  /* Signature accents */
+  --color-teal-accent:  #17A398;
+  --color-amber-accent: #F5A623;
 
   --color-emerald-50:  hsl(152 81% 96%);
   --color-emerald-100: hsl(149 80% 90%);
@@ -52,16 +70,16 @@
   html { scroll-behavior: smooth; }
 
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: hsl(210 40% 98%);
+    background: hsl(150 30% 98%);
   }
 
   .dark body { background: hsl(222 47% 8%); }
 }
 
-.font-heading { font-family: 'Space Grotesk', sans-serif; }
+.font-heading { font-family: 'Plus Jakarta Sans', sans-serif; }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }

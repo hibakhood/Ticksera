@@ -1,14 +1,22 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useStore } from '../../store';
+import { useShallow } from 'zustand/react/shallow';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { TextArea } from '../../components/ui/Input';
-import { Search, ThumbsUp, Plus, ChevronDown, BookOpen } from 'lucide-react';
+import { Search, ThumbsUp, Plus, ChevronDown, BookOpen, Crown } from 'lucide-react';
 import PageHeader from '../../components/ui/PageHeader';
+import { hasActivePlanFor } from '../../utils/plans';
 
 export default function KnowledgeBase() {
-  const { currentUser, kbArticles, voteHelpful, addKBArticle } = useStore();
+  const { currentUser, kbArticles, voteHelpful, addKBArticle, payments } = useStore(
+    useShallow(s => ({
+      currentUser: s.currentUser, kbArticles: s.kbArticles, voteHelpful: s.voteHelpful,
+      addKBArticle: s.addKBArticle, payments: s.payments,
+    }))
+  );
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -68,6 +76,22 @@ export default function KnowledgeBase() {
             </div>
           </form>
         </Card>
+      )}
+
+      {/* Blueprint "Go Premium" upgrade card for customers on Basic/Professional */}
+      {currentUser?.role === 'customer' && !hasActivePlanFor(payments, currentUser.id, ['Business', 'Enterprise']) && (
+        <div className="rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 dark:from-brand-900/40 dark:to-brand-950/60 border border-brand-200 dark:border-brand-800 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-amber-accent flex items-center justify-center flex-shrink-0 shadow-sm shadow-amber-600/30">
+            <Crown className="w-5.5 h-5.5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-heading font-bold text-brand-900 dark:text-brand-100">Go Premium</h3>
+            <p className="text-sm text-brand-800/70 dark:text-brand-200/70 mt-0.5">Get advanced support, priority assistance and more.</p>
+          </div>
+          <Link to="/plan" className="flex-shrink-0">
+            <Button size="md">Upgrade Now</Button>
+          </Link>
+        </div>
       )}
 
       {/* Search */}
