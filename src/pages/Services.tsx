@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ShaderBackground from '../components/ui/ShaderBackground';
 import { Monitor, Wifi, Printer, Camera, Globe, Server, Code, Headphones, Shield, KeyRound, Hotel, GraduationCap, HeartPulse, Truck, Factory, Home, Landmark, Store, CheckCircle, ChevronRight, User, Building2, Smartphone, Mail, Cloud, Rocket, ShieldCheck, Network, LayoutGrid } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -289,23 +288,28 @@ export default function Services() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="s-section bg-slate-900 relative overflow-hidden">
-        <ShaderBackground />
+      <section className="s-section bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-16 -right-40 w-[28rem] h-[28rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
         <div className="s-inner max-w-6xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1.5rem' }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-brand-700 text-xs font-medium border border-brand-200 shadow-sm dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300" style={{ marginBottom: '1.5rem' }}>
             What We Offer
           </div>
-          <h1 className="font-heading text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Our Services</h1>
-          <p className="text-slate-300 max-w-2xl mx-auto" style={{ marginBottom: '2rem' }}>
+          <h1 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+            Our <span className="text-brand-700 dark:text-brand-400">Services</span>
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto" style={{ marginBottom: '2rem' }}>
             End-to-end IT support across devices, connectivity, software, email &amp; productivity, security, and setup, for personal and business clients in every industry.
           </p>
 
           {/* Segment toggle */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white/10 dark:bg-dark-card border border-white/20 dark:border-dark-border shadow-sm">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-white border border-brand-200 shadow-sm dark:bg-dark-card dark:border-dark-border">
             {([['all', 'All Clients'], ['personal', 'Personal'], ['business', 'Business']] as [Segment, string][]).map(([v, label]) => (
               <button key={v} onClick={() => setSegment(v)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all
-                  ${segment === v ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-300 hover:text-white'}`}>
+                  ${segment === v ? 'bg-brand-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                 {v === 'personal' && <User className="w-3.5 h-3.5" />}
                 {v === 'business' && <Building2 className="w-3.5 h-3.5" />}
                 {label}

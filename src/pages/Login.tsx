@@ -6,7 +6,6 @@ import { Lock, ArrowRight, Shield, Zap, Users, Eye, EyeOff, Check, Mail, KeyRoun
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Logo from '../components/ui/Logo';
-import ShaderBackground from '../components/ui/ShaderBackground';
 
 type AuthMode = 'signin' | 'forgot' | 'reset' | 'done' | 'mfa';
 
@@ -189,7 +188,11 @@ export default function Login() {
 
       {/* ── Left panel ── */}
       <div className="hidden lg:flex lg:w-[42%] bg-slate-900 flex-col justify-between p-10 relative overflow-hidden flex-shrink-0">
-        <ShaderBackground />
+        {/* Soft glow accents */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-24 -left-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl" />
+        </div>
 
         <Link to="/" className="flex items-center gap-3 relative z-10">
           <Logo size={36} />

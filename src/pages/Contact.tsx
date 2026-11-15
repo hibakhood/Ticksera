@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ShaderBackground from '../components/ui/ShaderBackground';
 import { Mail, Phone, MapPin, CheckCircle, Send, Clock, MessageCircle, BadgeCheck, BookOpen, ArrowRight, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -40,18 +39,20 @@ export default function Contact() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-grid pointer-events-none" />
-        <ShaderBackground />
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-16 -right-40 w-[28rem] h-[28rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-brand-700 dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
             <MessageCircle className="w-3.5 h-3.5" />
             Get in Touch
           </div>
-          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
-            Contact <span className="text-gradient">Us</span>
+          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+            Contact <span className="text-brand-700 dark:text-brand-400">Us</span>
           </h1>
-          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
+          <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
             We'd love to hear from you. Send us a message and we'll respond shortly.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
@@ -60,8 +61,8 @@ export default function Contact() {
               { icon: Clock,         label: 'Mon-Fri, 8am-6pm WAT' },
               { icon: BadgeCheck,    label: 'SOC 2 aligned' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-slate-300">
+                <t.icon className="w-3.5 h-3.5 text-brand-500" />
                 {t.label}
               </span>
             ))}

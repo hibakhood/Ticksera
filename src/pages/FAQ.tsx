@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ShaderBackground from '../components/ui/ShaderBackground';
 import { Search, Plus, X, Rocket, Wrench, CreditCard, Building2, ShieldCheck, LifeBuoy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Button from '../components/ui/Button';
@@ -103,36 +102,40 @@ export default function FAQ() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* Hero */}
-      <section className="s-hero bg-slate-900 relative overflow-hidden">
-        <ShaderBackground />
-        <div className="absolute inset-0 bg-grid" aria-hidden />
+      <section className="s-hero bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[28rem] h-[28rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-16 -right-40 w-[26rem] h-[26rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
         <div className="s-inner max-w-3xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20" style={{ marginBottom: '1.5rem' }}>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white text-brand-700 text-xs font-medium border border-brand-200 shadow-sm dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300" style={{ marginBottom: '1.5rem' }}>
             <LifeBuoy className="w-3.5 h-3.5" />
             Support Center
           </div>
-          <h1 className="font-heading text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>Frequently Asked Questions</h1>
-          <p className="text-slate-300">Everything you need to know about getting IT help with TICKSERA.</p>
+          <h1 className="font-heading text-slate-900 dark:text-white" style={{ fontSize: '2.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+            Frequently Asked <span className="text-brand-700 dark:text-brand-400">Questions</span>
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400">Everything you need to know about getting IT help with TICKSERA.</p>
 
           {/* Search */}
           <div className="relative max-w-xl mx-auto" style={{ marginTop: '2rem' }}>
-            <Search className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               value={query}
               onChange={e => { setQuery(e.target.value); setOpen(null); }}
               placeholder="Search questions… e.g. SLA, payment, onsite"
-              className="w-full rounded-2xl bg-white/10 backdrop-blur border border-white/15 text-white placeholder:text-slate-400 pl-11 pr-10 py-3.5 text-sm outline-none focus:border-emerald-400/60 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20 transition-all"
+              className="w-full rounded-2xl bg-white border border-slate-200 shadow-sm text-slate-900 placeholder:text-slate-400 pl-11 pr-10 py-3.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all dark:bg-dark-card dark:border-dark-border dark:text-white dark:focus:border-brand-500"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors" aria-label="Clear search">
+              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" aria-label="Clear search">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2" style={{ marginTop: '1rem' }}>
-            <span className="text-[11px] text-slate-500">Popular:</span>
+            <span className="text-[11px] text-slate-400">Popular:</span>
             {POPULAR.map(t => (
-              <button key={t} onClick={() => { setQuery(t); setOpen(null); }} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-300 hover:bg-white/20 hover:text-white transition-colors">
+              <button key={t} onClick={() => { setQuery(t); setOpen(null); }} className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm hover:border-brand-300 hover:text-brand-700 transition-colors dark:bg-white/5 dark:border-white/10 dark:text-slate-300">
                 {t}
               </button>
             ))}

@@ -1,15 +1,14 @@
 import { Link } from 'react-router-dom';
-import ShaderBackground from '../components/ui/ShaderBackground';
 import {
   ArrowRight, Shield, Zap, Users, CheckCircle,
   Monitor, Wifi, Printer, Camera, Server, Globe, Star, ChevronRight,
   Hotel, GraduationCap, HeartPulse, Truck, Factory, Home, Landmark, Store,
   Route,
-  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck, Plus,
-  Bot, Timer, Wrench
+  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck, Plus, Play, Bot, Timer, Wrench
 } from 'lucide-react';
 import { useStore } from '../store';
 import Button from '../components/ui/Button';
+import Logo from '../components/ui/Logo';
 
 const services = [
   { icon: Monitor,  title: 'Computer Repair',  desc: 'Hardware diagnostics, OS recovery, data backup, and full system performance tuning.' },
@@ -135,164 +134,135 @@ export default function Landing() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-grid pointer-events-none" />
-        <ShaderBackground />
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg">
+        {/* Soft decorative wash */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[34rem] h-[34rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-20 -right-44 w-[30rem] h-[30rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
 
         <div className="s-hero s-inner relative z-10 max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-14 lg:gap-12">
 
             {/* Left: text content */}
-            <div className="flex-shrink-0 lg:w-[46%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
-                <Zap className="w-3.5 h-3.5" /> Enterprise IT Support Platform
+            <div className="flex-shrink-0 lg:w-[47%] text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-brand-700 dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
+                <Zap className="w-3.5 h-3.5 text-amber-500" /> AI-Powered IT Support
               </div>
-              <h1 className="font-heading text-white leading-[1.06] tracking-tight text-[clamp(2.125rem,5vw,3.75rem)] font-bold">
-                Enterprise IT Support,<br />
-                <span className="text-gradient">Delivered in Minutes</span>
+              <h1 className="font-heading leading-[1.02] tracking-tight text-[clamp(2.75rem,6.5vw,4.5rem)] font-extrabold text-slate-900 dark:text-white">
+                <span className="text-brand-700 dark:text-brand-400">Fix IT.</span><br />
+                <span className="text-amber-500">Faster.</span>
               </h1>
-              <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-xl mx-auto lg:mx-0">
-                Streamline your IT operations with an enterprise-grade helpdesk, smart technician routing, and real-time SLA tracking, all in one platform.
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[1.0625rem] mt-6 max-w-xl mx-auto lg:mx-0">
+                Get instant help, solve technical problems, and access expert resources with TICKSERA — your smart AI-powered IT support assistant.
               </p>
               <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mt-9">
                 <Link to={primaryTo}>
-                  <Button size="lg" className="px-8 shadow-lg shadow-emerald-500/20 w-full sm:w-auto">
-                    {primaryCta} <ArrowRight className="w-4 h-4" />
+                  <Button size="lg" className="px-8 rounded-full shadow-lg shadow-brand-500/25 w-full sm:w-auto">
+                    Start for Free <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
-                <Link to="/services" className="w-full sm:w-auto">
-                  <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-300 hover:text-white">
-                    View Services <ChevronRight className="w-4 h-4" />
-                  </Button>
+                <Link to="/docs" className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-2 py-3 rounded-full text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-brand-700 dark:hover:text-brand-400 transition-colors group">
+                  <span className="w-9 h-9 rounded-full bg-white border border-slate-200 dark:bg-white/10 dark:border-white/10 shadow-sm flex items-center justify-center group-hover:border-brand-300 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 transition-colors">
+                    <Play className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 fill-brand-600 dark:fill-brand-400 ml-0.5" />
+                  </span>
+                  Watch Demo
                 </Link>
               </div>
-              <p className="text-xs text-slate-500 mt-5 flex items-center justify-center lg:justify-start gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                No credit card required · Set up in 5 minutes
-              </p>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 mt-8">
+                {['AI Troubleshooting', 'Expert Guides', 'Track Support Tickets'].map(t => (
+                  <span key={t} className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-400">
+                    <CheckCircle className="w-3.5 h-3.5 text-brand-500 flex-shrink-0" />
+                    {t}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Right: dashboard preview */}
-            <div className="flex-1 relative w-full max-w-2xl mx-auto lg:max-w-none">
-              <div className="absolute inset-0 -bottom-6 bg-emerald-500/10 rounded-3xl blur-2xl pointer-events-none" />
-              <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-2xl shadow-slate-900/20 dark:shadow-emerald-900/10">
-                <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3.5 py-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                  <span className="text-xs text-slate-400 dark:text-slate-500 font-mono ml-2.5 truncate">app.ticksera.io/dashboard</span>
-                </div>
-                {/* Live themed dashboard mockup (replaces stale FIXORA screenshot) */}
-                <div className="aspect-[16/9] bg-white dark:bg-dark-card flex overflow-hidden select-none pointer-events-none" aria-hidden="true">
-                  {/* Sidebar */}
-                  <div className="w-[25%] bg-slate-900 p-[3.5%] flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5 mb-[7%]">
-                      <div className="w-[14px] h-[14px] rounded-[4px] bg-brand-500 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-[9px] h-[9px] text-white" />
-                      </div>
-                      <span className="text-[9px] font-bold text-white tracking-tight truncate">TICKSERA</span>
-                    </div>
-                    <div className="space-y-[5px]">
-                      {['Dashboard', 'All Tickets', 'Live Chat', 'Knowledge Base', 'Calendar'].map((item, i) => (
-                        <div
-                          key={item}
-                          className={`flex items-center gap-1.5 rounded-md px-1.5 py-[4px] ${
-                            i === 0 ? 'bg-brand-500 text-white' : 'text-slate-400'
-                          }`}
-                        >
-                          <span className={`w-[5px] h-[5px] rounded-sm flex-shrink-0 ${i === 0 ? 'bg-white/80' : 'bg-slate-600'}`} />
-                          <span className="text-[8px] font-medium truncate">{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-auto flex items-center gap-1.5">
-                      <div className="w-[12px] h-[12px] rounded-full bg-brand-500 flex items-center justify-center text-[7px] font-bold text-white flex-shrink-0">D</div>
-                      <div className="min-w-0">
-                        <div className="text-[7px] font-semibold text-white leading-none truncate">David</div>
-                        <div className="text-[6px] text-slate-500 leading-none mt-[2px]">Customer</div>
-                      </div>
-                    </div>
-                  </div>
+            {/* Right: AI assistant photo composition */}
+            <div className="flex-1 relative w-full max-w-md sm:max-w-lg mx-auto lg:max-w-none">
+              <div className="absolute inset-0 -bottom-8 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-brand-900/25 ring-1 ring-slate-900/10">
+                <img
+                  src="/hero-photo.jpg"
+                  alt="Person looking up while the TICKSERA AI assistant handles their IT issue in the background"
+                  className="w-full h-[400px] sm:h-[460px] object-cover object-top"
+                  loading="eager"
+                />
+                {/* Emerald wash + grounding gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-900/15 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-brand-500/10 mix-blend-overlay pointer-events-none" />
 
-                  {/* Main panel */}
-                  <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-dark-bg">
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-[4%] h-[11%] bg-white dark:bg-dark-card border-b border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-1 text-[7px] min-w-0">
-                        <span className="text-slate-400">TICKSERA</span>
-                        <ChevronRight className="w-[6px] h-[6px] text-slate-300" />
-                        <span className="font-semibold text-slate-900 dark:text-white">Dashboard</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-[10px] h-[10px] rounded-full bg-slate-100 dark:bg-slate-800" />
-                        <div className="w-[10px] h-[10px] rounded-full bg-slate-100 dark:bg-slate-800" />
-                        <div className="w-[14px] h-[14px] rounded-full bg-brand-500 flex items-center justify-center text-[7px] font-bold text-white">D</div>
-                      </div>
-                    </div>
+                {/* Circuit-line motif */}
+                <svg className="absolute top-5 right-5 w-24 h-16 text-brand-300/90 pointer-events-none" viewBox="0 0 100 64" fill="none" aria-hidden="true">
+                  <path d="M2 52 L30 52 L30 32 L54 32 L54 12 L86 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="2" cy="52" r="3" fill="currentColor" />
+                  <circle cx="30" cy="32" r="3" fill="currentColor" />
+                  <circle cx="54" cy="12" r="3" fill="currentColor" />
+                  <circle cx="86" cy="12" r="3.5" fill="white" stroke="currentColor" strokeWidth="2" />
+                </svg>
 
-                    {/* Content */}
-                    <div className="flex-1 px-[4%] py-[3%] min-w-0">
-                      <div className="flex items-center justify-between mb-[3.5%]">
-                        <div className="min-w-0">
-                          <div className="text-[11px] font-bold text-slate-900 dark:text-white leading-tight truncate">Good afternoon, David 👋</div>
-                          <div className="text-[7px] text-slate-400 mt-[2px]">Here's a summary of your support activity.</div>
-                        </div>
-                        <div className="flex items-center gap-1 rounded-md bg-brand-500 text-white text-[7px] font-semibold px-2 py-[4px] flex-shrink-0">
-                          <Plus className="w-[6px] h-[6px]" /> New Ticket
-                        </div>
-                      </div>
-
-                      {/* Stat cards */}
-                      <div className="grid grid-cols-4 gap-[2.5%] mb-[3.5%]">
-                        {[
-                          { label: 'My Tickets', value: '12', grad: 'from-blue-500 to-indigo-600' },
-                          { label: 'Open', value: '3', grad: 'from-amber-500 to-orange-600' },
-                          { label: 'Resolved', value: '8', grad: 'from-brand-500 to-teal-600' },
-                          { label: 'Bookings', value: '2', grad: 'from-violet-500 to-purple-600' },
-                        ].map(s => (
-                          <div key={s.label} className="bg-white dark:bg-dark-card rounded-lg border border-slate-100 dark:border-slate-800 p-[6px] min-w-0">
-                            <div className={`w-[10px] h-[10px] rounded bg-gradient-to-br ${s.grad} mb-[4px]`} />
-                            <div className="text-[9px] font-bold text-slate-900 dark:text-white leading-none">{s.value}</div>
-                            <div className="text-[6px] text-slate-400 mt-[2px] truncate">{s.label}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Chart card */}
-                      <div className="bg-white dark:bg-dark-card rounded-lg border border-slate-100 dark:border-slate-800 p-[2.5%] h-[46%]">
-                        <div className="flex items-end justify-between gap-[3%] h-[78%] px-[2%]">
-                          {[42, 68, 35, 80, 55, 92, 60].map((h, i) => (
-                            <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-brand-300 to-brand-500" style={{ height: `${h}%`, opacity: i === 5 ? 1 : 0.35 }} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                {/* Logo chip */}
+                <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/95 backdrop-blur rounded-xl shadow-lg px-3 py-2 pointer-events-none">
+                  <Logo size={18} />
+                  <span className="font-heading text-[11px] font-bold text-slate-900 tracking-tight">TICKSERA</span>
                 </div>
               </div>
 
-              {/* Floating SLA chip */}
-              <div className="absolute -bottom-5 left-4 sm:left-6 z-10 flex items-center gap-3 bg-white dark:bg-slate-900 rounded-xl px-3.5 py-2.5 shadow-xl border border-slate-200 dark:border-slate-700">
-                <span className="relative flex w-2 h-2 flex-shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white leading-none">Avg. response under 15 min</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Across all priority tiers</p>
+              {/* Floating: TICKSERA AI chat card */}
+              <div className="absolute left-3 right-3 sm:left-6 sm:right-auto sm:w-60 -bottom-7 bg-white/95 backdrop-blur border border-brand-100 shadow-xl rounded-2xl p-3.5" aria-hidden="true">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0 shadow-sm shadow-brand-500/30">
+                    <Bot className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-slate-900 leading-none truncate">Hello! I'm TICKSERA AI</p>
+                    <p className="text-[9px] text-brand-600 font-medium mt-0.5 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse flex-shrink-0" /> Online
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-brand-50 text-[10px] text-slate-600 leading-relaxed px-2.5 py-2 mb-2">
+                  How can I help you today? Describe your issue and I'll walk you through the fix, step by step.
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white pl-3 pr-1 py-1">
+                  <span className="text-[10px] text-slate-400 flex-1">Type your issue…</span>
+                  <span className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0">
+                    <ArrowRight className="w-2.5 h-2.5 text-white" />
+                  </span>
+                </div>
+              </div>
+
+              {/* Floating: Quick Actions card */}
+              <div className="hidden sm:block absolute -left-8 top-1/4 w-44 bg-white/95 backdrop-blur border border-brand-100 shadow-xl rounded-2xl p-3" aria-hidden="true">
+                <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider mb-2">Quick Actions</p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { icon: Wifi,    label: 'Network' },
+                    { icon: Monitor, label: 'Computer' },
+                    { icon: Wrench,  label: 'Software' },
+                    { icon: Globe,   label: 'Email' },
+                    { icon: Printer, label: 'Printer' },
+                    { icon: Plus,    label: 'More Tools' },
+                  ].map(a => (
+                    <div key={a.label} className="rounded-lg bg-brand-50 flex flex-col items-center gap-1 py-2 px-1">
+                      <a.icon className="w-3.5 h-3.5 text-brand-600" />
+                      <span className="text-[8px] font-medium text-slate-600 leading-none text-center">{a.label}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Trusted-by strip */}
-          <div className="mt-10 lg:mt-14 pt-6 border-t border-slate-800">
-            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-6">
+          <div className="mt-16 sm:mt-20 pt-8 border-t border-brand-200/70 dark:border-dark-border">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6">
               Trusted by 500+ support teams
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
               {trustedBy.map(name => (
-                <span key={name} className="font-heading text-lg font-bold text-slate-600 hover:text-slate-400 transition-colors">
+                <span key={name} className="font-heading text-lg font-bold text-slate-300 hover:text-slate-400 transition-colors">
                   {name}
                 </span>
               ))}
@@ -302,14 +272,14 @@ export default function Landing() {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-slate-900 dark:bg-slate-950 border-t border-slate-800/60">
+      <section className="bg-white border-t border-brand-100 dark:bg-dark-bg dark:border-dark-border">
         <div className="s-sm s-inner max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10">
             {stats.map((s, i) => (
-              <div key={i} className={`text-center lg:py-2 ${i > 0 ? 'lg:border-l lg:border-slate-800' : ''}`}>
+              <div key={i} className={`text-center lg:py-2 ${i > 0 ? 'lg:border-l lg:border-brand-100 dark:lg:border-dark-border' : ''}`}>
                 <div className="font-heading font-bold leading-none text-[clamp(1.875rem,4vw,2.5rem)] text-gradient">{s.value}</div>
-                <div className="font-semibold text-white mt-2.5 text-sm">{s.label}</div>
-                <div className="text-slate-500 mt-1 text-xs">{s.desc}</div>
+                <div className="font-semibold text-slate-900 dark:text-white mt-2.5 text-sm">{s.label}</div>
+                <div className="text-slate-400 mt-1 text-xs">{s.desc}</div>
               </div>
             ))}
           </div>
@@ -426,37 +396,37 @@ export default function Landing() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="s-section bg-slate-900 dark:bg-slate-950 relative overflow-hidden">
+      <section className="s-section bg-brand-50/70 dark:bg-dark-bg/60 relative overflow-hidden">
         {/* Background glow blobs */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-300/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl" />
         </div>
 
         <div className="s-inner max-w-7xl mx-auto relative">
           <div className="s-header text-center">
-            <span className="inline-block text-xs font-semibold tracking-widest text-emerald-400 uppercase mb-3">
+            <span className="inline-block text-xs font-semibold tracking-widest text-brand-600 dark:text-brand-400 uppercase mb-3">
               The Process
             </span>
-            <h2 className="font-heading text-white text-3xl sm:text-4xl font-bold">
+            <h2 className="font-heading text-slate-900 dark:text-white text-3xl sm:text-4xl font-bold">
               How TICKSERA Works
             </h2>
-            <p className="text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto mt-3 text-[0.9375rem] leading-relaxed">
               From your first click to a verified resolution: every step maps to a real TICKSERA feature, from AI self-service triage to live technician support.
             </p>
           </div>
 
           {/* Step grid: 3 cols × 2 rows */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-slate-800 rounded-2xl overflow-hidden border border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-brand-200/70 dark:bg-dark-border rounded-2xl overflow-hidden border border-brand-200/70 dark:border-dark-border">
             {steps.map((s, i) => {
               const Icon = s.icon;
               const isLastInRow = (i + 1) % 3 === 0;
               return (
                 <div
                   key={i}
-                  className="relative bg-slate-900 dark:bg-slate-950 group hover:bg-slate-800/70 transition-colors duration-300 p-8"
+                  className="relative bg-white dark:bg-dark-card group hover:bg-brand-50/60 dark:hover:bg-dark-card transition-colors duration-300 p-8"
                 >
-                  <div className="absolute top-4 right-5 font-heading font-black text-slate-800 dark:text-slate-700 select-none leading-none text-[3.5rem]">
+                  <div className="absolute top-4 right-5 font-heading font-black text-brand-100 dark:text-slate-800 select-none leading-none text-[3.5rem]">
                     {s.n}
                   </div>
 
@@ -470,16 +440,16 @@ export default function Landing() {
                     </span>
                   </div>
 
-                  <h3 className="font-heading font-bold text-white text-base mb-2">
+                  <h3 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2">
                     {s.title}
                   </h3>
-                  <p className="text-slate-400 leading-relaxed text-[0.8125rem]">
+                  <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[0.8125rem]">
                     {s.desc}
                   </p>
 
                   {!isLastInRow && (
-                    <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-slate-700 border border-slate-600 items-center justify-center">
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-brand-200 shadow-sm items-center justify-center">
+                      <ArrowRight className="w-3.5 h-3.5 text-brand-500" />
                     </div>
                   )}
                 </div>
@@ -586,19 +556,19 @@ export default function Landing() {
 
       {/* ── CTA ── */}
       <section className="s-sm s-inner max-w-4xl mx-auto">
-        <div className="relative bg-slate-900 dark:bg-slate-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
+        <div className="relative bg-gradient-to-br from-brand-600 via-brand-700 to-brand-800 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl" />
           </div>
           <div className="relative">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-6">
-              <Zap className="w-3.5 h-3.5" /> Start in minutes
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-brand-50 text-xs font-semibold tracking-wide mb-6">
+              <Zap className="w-3.5 h-3.5 text-amber-300" /> Start in minutes
             </div>
             <h2 className="font-heading text-white text-3xl sm:text-4xl font-bold mb-4">
-              Ready to Fix Your IT?
+              Ready to Fix Your IT <span className="text-amber-300">Faster?</span>
             </h2>
-            <p className="text-slate-400 text-[1.0625rem] max-w-xl mx-auto mb-10">
+            <p className="text-brand-100/85 text-[1.0625rem] max-w-xl mx-auto mb-10">
               Join thousands of businesses that trust TICKSERA to keep their technology running smoothly, with guaranteed SLA response times and smart technician routing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -608,7 +578,7 @@ export default function Landing() {
                 </Button>
               </Link>
               <Link to="/contact" className="w-full sm:w-auto">
-                <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-slate-400 hover:text-white hover:bg-slate-800">
+                <Button variant="ghost" size="lg" className="px-8 w-full sm:w-auto text-brand-100 hover:text-white hover:bg-white/10">
                   Talk to Sales
                 </Button>
               </Link>

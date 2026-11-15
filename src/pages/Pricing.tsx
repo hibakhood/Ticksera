@@ -5,7 +5,6 @@ import {
   Clock, ShieldCheck, User, Building2, Sparkles, BadgeCheck, LifeBuoy,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
-import ShaderBackground from '../components/ui/ShaderBackground';
 import { useStore } from '../store';
 
 const FREQUENCIES = ['monthly', 'yearly'] as const;
@@ -192,36 +191,38 @@ export default function Pricing() {
       `}</style>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-grid pointer-events-none" />
-        <ShaderBackground />
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[30rem] h-[30rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-16 -right-40 w-[28rem] h-[28rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-brand-700 dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
             <BadgeCheck className="w-3.5 h-3.5" />
             Plans & Pricing
           </div>
-          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
-            Simple, <span className="text-gradient">Transparent</span> Pricing
+          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+            Simple, <span className="text-brand-700 dark:text-brand-400">Transparent</span> Pricing
           </h1>
-          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
+          <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl mx-auto">
             Pick the plan that fits, then upgrade, downgrade, or cancel whenever you like. No hidden fees, no lock-in.
           </p>
 
           {/* Frequency toggle */}
-          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white/10 border border-white/15" style={{ marginTop: '2rem' }}>
+          <div className="inline-flex items-center gap-1 p-1 rounded-full bg-white border border-brand-200 shadow-sm dark:bg-dark-card dark:border-dark-border" style={{ marginTop: '2rem' }}>
             {FREQUENCIES.map(freq => (
               <button
                 key={freq}
                 onClick={() => setFrequency(freq)}
                 className={`relative px-5 py-2 rounded-full text-sm font-semibold capitalize transition-all duration-200 ${
                   frequency === freq
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 {freq}
                 {freq === 'yearly' && (
-                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold leading-none">
+                  <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-amber-400 text-white text-[9px] font-bold leading-none">
                     -20%
                   </span>
                 )}
@@ -235,8 +236,8 @@ export default function Pricing() {
               { icon: RefreshCw, label: 'Upgrade or downgrade anytime' },
               { icon: Clock, label: 'Cancel anytime' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-slate-300">
+                <t.icon className="w-3.5 h-3.5 text-brand-500" />
                 {t.label}
               </span>
             ))}

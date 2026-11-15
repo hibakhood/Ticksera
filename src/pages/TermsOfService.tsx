@@ -4,7 +4,7 @@ import {
   FileText, ChevronRight, FileCheck, UserPlus, CreditCard, FileWarning,
   Activity, Copyright, Lock, Power, AlertTriangle, Scale, ShieldCheck, LifeBuoy,
 } from 'lucide-react';
-import ShaderBackground from '../components/ui/ShaderBackground';
+
 import Button from '../components/ui/Button';
 
 const sections = [
@@ -275,23 +275,25 @@ export default function TermsOfService() {
     <div className="bg-white dark:bg-dark-bg min-h-screen">
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-slate-900">
-        <div className="absolute inset-0 bg-grid pointer-events-none" />
-        <ShaderBackground />
+      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute -top-40 -left-40 w-[28rem] h-[28rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-16 -right-40 w-[26rem] h-[26rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+        </div>
         <div className="s-hero s-inner relative z-10 max-w-6xl mx-auto">
-          <div className="flex items-center gap-2 text-sm text-slate-500" style={{ marginBottom: '1.5rem' }}>
-            <Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link>
+          <div className="flex items-center gap-2 text-sm text-slate-400" style={{ marginBottom: '1.5rem' }}>
+            <Link to="/" className="hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Home</Link>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-300">Terms of Service</span>
+            <span className="text-slate-600 dark:text-slate-300">Terms of Service</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-brand-700 dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
             <FileText className="w-3.5 h-3.5" />
             Legal
           </div>
-          <h1 className="font-heading text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
-            Terms of <span className="text-gradient">Service</span>
+          <h1 className="font-heading text-slate-900 dark:text-white leading-[1.1] tracking-tight text-[clamp(2.125rem,5vw,3.5rem)] font-bold">
+            Terms of <span className="text-brand-700 dark:text-brand-400">Service</span>
           </h1>
-          <p className="text-slate-300 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
+          <p className="text-slate-500 dark:text-slate-400 leading-relaxed text-[1.0625rem] mt-6 max-w-2xl">
             Please read these Terms of Service carefully before using the TICKSERA platform. These Terms constitute a legally binding agreement between you and TICKSERA Technologies Ltd governing your access to and use of our IT support platform and related services.
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-8">
@@ -301,12 +303,12 @@ export default function TermsOfService() {
               { icon: Activity,    label: '99.9% uptime target' },
               { icon: Scale,       label: 'Lagos law governs' },
             ].map((t, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-200">
-                <t.icon className="w-3.5 h-3.5 text-emerald-400" />
+              <span key={i} className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-slate-300">
+                <t.icon className="w-3.5 h-3.5 text-brand-500" />
                 {t.label}
               </span>
             ))}
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-slate-300">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-500 shadow-sm dark:bg-white/5 dark:border-white/10 dark:text-slate-400">
               Last updated June 9, 2026
             </span>
           </div>

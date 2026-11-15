@@ -26,7 +26,10 @@ export default function PublicNavbar() {
         <div className="flex items-center h-16">
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
             <Logo size={34} />
-            <span className="font-heading text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
+            <span className="hidden sm:flex flex-col leading-none">
+              <span className="font-heading text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">TICKSERA</span>
+              <span className="text-[10px] font-semibold text-amber-500 tracking-wide mt-1">Fix IT. Faster.</span>
+            </span>
           </Link>
 
           <div className="hidden lg:flex items-center justify-center gap-0.5 flex-1">
@@ -59,11 +62,11 @@ export default function PublicNavbar() {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="hidden lg:block whitespace-nowrap text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                <Link to="/login" className="hidden lg:block whitespace-nowrap text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2 rounded-full border border-slate-200 dark:border-dark-border hover:border-brand-400 dark:hover:border-brand-500 hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
                   Sign In
                 </Link>
                 <Link to="/login" className="hidden sm:inline-flex">
-                  <Button size="sm">Get Started</Button>
+                  <Button size="sm" className="rounded-full">Get Started</Button>
                 </Link>
               </>
             )}
