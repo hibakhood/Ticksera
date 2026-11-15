@@ -110,7 +110,7 @@ const plans = [
 
 function SectionLabel({ children }: { children: string }) {
   return (
-    <span className="inline-block text-xs font-semibold tracking-widest text-brand-600 dark:text-brand-400 uppercase mb-3">
+    <span className="inline-block text-xs font-semibold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-3">
       {children}
     </span>
   );
@@ -135,7 +135,7 @@ export default function Landing() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-brand-950 via-brand-900 to-brand-950">
+      <section className="relative overflow-hidden bg-slate-900">
         <div className="absolute inset-0 bg-grid pointer-events-none" />
         <ShaderBackground />
 
@@ -144,7 +144,7 @@ export default function Landing() {
 
             {/* Left: text content */}
             <div className="flex-shrink-0 lg:w-[46%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 text-brand-200 text-xs font-semibold tracking-wide mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide mb-8">
                 <Zap className="w-3.5 h-3.5" /> Enterprise IT Support Platform
               </div>
               <h1 className="font-heading text-white leading-[1.06] tracking-tight text-[clamp(2.125rem,5vw,3.75rem)] font-bold">
@@ -185,7 +185,7 @@ export default function Landing() {
                 {/* Live themed dashboard mockup (replaces stale FIXORA screenshot) */}
                 <div className="aspect-[16/9] bg-white dark:bg-dark-card flex overflow-hidden select-none pointer-events-none" aria-hidden="true">
                   {/* Sidebar */}
-                  <div className="w-[25%] bg-gradient-to-b from-brand-900 to-brand-950 p-[3.5%] flex flex-col min-w-0">
+                  <div className="w-[25%] bg-slate-900 p-[3.5%] flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5 mb-[7%]">
                       <div className="w-[14px] h-[14px] rounded-[4px] bg-brand-500 flex items-center justify-center flex-shrink-0">
                         <CheckCircle className="w-[9px] h-[9px] text-white" />
@@ -197,10 +197,10 @@ export default function Landing() {
                         <div
                           key={item}
                           className={`flex items-center gap-1.5 rounded-md px-1.5 py-[4px] ${
-                            i === 0 ? 'bg-brand-500 text-white' : 'text-brand-100/50'
+                            i === 0 ? 'bg-brand-500 text-white' : 'text-slate-400'
                           }`}
                         >
-                          <span className={`w-[5px] h-[5px] rounded-sm flex-shrink-0 ${i === 0 ? 'bg-white/80' : 'bg-brand-300/40'}`} />
+                          <span className={`w-[5px] h-[5px] rounded-sm flex-shrink-0 ${i === 0 ? 'bg-white/80' : 'bg-slate-600'}`} />
                           <span className="text-[8px] font-medium truncate">{item}</span>
                         </div>
                       ))}
@@ -209,7 +209,7 @@ export default function Landing() {
                       <div className="w-[12px] h-[12px] rounded-full bg-brand-500 flex items-center justify-center text-[7px] font-bold text-white flex-shrink-0">D</div>
                       <div className="min-w-0">
                         <div className="text-[7px] font-semibold text-white leading-none truncate">David</div>
-                        <div className="text-[6px] text-brand-200/50 leading-none mt-[2px]">Customer</div>
+                        <div className="text-[6px] text-slate-500 leading-none mt-[2px]">Customer</div>
                       </div>
                     </div>
                   </div>
@@ -302,7 +302,7 @@ export default function Landing() {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-gradient-to-b from-brand-950 to-brand-900 dark:from-brand-950 dark:to-brand-950 border-t border-brand-800/50">
+      <section className="bg-slate-900 dark:bg-slate-950 border-t border-slate-800/60">
         <div className="s-sm s-inner max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10">
             {stats.map((s, i) => (
@@ -426,7 +426,7 @@ export default function Landing() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="s-section bg-gradient-to-b from-brand-950 to-brand-900 dark:from-brand-950 dark:to-brand-950 relative overflow-hidden">
+      <section className="s-section bg-slate-900 dark:bg-slate-950 relative overflow-hidden">
         {/* Background glow blobs */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -454,7 +454,7 @@ export default function Landing() {
               return (
                 <div
                   key={i}
-                  className="relative bg-white/5 dark:bg-white/5 ring-1 ring-white/10 group hover:bg-white/10 transition-colors duration-300 p-8"
+                  className="relative bg-slate-900 dark:bg-slate-950 group hover:bg-slate-800/70 transition-colors duration-300 p-8"
                 >
                   <div className="absolute top-4 right-5 font-heading font-black text-slate-800 dark:text-slate-700 select-none leading-none text-[3.5rem]">
                     {s.n}
@@ -586,7 +586,7 @@ export default function Landing() {
 
       {/* ── CTA ── */}
       <section className="s-sm s-inner max-w-4xl mx-auto">
-        <div className="relative bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
+        <div className="relative bg-slate-900 dark:bg-slate-950 rounded-3xl overflow-hidden text-center px-6 sm:px-10 py-12 sm:py-16">
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
             <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />

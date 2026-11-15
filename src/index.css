@@ -7,23 +7,22 @@
   --font-heading: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  /* ── Ticksera blueprint palette ──
-     Primary green ramp sampled from the mobile UI blueprint. */
-  --color-brand-50:  #ECFDF5;
-  --color-brand-100: #D3F5E1;
-  --color-brand-200: #A9E8C4;
-  --color-brand-300: #6FD79E;
-  --color-brand-400: #34C274;
-  --color-brand-500: #16A34A;
-  --color-brand-600: #15803D;
-  --color-brand-700: #166534;
-  --color-brand-800: #14532D;
-  --color-brand-900: #0F3D23;
-  --color-brand-950: #0B2E1B;
+  /* ── Brand tokens: aliased to the original emerald palette ── */
+  --color-brand-50:  hsl(152 81% 96%);
+  --color-brand-100: hsl(149 80% 90%);
+  --color-brand-200: hsl(152 76% 80%);
+  --color-brand-300: hsl(156 72% 65%);
+  --color-brand-400: hsl(158 64% 52%);
+  --color-brand-500: hsl(160 84% 39%);
+  --color-brand-600: hsl(161 94% 30%);
+  --color-brand-700: hsl(163 94% 24%);
+  --color-brand-800: hsl(163 88% 18%);
+  --color-brand-900: hsl(164 86% 12%);
+  --color-brand-950: hsl(164 86% 7%);
 
   /* Signature accents */
   --color-teal-accent:  #17A398;
-  --color-amber-accent: #F5A623;
+  --color-amber-accent: hsl(38 92% 50%);
 
   --color-emerald-50:  hsl(152 81% 96%);
   --color-emerald-100: hsl(149 80% 90%);
@@ -76,7 +75,7 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: hsl(150 30% 98%);
+    background: hsl(210 40% 98%);
   }
 
   .dark body { background: hsl(222 47% 8%); }

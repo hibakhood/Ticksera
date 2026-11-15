@@ -198,14 +198,14 @@ export default function DashboardLayout() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-gradient-to-b from-brand-900 to-brand-950 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-16 border-b border-brand-800/60 flex-shrink-0">
+        <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
           <span className="font-heading text-lg font-bold text-white tracking-tight">TICKSERA</span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden text-brand-300 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors"
+            className="ml-auto lg:hidden text-slate-500 hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors"
           >
             <X className="w-4.5 h-4.5" />
           </button>
@@ -217,7 +217,7 @@ export default function DashboardLayout() {
             <div key={si}>
               {section.title && (
                 <div className="px-3.5 pt-4 pb-1">
-                  <span className="text-[10px] font-semibold text-brand-300/70 uppercase tracking-widest">{section.title}</span>
+                  <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">{section.title}</span>
                 </div>
               )}
               {section.items.map(item => {
@@ -228,8 +228,8 @@ export default function DashboardLayout() {
                     to={item.search ? { pathname: item.to, search: `?${item.search}` } : item.to}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all group ${
                       active
-                        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/25'
-                        : 'text-brand-100/70 hover:text-white hover:bg-brand-800/50'
+                        ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800'
                     }`}
                   >
 <item.icon className="w-4.5 h-4.5 flex-shrink-0" />
@@ -248,9 +248,9 @@ export default function DashboardLayout() {
         </nav>
 
         {/* User footer */}
-        <div className="p-3 border-t border-brand-800/60 flex-shrink-0">
-          <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-brand-800/50 transition-colors cursor-default">
-            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-brand-500/25 overflow-hidden">
+        <div className="p-3 border-t border-slate-800 flex-shrink-0">
+          <div className="flex items-center gap-3 px-2.5 py-2.5 rounded-xl hover:bg-slate-800 transition-colors cursor-default">
+            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-md shadow-brand-500/20 overflow-hidden">
               {currentUser?.avatar ? (
                 <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
               ) : (
@@ -259,7 +259,7 @@ export default function DashboardLayout() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate leading-none mb-0.5">{currentUser?.name}</p>
-              <p className="text-[11px] text-brand-200/60 truncate capitalize">{currentUser?.role?.replace(/_/g, ' ')}</p>
+              <p className="text-[11px] text-slate-500 truncate capitalize">{currentUser?.role?.replace(/_/g, ' ')}</p>
             </div>
           </div>
         </div>

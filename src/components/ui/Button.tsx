@@ -67,9 +67,9 @@ export default function Button({
 
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      background: 'linear-gradient(135deg, hsl(145 74% 37%) 0%, hsl(150 76% 36%) 100%)',
+      background: 'linear-gradient(135deg, hsl(158 64% 52%) 0%, hsl(160 84% 39%) 60%, hsl(163 94% 30%) 100%)',
       color: '#ffffff',
-      boxShadow: '0 1px 2px hsl(150 76% 36% / 0.3), 0 4px 14px hsl(150 76% 36% / 0.28), inset 0 1px 0 hsl(145 74% 50% / 0.35)',
+      boxShadow: '0 1px 2px hsl(160 84% 39% / 0.25), 0 4px 12px hsl(160 84% 39% / 0.25), inset 0 1px 0 hsl(158 64% 62% / 0.4)',
     },
     secondary: {
       background: 'linear-gradient(135deg, hsl(215 25% 32%) 0%, hsl(217 33% 22%) 100%)',
@@ -78,9 +78,9 @@ export default function Button({
     },
     outline: {
       background: 'transparent',
-      color: 'hsl(150 76% 30%)',
-      border: '1.5px solid hsl(150 76% 36% / 0.55)',
-      boxShadow: '0 1px 2px hsl(150 76% 36% / 0.08)',
+      color: 'hsl(161 94% 30%)',
+      border: '1.5px solid hsl(160 84% 39% / 0.6)',
+      boxShadow: '0 1px 2px hsl(160 84% 39% / 0.06)',
     },
     ghost: {
       background: 'transparent',
@@ -93,9 +93,9 @@ export default function Button({
       boxShadow: '0 1px 2px hsl(0 84% 55% / 0.25), 0 4px 12px hsl(0 84% 55% / 0.2), inset 0 1px 0 hsl(0 85% 72% / 0.4)',
     },
     dark: {
-      background: 'linear-gradient(135deg, hsl(152 53% 19%) 0%, hsl(154 55% 13%) 100%)',
+      background: 'linear-gradient(135deg, hsl(222 47% 14%) 0%, hsl(222 47% 10%) 100%)',
       color: '#ffffff',
-      boxShadow: '0 1px 2px hsl(155 60% 8% / 0.4), 0 4px 12px hsl(155 60% 8% / 0.25), inset 0 1px 0 hsl(152 45% 30% / 0.5)',
+      boxShadow: '0 1px 2px hsl(222 47% 4% / 0.4), 0 4px 12px hsl(222 47% 4% / 0.25), inset 0 1px 0 hsl(215 25% 30% / 0.5)',
     },
   };
 
@@ -103,18 +103,18 @@ export default function Button({
     if (isDisabled) return;
     const el = e.currentTarget;
     if (variant === 'primary') {
-      el.style.background = 'linear-gradient(135deg, hsl(145 74% 40%) 0%, hsl(150 76% 39%) 100%)';
-      el.style.boxShadow = '0 2px 4px hsl(150 76% 36% / 0.25), 0 8px 24px hsl(150 76% 36% / 0.38), inset 0 1px 0 hsl(145 74% 52% / 0.4)';
+      el.style.background = 'linear-gradient(135deg, hsl(158 64% 55%) 0%, hsl(160 84% 43%) 60%, hsl(163 94% 33%) 100%)';
+      el.style.boxShadow = '0 2px 4px hsl(160 84% 39% / 0.2), 0 8px 24px hsl(160 84% 39% / 0.35), inset 0 1px 0 hsl(158 64% 65% / 0.4)';
       el.style.transform = 'translateY(-1px)';
     } else if (variant === 'secondary') {
       el.style.background = 'linear-gradient(135deg, hsl(215 25% 36%) 0%, hsl(217 33% 26%) 100%)';
       el.style.boxShadow = '0 2px 4px hsl(220 30% 10% / 0.3), 0 8px 20px hsl(220 30% 10% / 0.3), inset 0 1px 0 hsl(215 25% 46% / 0.4)';
       el.style.transform = 'translateY(-1px)';
     } else if (variant === 'outline') {
-      el.style.background = 'hsl(150 76% 36% / 0.06)';
-      el.style.borderColor = 'hsl(150 76% 36%)';
-      el.style.color = 'hsl(152 53% 19%)';
-      el.style.boxShadow = '0 2px 8px hsl(150 76% 36% / 0.14)';
+      el.style.background = 'hsl(160 84% 39% / 0.06)';
+      el.style.borderColor = 'hsl(160 84% 39%)';
+      el.style.color = 'hsl(163 94% 24%)';
+      el.style.boxShadow = '0 2px 8px hsl(160 84% 39% / 0.12)';
       el.style.transform = 'translateY(-1px)';
     } else if (variant === 'ghost') {
       el.style.background = 'hsl(214 32% 91% / 0.7)';
@@ -124,8 +124,8 @@ export default function Button({
       el.style.boxShadow = '0 2px 4px hsl(0 84% 55% / 0.2), 0 8px 24px hsl(0 84% 55% / 0.3), inset 0 1px 0 hsl(0 85% 75% / 0.4)';
       el.style.transform = 'translateY(-1px)';
     } else if (variant === 'dark') {
-      el.style.background = 'linear-gradient(135deg, hsl(152 53% 23%) 0%, hsl(154 55% 16%) 100%)';
-      el.style.boxShadow = '0 2px 4px hsl(155 60% 8% / 0.4), 0 8px 24px hsl(155 60% 8% / 0.35), inset 0 1px 0 hsl(152 45% 34% / 0.5)';
+      el.style.background = 'linear-gradient(135deg, hsl(222 47% 18%) 0%, hsl(222 47% 13%) 100%)';
+      el.style.boxShadow = '0 2px 4px hsl(222 47% 4% / 0.4), 0 8px 24px hsl(222 47% 4% / 0.35), inset 0 1px 0 hsl(215 25% 34% / 0.5)';
       el.style.transform = 'translateY(-1px)';
     }
   }
