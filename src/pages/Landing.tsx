@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store';
 import Button from '../components/ui/Button';
-import Logo from '../components/ui/Logo';
 
 const services = [
   { icon: Monitor,  title: 'Computer Repair',  desc: 'Hardware diagnostics, OS recovery, data backup, and full system performance tuning.' },
@@ -183,30 +182,18 @@ export default function Landing() {
             <div className="flex-1 relative w-full max-w-md sm:max-w-lg mx-auto lg:max-w-none">
               <div className="absolute inset-0 -bottom-8 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
               <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-brand-900/25 ring-1 ring-slate-900/10">
+                {/* Image source: crop of the man-with-AI-circuitry art from our own
+                    "Ticksera AI Support Hero" template asset (not a stock photo) */}
                 <img
                   src="/hero-photo.jpg"
-                  alt="Person looking up while the TICKSERA AI assistant handles their IT issue in the background"
-                  className="w-full h-[400px] sm:h-[460px] object-cover object-top"
+                  alt="Person with glowing AI circuitry and the TICKSERA chip — the TICKSERA AI assistant at work"
+                  className="w-full h-[420px] sm:h-[500px] object-cover object-top"
                   loading="eager"
                 />
-                {/* Emerald wash + grounding gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-900/15 to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-brand-500/10 mix-blend-overlay pointer-events-none" />
-
-                {/* Circuit-line motif */}
-                <svg className="absolute top-5 right-5 w-24 h-16 text-brand-300/90 pointer-events-none" viewBox="0 0 100 64" fill="none" aria-hidden="true">
-                  <path d="M2 52 L30 52 L30 32 L54 32 L54 12 L86 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <circle cx="2" cy="52" r="3" fill="currentColor" />
-                  <circle cx="30" cy="32" r="3" fill="currentColor" />
-                  <circle cx="54" cy="12" r="3" fill="currentColor" />
-                  <circle cx="86" cy="12" r="3.5" fill="white" stroke="currentColor" strokeWidth="2" />
-                </svg>
-
-                {/* Logo chip */}
-                <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/95 backdrop-blur rounded-xl shadow-lg px-3 py-2 pointer-events-none">
-                  <Logo size={18} />
-                  <span className="font-heading text-[11px] font-bold text-slate-900 tracking-tight">TICKSERA</span>
-                </div>
+                {/* Subtle grounding gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-950/25 via-transparent to-transparent pointer-events-none" />
+                {/* Dim slightly in dark mode so the bright image doesn't glare */}
+                <div className="hidden dark:block absolute inset-0 bg-dark-bg/40 pointer-events-none" />
               </div>
 
               {/* Floating: TICKSERA AI chat card */}
