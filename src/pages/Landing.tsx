@@ -4,7 +4,7 @@ import {
   Monitor, Wifi, Printer, Camera, Server, Globe, Star, ChevronRight,
   Hotel, GraduationCap, HeartPulse, Truck, Factory, Home, Landmark, Store,
   Route,
-  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck, Plus, Play, Bot, Timer, Wrench
+  UserPlus, GitBranch, Sparkles, UserCheck, MessageSquare, BadgeCheck, Play, Bot, Timer, Wrench
 } from 'lucide-react';
 import { useStore } from '../store';
 import Button from '../components/ui/Button';
@@ -133,11 +133,21 @@ export default function Landing() {
     <div className="bg-white dark:bg-dark-bg">
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-brand-50/80 via-white to-white dark:from-dark-bg dark:via-dark-bg dark:to-dark-bg">
-        {/* Soft decorative wash */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <div className="absolute -top-40 -left-40 w-[34rem] h-[34rem] bg-brand-200/50 dark:bg-brand-500/10 rounded-full blur-3xl" />
-          <div className="absolute top-20 -right-44 w-[30rem] h-[30rem] bg-amber-200/40 dark:bg-amber-500/10 rounded-full blur-3xl" />
+      <section className="relative overflow-hidden">
+        {/* Full-bleed background: man with glowing AI circuitry (from our own template asset) */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <img
+            src="/hero-bg.jpg"
+            alt=""
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Legibility scrim — heavier on the left where the text sits */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/55 to-white/0 dark:from-dark-bg/92 dark:via-dark-bg/60 dark:to-dark-bg/20" />
+          {/* Extra flat veil on small screens where text sits over the face */}
+          <div className="absolute inset-0 bg-white/55 dark:bg-dark-bg/65 lg:hidden" />
+          {/* Fade into the section below */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent dark:from-dark-bg dark:via-dark-bg/70" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent dark:from-dark-bg" />
         </div>
 
         <div className="s-hero s-inner relative z-10 max-w-7xl mx-auto">
@@ -145,7 +155,7 @@ export default function Landing() {
 
             {/* Left: text content */}
             <div className="flex-shrink-0 lg:w-[47%] text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-brand-200 shadow-sm text-brand-700 dark:bg-brand-500/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/85 backdrop-blur border border-brand-200 shadow-sm text-brand-700 dark:bg-white/10 dark:border-brand-500/20 dark:text-brand-300 text-xs font-semibold tracking-wide mb-8">
                 <Zap className="w-3.5 h-3.5 text-amber-500" /> AI-Powered IT Support
               </div>
               <h1 className="font-heading leading-[1.02] tracking-tight text-[clamp(2.75rem,6.5vw,4.5rem)] font-extrabold text-slate-900 dark:text-white">
@@ -178,26 +188,20 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right: AI assistant photo composition */}
-            <div className="flex-1 relative w-full max-w-md sm:max-w-lg mx-auto lg:max-w-none">
-              <div className="absolute inset-0 -bottom-8 bg-brand-500/20 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl shadow-brand-900/25 ring-1 ring-slate-900/10">
-                {/* Image source: crop of the man-with-AI-circuitry art from our own
-                    "Ticksera AI Support Hero" template asset (not a stock photo) */}
+            {/* Right: live TICKSERA dashboard mockup, floating beside the man's head */}
+            <div className="flex-1 relative w-full max-w-md sm:max-w-lg mx-auto lg:max-w-[460px] xl:max-w-[500px] lg:mt-10 lg:ml-auto lg:mr-0">
+              <div className="absolute -inset-6 bg-white/30 dark:bg-brand-500/10 rounded-[2rem] blur-2xl pointer-events-none" />
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-slate-900/30 ring-1 ring-slate-900/10 dark:ring-white/10">
                 <img
-                  src="/hero-photo.jpg"
-                  alt="Person with glowing AI circuitry and the TICKSERA chip — the TICKSERA AI assistant at work"
-                  className="w-full h-[420px] sm:h-[500px] object-cover object-top"
+                  src="/dashboard-hero.png"
+                  alt="The TICKSERA admin dashboard — ticket stats, revenue overview and status breakdown"
+                  className="w-full h-auto"
                   loading="eager"
                 />
-                {/* Subtle grounding gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-950/25 via-transparent to-transparent pointer-events-none" />
-                {/* Dim slightly in dark mode so the bright image doesn't glare */}
-                <div className="hidden dark:block absolute inset-0 bg-dark-bg/40 pointer-events-none" />
               </div>
 
               {/* Floating: TICKSERA AI chat card */}
-              <div className="absolute left-3 right-3 sm:left-6 sm:right-auto sm:w-60 -bottom-7 bg-white/95 backdrop-blur border border-brand-100 shadow-xl rounded-2xl p-3.5" aria-hidden="true">
+              <div className="absolute left-2 right-2 -bottom-10 sm:left-auto sm:right-auto sm:w-60 sm:left-4 sm:bottom-6 bg-white/95 backdrop-blur border border-brand-100 shadow-xl rounded-2xl p-3.5" aria-hidden="true">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-7 h-7 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0 shadow-sm shadow-brand-500/30">
                     <Bot className="w-3.5 h-3.5 text-white" />
@@ -217,26 +221,6 @@ export default function Landing() {
                   <span className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center flex-shrink-0">
                     <ArrowRight className="w-2.5 h-2.5 text-white" />
                   </span>
-                </div>
-              </div>
-
-              {/* Floating: Quick Actions card */}
-              <div className="hidden sm:block absolute -left-8 top-1/4 w-44 bg-white/95 backdrop-blur border border-brand-100 shadow-xl rounded-2xl p-3" aria-hidden="true">
-                <p className="text-[10px] font-bold text-slate-900 uppercase tracking-wider mb-2">Quick Actions</p>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { icon: Wifi,    label: 'Network' },
-                    { icon: Monitor, label: 'Computer' },
-                    { icon: Wrench,  label: 'Software' },
-                    { icon: Globe,   label: 'Email' },
-                    { icon: Printer, label: 'Printer' },
-                    { icon: Plus,    label: 'More Tools' },
-                  ].map(a => (
-                    <div key={a.label} className="rounded-lg bg-brand-50 flex flex-col items-center gap-1 py-2 px-1">
-                      <a.icon className="w-3.5 h-3.5 text-brand-600" />
-                      <span className="text-[8px] font-medium text-slate-600 leading-none text-center">{a.label}</span>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
