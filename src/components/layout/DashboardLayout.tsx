@@ -4,8 +4,8 @@ import { useStore } from '../../store';
 import { useShallow } from 'zustand/react/shallow';
 import {
   LayoutDashboard, Ticket, MessageSquare, BookOpen,
-  User, Menu, X, Sun, Moon, Bell,
-  LogOut, ChevronDown, ChevronRight, CalendarCheck, CalendarDays, LayoutGrid,
+  User, X, Sun, Moon, Bell,
+  LogOut, ChevronDown, ChevronRight, ChevronLeft, CalendarCheck, CalendarDays, LayoutGrid,
   Building2, Layers, Users, Wrench, Sparkles, ScrollText, BarChart3, Inbox,
   RefreshCw, AlertTriangle, Check, Minus
 } from 'lucide-react';
@@ -198,7 +198,7 @@ export default function DashboardLayout() {
       )}
 
       {/* ── Sidebar ── */}
-      <aside className={`fixed ${sidebarMinimized ? 'w-20' : 'w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen || !sidebarMinimized ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed w-64 ${sidebarMinimized ? 'lg:w-20' : 'lg:w-64'} lg:sticky top-0 left-0 z-50 ${sidebarOpen || !sidebarMinimized ? 'h-dvh' : 'h-20'} bg-slate-900 flex flex-col transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-800 flex-shrink-0">
           <Logo size={32} className="flex-shrink-0" />
@@ -263,6 +263,16 @@ export default function DashboardLayout() {
             </div>
           </div>
         </div>
+
+        {/* Mobile: slide-out toggle arrow (rides the sidebar edge) */}
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? 'Collapse menu' : 'Expand menu'}
+          aria-expanded={sidebarOpen}
+          className="lg:hidden absolute top-1/2 -translate-y-1/2 -right-9 w-9 h-14 rounded-r-xl bg-slate-900 text-white shadow-lg flex items-center justify-center hover:text-brand-300 transition-colors z-50"
+        >
+          <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${sidebarOpen ? '' : 'rotate-180'}`} />
+        </button>
       </aside>
 
       {/* ── Main content ── */}
@@ -270,14 +280,8 @@ export default function DashboardLayout() {
         {/* Top header */}
 <header className="sticky top-0 z-30 h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center px-5 lg:px-7 gap-4">
           <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-          <button
             onClick={() => toggleSidebarMinimize()}
-            className="lg:block min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
+            className="hidden lg:flex min-w-[44px] min-h-[44px] items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
             aria-label="Minimize sidebar"
           >
             {sidebarMinimized ? <ChevronRight className="w-4.5 h-4.5" /> : <Minus className="w-4.5 h-4.5" />}
